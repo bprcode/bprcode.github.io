@@ -6,12 +6,12 @@
 
 html{
   height: 100%;
-  background: radial-gradient(1400px 500px at 400px 120px, #d6f0fc, #74a1a7);
+  background: radial-gradient(1400px 700px at 400px 120px, #dde4fc, #6f82a3);
   color: #222;
   font-family: 'Voltaire', sans-serif;
   font-size: 18px;
-  text-shadow: 2px 1px 2px #fff8,
-                -1px -1px 1px #0002;
+  text-shadow: 2px 1px 2px #fff6,
+                -1px -1px 1px #0001;
 }
 
 h1{
