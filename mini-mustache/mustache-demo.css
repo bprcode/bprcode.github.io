@@ -1,0 +1,63 @@
+*{
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+  }
+  
+html{
+    background-color: #eee;
+    color: #222;
+    font-family: 'Voltaire', sans-serif;
+    font-size: 18px;
+}
+  
+.center-content{
+    max-width: 800px;
+    margin: 0px auto;
+}
+
+.triptych{
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    margin-top: 1.25rem;
+}
+
+.triptych span{
+    padding-right: 0.35rem;
+}
+
+#json-source, #template-source{
+    border: 2px inset;
+}
+
+#rendered-output{
+    background: #fff4;
+}
+
+button{
+    background-color: #fca;
+    border-radius: 5px;
+    padding: 5px;
+    margin-top: 2.25rem;
+}
+
+label{
+    position: absolute;
+}
+
+textarea{
+    padding: 0.25rem;
+    margin-top: 1.25rem;
+
+    background-image: linear-gradient(#eee 50%, #ddf 50%);
+    background-size: 100% 2rem;
+    border: 1px solid #CCC;
+    width: 100%;
+    line-height: 1rem;
+    background-position-y: 4px;
+}
+
+.partial{
+    background-image: linear-gradient(#fed 50%, #fcc 50%);
+}
