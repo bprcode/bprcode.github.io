@@ -1,0 +1,29 @@
+*{
+  margin: 0px;
+  padding: 0px;
+  box-sizing: border-box;
+}
+
+html{
+  height: 100%;
+  background: radial-gradient(1400px 500px at 400px 120px, #d6f0fc, #74a1a7);
+  color: #222;
+  font-family: 'Voltaire', sans-serif;
+  font-size: 18px;
+  text-shadow: 2px 1px 2px #fff8,
+                -1px -1px 1px #0002;
+}
+
+h1{
+  margin-top: 1.45rem;
+  margin-bottom: 0.55rem;
+}
+
+p{
+  padding: 0.25rem;
+}
+
+.center-content{
+  max-width: 800px;
+  margin: 0px auto;
+}
