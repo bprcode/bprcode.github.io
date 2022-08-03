@@ -1,0 +1,84 @@
+{
+    "telemetry.enableTelemetry": false,
+    "telemetry.enableCrashReporter": false,
+    "files.autoSave": "afterDelay",
+    "workbench.colorTheme": "Tokyo Night",
+    "editor.guides.bracketPairs": true,
+    "terminal.integrated.fontFamily": "MesloLGM Nerd Font Mono",
+    "editor.cursorStyle": "line-thin",
+    "telemetry.telemetryLevel": "off",
+    "window.zoomLevel": 1,
+    "git.mergeEditor": true,
+
+    "[html]": {
+        "editor.tabSize": 2
+    },
+    "[javascript]": {
+        "editor.tabSize": 4
+    },
+    "workbench.colorCustomizations": {
+        "gitDecoration.untrackedResourceForeground": "#aaaacc",
+        "gitDecoration.modifiedResourceForeground": "#7c6ce8",
+        "statusBar.background": "#070724",
+        "statusBar.foreground": "#114fb9",
+        "activityBar.background": "#121422",
+        "activityBar.foreground": "#7e7e95",
+        "activityBarBadge.foreground": "#93b0a2",
+        "activityBarBadge.background": "#004488",
+        "editor.lineHighlightBackground": "#020222",
+        "editor.selectionBackground": "#6c0692",
+        "editor.selectionHighlightBackground": "#112137",
+        "list.hoverBackground": "#006276",
+        "sideBar.background": "#121418",
+        "sideBar.foreground": "#5f5f7d",
+        "sideBarSectionHeader.background": "#121422",
+        "sideBarTitle.foreground": "#8888cc",
+        "editorBracketHighlight.foreground1": "#3e3eda",
+        "editorBracketHighlight.foreground2": "#983de3",
+        "editorBracketHighlight.foreground3": "#c845e9",
+        "editorBracketHighlight.foreground4": "#e35688",
+        "editorBracketHighlight.foreground5": "#ed9741",
+        "editorBracketHighlight.foreground6": "#f3b63c"
+    },
+    "editor.tokenColorCustomizations": {
+        "textMateRules": [
+          {
+            "scope": [
+                "keyword.control",
+                "keyword.operator.expression",
+                "keyword.operator.new",
+                "storage"
+            ],
+            "settings": {
+                "fontStyle": "italic",
+                "foreground": "#9D7CD8"
+            }
+          },
+          {
+            "scope" : [
+                "string"
+             ],
+             "settings":{
+                "foreground": "#71da72"
+             }
+          },  
+          {
+            "scope" : [
+                "keyword.operator"
+             ],
+             "settings":{
+                "foreground": "#9D7CD8"
+             }
+          },
+          {
+            "scope" : [
+                "variable.other.readwrite.js"
+             ],
+             "settings":{
+                "foreground": "#ffbce6"
+             }
+          }
+        ]
+    },
+    "editor.fontSize": 15
+}
