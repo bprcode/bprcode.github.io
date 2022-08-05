@@ -1,0 +1,46 @@
+.fields{
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-evenly;
+}
+
+#input-text{
+  background-image: linear-gradient(rgb(253, 235, 228) 50%, rgb(255, 213, 200) 50%);
+}
+
+#output-text{
+  background-image: linear-gradient(rgb(215, 215, 240) 50%, rgb(201, 190, 226) 50%);
+}
+
+.fields{
+  margin-top: 24px;
+}
+
+label{
+  background-color: #58689e;
+  color: #fff0e5;
+  position: absolute;
+  padding: 0px 7px;
+  border-radius: 7px;
+}
+
+label[for='input-text']{
+  background-color: #974c4e;
+}
+
+textarea{
+  margin-top: 30px;
+  border-radius: 10px;
+}
+
+#input-text{
+  scrollbar-color: #b6705e #dab5b4;
+}
+
+#input-text::-webkit-scrollbar{
+  background-color: #dab5b4;
+}
+  
+#input-text::-webkit-scrollbar-thumb{
+  background-color: #b6705e;
+}

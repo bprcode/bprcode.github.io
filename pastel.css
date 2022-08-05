@@ -1,0 +1,102 @@
+*{
+  margin: 0px;
+  padding: 0px;
+  box-sizing: border-box;
+  scrollbar-color: #4e518f #888abb;
+}
+
+html{
+  color: #222;
+  font-family: 'Voltaire', sans-serif;
+  font-size: 18px;
+  text-shadow: 2px 1px 2px #fff2;
+}
+
+::-webkit-scrollbar{
+  background-color: #888abb;
+}
+
+::-webkit-scrollbar-thumb{
+  background-color: #4e518f;
+}
+
+::-webkit-resizer{
+  border: 9px solid #0002;
+  border-bottom-color: #0008;
+  border-right-color: #0008;
+  outline: 1px solid #0003;
+  box-shadow: 0 0 5px 0px #0002;
+} 
+
+
+body{
+  height: 100%;
+  background-image: radial-gradient(1400px 700px at 400px 120px,
+    #dde4fc, #6f72a3);
+  background-attachment: fixed;
+  line-height: 1.8rem;
+}
+
+.center-content{
+  max-width: 800px;
+  margin: 2.1rem auto;
+}
+
+.ambient-bg{
+  position: fixed;
+  top: 0vh;
+  left: 0vw;
+  height: 100vw;
+  width: 100vw;
+  background-image: linear-gradient(5deg, transparent 10%, #e9d4ff 50%, transparent 90%);
+  z-index: -8;
+  animation:endless 18s infinite linear;
+}
+
+@keyframes endless{
+  from{transform:translateY(100vw)}
+  to{transform:translateY(-100vw)}
+}
+
+h1{
+  margin-top: 1.3rem;
+  margin-bottom: 0.65rem;
+}
+
+p{
+  padding: 0.7rem;
+  padding-top: 0.2rem;
+}
+
+button{
+  color: rgb(223, 214, 255); 
+  font-family: 'Voltaire', sans-serif;
+  font-size: 16px;
+  border-radius: 10px;
+  padding: 5px;
+  margin: 1rem 0px;
+  background-color: #5c00dc;
+  background-image: linear-gradient(to top left,
+                                    #0003,
+                                    #0003 30%,
+                                    #0003);
+  box-shadow: inset 2px 2px 3px #fffa,
+            inset -2px -2px 3px #000a;
+}
+
+textarea{
+  padding: 0.25rem;
+  margin-top: 1.25rem;
+  margin-left: 0.7rem;
+
+  background-image: linear-gradient(#ffe3e3 50%, #decfff 50%);
+  background-size: 100% 2rem;
+  border: 1px solid #CCC;
+
+  line-height: 1rem;
+  background-position-y: 4px;
+}
+
+textarea, label{
+  box-shadow: 5px 5px 5px #0044;
+}
