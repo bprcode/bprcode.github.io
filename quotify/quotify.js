@@ -6,6 +6,8 @@ function parse () {
     if (output.value.slice(-1) !== '\n')
         output.value += '\n'
 
+    output.value = output.value.replace(/"/g, '\\"')
+    output.value = output.value.replace(/\t/g, '\\t')
     output.value = output.value.replace(/([^\n]*)\n/g, '"$1",\n')
     output.value = output.value.slice(0,-2)
 }
