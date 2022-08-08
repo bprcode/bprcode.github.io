@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="icon" href="favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Voltaire&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="pastel.css">
+  <link rel="stylesheet" href="chat-client.css">
+
+  <script defer src="handlebars.min-v4.7.7.js"></script>
+  <script type="module" src="chat-client.mjs"></script>
+
+  <title>Let's Chat</title>
+</head>
+
+<body>
+  
+  <div class="ambient-bg"></div>
+  <div class="center-content">
+  <div class="top-banner">
+    <span><h1>Let's Chat</h1></span>
+
+    <span class="spin-container">
+      <div class="spin">
+        <div class="mask">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </span>
+
+    <span class="status">
+      <span>Joining as </span>
+      <span class="name-field" contenteditable spellcheck="false"></span>
+    </span>
+  </div>
+  <div class="interface">
+    <div class="chat-container"></div>
+    <div class="clickables">
+      <input type="text" id="input-text" size="30">
+      <button type="button" id="send-chat">Send</button>
+    </div>
+  </div>
+  </div>
+
+</body>
+
+<!-- template for individual chat messages -->
+<template id="chat-message">
+  <div class="message-content">
+    {{#notification}}
+    <span class="message-notification">{{.}}</span>
+    {{/notification}}
+    {{^notification}}
+    <!--{{#id}}<span class="message-id">[{{.}}] </span>{{/id}}-->
+    {{~#time}}<span class="message-time">{{.}}</span>{{/time}}
+    {{~#user}}<span class="message-user">{{.}}: </span>{{/user}}
+    <span class="message-text"> {{text}}</span>
+    {{/notification}}
+  </div>
+</template>
+
+</html>
