@@ -1,6 +1,4 @@
 {
-    "telemetry.enableTelemetry": false,
-    "telemetry.enableCrashReporter": false,
     "files.autoSave": "afterDelay",
     "workbench.colorTheme": "Tokyo Night",
     "editor.guides.bracketPairs": true,
@@ -9,6 +7,8 @@
     "telemetry.telemetryLevel": "off",
     "window.zoomLevel": 1,
     "git.mergeEditor": true,
+    "javascript.suggest.autoImports": false,
+    "typescript.suggest.autoImports": false,
 
     "[html]": {
         "editor.tabSize": 2
@@ -26,7 +26,7 @@
         "activityBarBadge.foreground": "#93b0a2",
         "activityBarBadge.background": "#004488",
         "editor.lineHighlightBackground": "#020222",
-        "editor.selectionBackground": "#6c0692",
+        "editor.selectionBackground": "#3a3a9d",
         "editor.selectionHighlightBackground": "#112137",
         "list.hoverBackground": "#006276",
         "sideBar.background": "#121418",
@@ -59,7 +59,10 @@
                 "string.quoted.single.js",
                 "string.quoted.double.js",
                 "punctuation.definition.string.begin.js",
-                "punctuation.definition.string.end.js"
+                "punctuation.definition.string.end.js",
+                "punctuation.definition.string.template.begin.js",
+                "punctuation.definition.string.template.end.js",
+                "string.template.js"
              ],
              "settings":{
                 "foreground": "#908de0"
@@ -94,18 +97,19 @@
           },
           {
             "scope" : [
-                "entity.name.function.js"
-            ],
-            "settings" : {
-                "foreground": "#7be195"
-            }
-          },
-          {
-            "scope" : [
                 "variable.other.property.js"
             ],
             "settings" : {
                 "foreground": "#6382ff"
+            }
+          },
+          {
+            "scope" : [
+                "entity.name.function.js",
+                "entity.name.type.class.js"
+            ],
+            "settings" : {
+                "foreground": "#7be195"
             }
           }
         ]
