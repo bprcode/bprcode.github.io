@@ -7,7 +7,8 @@ let log = () => {}
 log.queue = () => {}
 log.send = () => {}
 
-const socketServer = 'ws://localhost:3303'
+// Deployment test; to be later loaded externally:
+const socketServer = 'wss://ws-chat-server.onrender.com:10000'
 
 const renderChat = Handlebars.compile(
     document.querySelector('#chat-message').innerHTML)
