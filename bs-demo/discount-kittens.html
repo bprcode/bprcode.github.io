@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="icon" href="paw-solid.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Voltaire&display=swap" rel="stylesheet">
+
+  <link href="bootstrap/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+
+  <script src="bootstrap/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
+  <script src="bootstrap/bootstrap.min.js" integrity="sha384-IDwe1+LCz02ROU9k972gdyvl+AESN10+x7tBKgc9I5HFtuNz0wWnPclzo6p9vxnk" crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="overwrite.css">
+
+  <title>Discount Kittens</title>
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+  
+  <div class="ambient-bg"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark py-3">
+    <div class="container-fluid px-3 px-sm-4 px-lg-5">
+      <a href="#" class="navbar-brand">Discount Kittens <img class="ms-1" src="paw-solid.svg" width=20 style="filter:invert();"></a>
+
+      <button class="navbar-toggler"
+        data-bs-toggle="collapse"
+        data-bs-target="#burger"
+        type="button">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="burger">
+        <ul class="navbar-nav ms-auto align-items-end">
+          <li class="nav-item"><a href="#locations" class="nav-link">Locations</a></li>
+          <li class="nav-item"><a href="#prices" class="nav-link">Prices</a></li>
+          <li class="nav-item"><a href="#customize" id="customizer" class="nav-link" data-bs-toggle="collapse" data-bs-target="#smoosh-color" aria-expanded="false" aria-controls="smoosh-color">Customize</a></li>
+          <li class="nav-item"><a href="#legality" class="nav-link">Questionable Legality</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Showcase -->
+  <section class="silhouette position-relative bg-dark text-light pt-3 pb-5 text-center text-sm-start">
+    <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-7 col-lg-5 ms-sm-5 ps-lg-5">
+        <div class="pe-sm-2 pe-md-4"><h1>Buy these <span class="text-info">discounted cats</span></h1>
+          <p class="lead my-2">Your money, our kittens. Hand me cash now dollar dollar, I give you cat. Ask no questions and I'll tell you no lies. These cats are fluffed and ready to go.</p>
+          <button class="btn btn-primary btn-lg" data-bs-target="#buy-now">Buy Cats Now</button>
+        </div>
+      </div>
+    </div>
+    </div>
+
+  </section>
+
+  <!-- Newsletter input group -->
+  <section class="text-bg-primary p-4 mb-4">
+    <div class="container">
+      <div class="d-md-flex justify-content-between align-items-center">
+        <h3 class="mb-3 mb-md-0 ms-lg-3">Join our mailing list</h3>
+
+        <div class="input-group news-input">
+          <input type="text" class="form-control" placeholder="you@example.com">
+          <button class="btn btn-outline-light">Sign Up</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Collapsible customization controls -->
+  <div class="collapse container pb-4" id="smoosh-color">
+    <!-- Primary color input -->
+    <div class="row">
+      <div class="col-8 offset-2">
+        <!-- Customization control content -->
+        <form class="d-flex">
+          <span class="col-2"><label for="primary-color-picker">Primary color</label></span>
+          <input class="form-control mx-2" type="color" id="primary-color-picker" value="#ff6600" style="width: 4rem; height: 2rem;">
+          <label class="me-2" for="primary-color-picker" id="primary-hex"></label>
+          <label class="me-2" for="primary-colorpicker" id="primary-hsl"></label>
+        </form>
+      </div>
+    </div>
+    <!-- Info color input -->
+    <div class="row">
+      <div class="col-8 offset-2">
+        <form class="d-flex">
+          <span class="col-2"><label for="info-color-picker">Info color</label></span>
+          <input class="form-control mx-2" type="color" id="info-color-picker" value="#ff6600" style="width: 4rem; height: 2rem;">
+          <label class="me-2" for="info-color-picker" id="info-hex"></label>
+          <label class="me-2" for="info-colorpicker" id="info-hsl"></label>
+        </form>
+      </div>
+    </div>
+    <!-- Success color input -->
+    <div class="row">
+      <div class="col-8 offset-2">
+        <form class="d-flex">
+          <span class="col-2"><label for="success-color-picker">Success color</label></span>
+          <input class="form-control mx-2" type="color" id="success-color-picker" value="#ff6600" style="width: 4rem; height: 2rem;">
+          <label class="me-2" for="success-color-picker" id="success-hex"></label>
+          <label class="me-2" for="success-colorpicker" id="success-hsl"></label>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cards -->
+  <section class="px-sm-5 mx-lg-5">
+    <div class="container">
+      <div class="row gy-4">
+
+        <!-- First cat card -->
+        <div class="col-md">
+          <div class="card card-1 text-bg-dark cat-card">
+            <div class="container-fluid position-absolute top-0 end-0 px-0 mx-0 pt-3 d-flex justify-content-center">
+              <img src="img/circle-solid.svg" width="50" style="filter: opacity(50%);">
+            </div>
+
+            <div class="card-img-overlay text-center heavy-text-shadow d-flex flex-column">
+              <div class="h1 mb-3">
+                <img width=32 src="img/incognito.svg" alt="Sneaky face" style="filter: invert();">
+              </div>
+              <h3 class="card-title mb-3">Shh, it's a secret</h3>
+              <p class="card-text">Let's just keep this between us. No need to let those killjoys at ASPCA know.</p>
+              
+              <div class="container-fluid position-absolute bottom-0 end-0 py-2 cool-shades">
+                <button class="btn btn-primary mt-auto">Meow's the Word</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Second cat card -->
+        <div class="col-md">
+          <div class="card card-2 text-bg-dark cat-card">
+            <div class="container-fluid position-absolute top-0 end-0 px-0 mx-0 pt-3 d-flex justify-content-center">
+              <img src="img/circle-solid.svg" width="50" style="filter: opacity(50%);">
+            </div>
+
+            <!-- <img class="card-img cat-2" src="img/mikhail-vasilyev-NodtnCsLdTE-unsplash.jpg"> -->
+            <div class="card-img-overlay text-center heavy-text-shadow d-flex flex-column">
+              <div class="h1 mb-3">
+                <img width=32 src="img/cash-stack.svg" alt="Stacked dollars" style="filter: invert();">
+              </div>
+              <h3 class="card-title mb-3">Cheap, cheap, cheap!</h3>
+              <p class="card-text mb-3">You won't find cheaper kittens anywhere. That's a threat.</p>
+              
+              <div class="container-fluid position-absolute bottom-0 end-0 py-2 cool-shades">
+                <button class="btn btn-primary mt-auto">Save Some Scratch</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Third cat card -->
+        <div class="col-md">
+          <div class="card card-3 text-bg-dark cat-card">
+            <div class="container-fluid position-absolute top-0 end-0 px-0 mx-0 pt-3 d-flex justify-content-center">
+              <img src="img/circle-solid.svg" width="50" style="filter: opacity(50%);">
+            </div>
+
+            <!-- <img class="card-img cat-3" src="img/amber-kipp-75715CVEJhI-unsplash.jpg"> -->
+            <div class="card-img-overlay text-center heavy-text-shadow">
+              <div class="h1 mb-3">
+                <img width=32 src="img/balloon-heart.svg" alt="Heart balloon" style="filter: invert();">
+              </div>
+              <h3 class="card-title mb-3">You're gonna love 'em</h3>
+              <p class="card-text">They might be a little mangy, but fleas are just new friends.</p>
+              
+              <div class="container-fluid position-absolute bottom-0 end-0 py-2 cool-shades">
+                <button class="btn btn-primary mt-auto">Soulmates for Sale</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!--First banner section-->
+  <section class="p-5" id="learn">
+    <div class="container">
+      <div class="row align-items-center justify-content-center">
+        <div class="col-md">
+          <img src="img/undraw_scientist_0ft9.svg" alt="A person in a lab coat, doing science" class="img-fluid">
+        </div>
+
+        <div class="col-md p-5">
+          <h2>A Vet Said It's Okay</h2>
+          <p class="lead">We're not sure she went to veterinary school, but she was wearing a lab coat and she sold us some pretty good horse tranquilizers, so who are we to argue?</p>
+          <a href="#" class="btn btn-light mt-3"><img src="img/chevron-right.svg">Read More</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!--Second banner section-->
+  <section class="p-5 text-bg-dark" id="learn">
+    <div class="container">
+      <div class="row align-items-center justify-content-center">
+        <div class="col-md order-1">
+          <img src="img/undraw_passing_by_0un9.svg" alt="Someone walking a dog past a hydrant" class="img-fluid">
+        </div>
+
+        <div class="col-md p-5">
+          <h2>Bark! Bark bark? <em>Bark!</em></h2>
+          <p class="lead">Oh boy, a fire hydrant. A car to chase. Yay, some old bone. It sure is great being a dog person. <strong><em>Not.</em></strong> Switch to cats today, and start living your best life!</p>
+          <a href="#" class="btn btn-dark mt-3"><img src="img/chevron-right.svg" style="filter: invert();">Get Cats Now</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Accordion -->
+  <section id="legality" class="p-5">
+    <div class="container-fluid w-75">
+      <h2 class="text-center mb-4">Legal Questions</h2>
+
+      <div class="accordion accordion-flush" id="accordionLegal">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="flush-headingOne">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+              Are these your cats?
+            </button>
+          </h2>
+          <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionLegal">
+            <div class="accordion-body">They're in my trunk, so sure, why not.</div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="flush-headingTwo">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+              Why are you wearing a trenchcoat?
+            </button>
+          </h2>
+          <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#accordionLegal">
+            <div class="accordion-body">It keeps the cats calm.</div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="flush-headingThree">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
+              I think this one is a mountain lion.
+            </button>
+          </h2>
+          <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#accordionLegal">
+            <div class="accordion-body">That's still a type of cat.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Prices -->
+  <section class="text-bg-primary bg-gradient p-5" id="prices">
+    <div class="container">
+      <h2 class="text-center">Prices</h2>
+      <p class="lead text-center mb-5">We accept payment in dollars, pesos, Geoffrey Bucks, and arcade tokens!</p>
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+          <div class="card price-card bg-light text-center text-dark">
+            <div class="card-header text-bg-info h5">Nine Lives Special!</div>
+            <div class="card-body p-2">
+              <p class="card-text">Nine Cats, <br><span class="h4">$9.99!</span></p>
+            </div>
+
+            <div class="row">
+              <div class="col-6 offset-3 d-flex justify-content-center pb-2 px-0">
+                <button class="btn btn-success d-flex pb-2">
+                  <img width=17 src="img/currency-dollar.svg" alt="US Dollars" style="filter: invert();">
+                  <span class="pt-0">BUY NOW! </span>
+                  <img width=17 src="img/currency-dollar.svg" alt="US Dollars" style="filter: invert();">
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+          <div class="card price-card bg-light text-center text-dark">
+            <div class="card-header text-bg-info h5">Cats Half Off!</div>
+            <div class="card-body p-2">
+              <p class="card-text">Two legs are just as good as four!<br><span class="h4">Two for $2.22!</span></p>
+            </div>
+
+            <div class="row">
+              <div class="col-6 offset-3 d-flex justify-content-center pb-2 px-0">
+                <button class="btn btn-success d-flex pb-2">
+                  <img width=17 src="img/currency-dollar.svg" alt="US Dollars" style="filter: invert();">
+                  <span class="pt-0">BUY NOW! </span>
+                  <img width=17 src="img/currency-dollar.svg" alt="US Dollars" style="filter: invert();">
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+          <div class="card price-card bg-light text-center text-dark">
+            <div class="card-header text-bg-info h5">Used Felines</div>
+            <div class="card-body p-2">
+              <p class="card-text">Some fluff still left!<br><span class="h4">$6.99/each!</span></p>
+            </div>
+
+            <div class="row">
+              <div class="col-6 offset-3 d-flex justify-content-center pb-2 px-0">
+                <button class="btn btn-success d-flex pb-2">
+                  <img width=17 src="img/currency-dollar.svg" alt="US Dollars" style="filter: invert();">
+                  <span class="pt-0">BUY NOW! </span>
+                  <img width=17 src="img/currency-dollar.svg" alt="US Dollars" style="filter: invert();">
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+          <div class="card price-card bg-light text-center text-dark">
+            <div class="card-header text-bg-info h5">Bulk Discounts</div>
+            <div class="card-body p-2">
+              <p class="card-text">Subscribe and Save!<br><span class="h4">Only $19.99/month!</span></p>
+            </div>
+
+            <div class="row">
+              <div class="col-6 offset-3 d-flex justify-content-center pb-2 px-0">
+                <button class="btn btn-success d-flex pb-2">
+                  <img width=17 src="img/currency-dollar.svg" alt="US Dollars" style="filter: invert();">
+                  <span class="pt-0">BUY NOW! </span>
+                  <img width=17 src="img/currency-dollar.svg" alt="US Dollars" style="filter: invert();">
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="p-2 bg-dark text-white text-center position-relative">
+    <div class="container">
+      <p class="fs-5"><small>Copyright &copy; 2022 Discount Kittens</small></p>
+      <img class="pb-2" src="paw-solid.svg" width="30" alt="" style="filter: invert();">
+    </div>
+  </footer>
+
+  <!-- Popover content -- for extraction via JS -->
+  <template id="po-template">
+    <em>Some stuff</em>
+    <p>more stuff</p>
+  </template>
+
+  <!-- Background image -->
+  <img src="undraw_cat_67tc.svg" class="bgcat img-fluid"></img>
+</body>
+</html>
+
+<script>
+  function hexFromRGB (r, g, b) {
+    return    (+r).toString(16).padStart(2, '0')
+            + (+g).toString(16).padStart(2, '0')
+            + (+b).toString(16).padStart(2, '0')
+  }
+
+  function RGBfromHex (hex) {
+    const r = parseInt(hex.slice(0, 2), 16)
+    const g = parseInt(hex.slice(2, 4), 16)
+    const b = parseInt(hex.slice(4, 6), 16)
+    return {r,g,b}
+  }
+
+  function HSLfromRGB (r, g, b) {
+    if (typeof r === 'object') {
+      b = r.b
+      g = r.g
+      r = r.r
+    }
+
+    [r,g,b] = [r,g,b].map(v => v/255)
+
+    let lowest = Math.min(r,g,b)
+    let highest = Math.max(r,g,b)
+    let difference = highest - lowest
+
+    let [h,s,l] = [0,0,0]
+
+    // Find hue angle
+    if (difference === 0)
+      h = 0
+    else if (highest === r)
+      h = ((g - b) / difference) % 6
+    else if (highest === g)
+      h = (b - r) / difference + 2
+    else
+      h = (r - g) / difference + 4
+
+    h = Math.round(h * 60)
+    if (h < 0)
+      h += 360
+
+    // Calculate lightness
+    l = (highest + lowest) / 2
+
+    // Calculate saturation
+    if ( difference === 0 )
+      s = 0
+    else
+      s = difference / (1 - Math.abs(2 * l - 1))
+
+    // Rescale to percentages
+    s *= 100
+    l *= 100
+
+    return {h,s,l}
+  }
+
+  function CSSfromHSL (h, s, l) {
+    if (typeof h === 'object') {
+      l = h.l
+      s = h.s
+      h = h.h
+    }
+
+    h = Math.min(h, 360)
+    s = Math.min(s, 100)
+    l = Math.min(l, 100)
+    h = Math.max(h, 0)
+    s = Math.max(s, 0)
+    l = Math.max(l, 0)
+
+    return `hsl(${h}, ${s}%, ${l}%)`
+  }
+
+  // Prepend a custom font onto Bootstrap's stack without needing CSS recompilation:
+  let fontFamily =
+    getComputedStyle(document.body).getPropertyValue('--bs-body-font-family')
+
+  fontFamily = 'Voltaire,' + fontFamily
+  document.body.style.setProperty('--bs-body-font-family', fontFamily)
+
+  // Initialize the color picker
+  // extracting values from the initial CSS
+  // Note: --nu-info-rgb is stored as a comma-separated string,
+  // --nu-primary is in the form rgb(12, 34, 56)
+
+  let primaryColor =
+    getComputedStyle(document.documentElement)
+    .getPropertyValue('--nu-primary')
+    .match(/\((.*)\)/)[1] // get contents between parentheses
+    .split(', ')
+
+  let infoColor =
+    getComputedStyle(document.querySelector('.text-info'))
+    .getPropertyValue('--nu-info-rgb')
+    .split(', ')
+
+  let successColor =
+    getComputedStyle(document.documentElement)
+    .getPropertyValue('--nu-success')
+    .match(/\((.*)\)/)[1] // get contents between parentheses
+    .split(', ')
+
+  document.getElementById('primary-color-picker').value =
+                            '#' + hexFromRGB(...primaryColor)
+  document.getElementById('info-color-picker').value =
+                            '#' + hexFromRGB(...infoColor)
+  document.getElementById('success-color-picker').value =
+                            '#' + hexFromRGB(...successColor)
+
+  // Register color picker event handlers
+  document.getElementById('primary-color-picker')
+    .addEventListener('input', event => {
+      let hex = event.target.value
+      let rgb = RGBfromHex(hex.slice(1))
+      let hsl = HSLfromRGB(rgb)
+
+      document.getElementById('primary-hex').textContent = hex
+      document.getElementById('primary-hsl').textContent =
+      `H: ${hsl.h} S: ${Math.round(hsl.s)}% L: ${Math.round(hsl.l)}%`
+
+      document.documentElement.style.setProperty('--nu-primary',
+        CSSfromHSL(hsl))
+      document.documentElement.style.setProperty('--nu-hover',
+        CSSfromHSL(hsl.h, hsl.s * 2, hsl.l * 1.2))
+      document.documentElement.style.setProperty('--nu-border',
+        CSSfromHSL(hsl.h, hsl.s * 1.2, hsl.l * 0.7))
+  })
+
+  document.getElementById('info-color-picker')
+    .addEventListener('input', event => {
+      let hex = event.target.value
+      let rgb = RGBfromHex(hex.slice(1))
+      let hsl = HSLfromRGB(rgb)
+
+      document.getElementById('info-hex').textContent = hex
+      document.getElementById('info-hsl').textContent =
+      `H: ${hsl.h} S: ${Math.round(hsl.s)}% L: ${Math.round(hsl.l)}%`
+
+      document.documentElement.style.setProperty('--nu-info-rgb',
+        `${rgb.r}, ${rgb.g}, ${rgb.b}`)
+    })
+
+  document.getElementById('success-color-picker')
+    .addEventListener('input', event => {
+      let hex = event.target.value
+      let rgb = RGBfromHex(hex.slice(1))
+      let hsl = HSLfromRGB(rgb)
+
+      document.getElementById('success-hex').textContent = hex
+      document.getElementById('success-hsl').textContent =
+      `H: ${hsl.h} S: ${Math.round(hsl.s)}% L: ${Math.round(hsl.l)}%`
+
+      document.documentElement.style.setProperty('--nu-success',
+        CSSfromHSL(hsl))
+      document.documentElement.style.setProperty('--nu-success-hover',
+        CSSfromHSL(hsl.h, hsl.s * 2, hsl.l * 1.2))
+      document.documentElement.style.setProperty('--nu-success-border',
+        CSSfromHSL(hsl.h, hsl.s * 1.2, hsl.l * 0.7))
+  })
+</script>
