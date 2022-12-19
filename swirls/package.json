@@ -1,0 +1,13 @@
+{
+  "name": "hello-matrix",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "bs": "browser-sync start --server --files . --index floo.html"
+  },
+  "keywords": [],
+  "author": "bprcode <bprcode@gmail.com>",
+  "license": "MIT"
+}
