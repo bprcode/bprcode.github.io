@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   data-name="Layer 1"
+   viewBox="0 0 1200 110.1677"
+   preserveAspectRatio="none"
+   version="1.1"
+   id="svg834"
+   sodipodi:docname="wave-bottom.svg"
+   inkscape:version="1.1.2 (b8e25be833, 2022-02-05)"
+   width="1200"
+   height="110.1677"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs838" />
+  <sodipodi:namedview
+     id="namedview836"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="0.6325"
+     inkscape:cx="457.70751"
+     inkscape:cy="60.079051"
+     inkscape:window-width="1366"
+     inkscape:window-height="705"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg834" />
+  <path
+     d="m 321.39,53.727696 c 58,10.79 114.16,30.13 172,41.86 82.39,16.720004 168.19,17.730004 250.45,0.39 79.94,-16.81 162.83,-57.81 241.82,-78.64 70.05,-18.4799995 146.53,-26.0899995 214.34,-3 V 110.1677 H 0 V 82.817696 a 600.21,600.21 0 0 1 321.39,-29.09 z"
+     class="shape-fill"
+     id="path832" />
+</svg>
