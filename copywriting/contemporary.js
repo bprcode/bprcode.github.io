@@ -56,7 +56,7 @@ function drawZigzag () {
   gradient.addColorStop(1, 'rgba(40, 16, 61, 0.7)')
 
   ctx.strokeStyle = gradient
-  ctx.lineWidth = 85
+  ctx.lineWidth = 75
 
   const images = document.querySelectorAll('.project-container img')
 
