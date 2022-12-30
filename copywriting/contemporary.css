@@ -363,6 +363,14 @@ h2 {
   flex-direction: column;
 }
 
+.project-canvas {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+}
+
 .project-intro {
   padding-left: 0px;
   padding-right: 0px;
@@ -405,14 +413,14 @@ h2 {
 .project-container li {
   display: flex;
   flex-direction: column;
-  width: min(650px, 90vw);
-  margin-bottom: 20vh; /* Vertical space between projects */
+  width: min(550px, 90vw);
+  margin-bottom: min(260px, 35vh); /* Vertical space between projects */
 }
 
 .image-shadow {
   position: absolute;
   border-radius: 20px;
-  background-color: rgba(26, 14, 50, 0.3);
+  background-color: rgb(12, 6, 23);
   --parallax-scroll: 65px;
 
   /* Switches to landscape on media query */
@@ -424,7 +432,7 @@ h2 {
 }
 
 .shadow-reveal {
-  background-color: rgba(35, 19, 68, 0.8);
+  background-color: rgb(36, 18, 69);
 }
 
 .project-details {
@@ -480,7 +488,6 @@ Desktop-first makes it easier to encapsulate this behavior */
     width: min(90vw, 500px);
     height: 165px;
     margin-top: 0px;
-    box-shadow: 16px 16px 1px rgba(0 0 0 / 0.25);
   }
 
   .project-container li:nth-child(even) {
@@ -658,7 +665,7 @@ footer a {
 }
 
 .outro {
-  padding-top: 1rem;
+  padding-top: 1.7rem;
   margin-bottom: 3.2rem;
 }
 
@@ -668,6 +675,7 @@ footer a {
 
 .outro a {
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .outro svg {
@@ -688,6 +696,9 @@ footer a {
   padding-right: 1.1rem;
   font-size: 1.05rem;
 }
+.copyright-notice a {
+  white-space: nowrap;
+}
 .copyright-notice svg {
   transform: translateY(2px);
 }
@@ -707,4 +718,5 @@ footer a {
 .last-call a {
   font-weight: 600;
   text-decoration: none;
+  white-space: nowrap;
 }

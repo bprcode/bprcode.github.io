@@ -35,7 +35,59 @@ function initialize () {
     observer.observe(e)
   }
 
+  window.addEventListener('resize', drawZigzag)
+  drawZigzag()
+
   requestAnimationFrame(animateParallax)
+}
+
+function drawZigzag () {
+  const canvas = document.getElementById('project-canvas')
+  const ctx = canvas.getContext('2d')
+  const realWidth = canvas.offsetWidth
+  const realHeight = canvas.offsetHeight
+
+  canvas.width = realWidth;
+  canvas.height = realHeight;
+  
+  const canvasRect = canvas.getBoundingClientRect()
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvasRect.height)
+  gradient.addColorStop(0, 'rgba(10,10,20,0.5')
+  gradient.addColorStop(1, 'rgba(40, 16, 61, 0.7)')
+
+  ctx.strokeStyle = gradient
+  ctx.lineWidth = 85
+
+  const images = document.querySelectorAll('.project-container img')
+
+  if (!images.length) { return }
+
+  ctx.beginPath()
+
+  let currentPoint = relativeCenter(images[0])
+  let displacement = canvasRect.width > 500
+                      ? 40
+                      : 0
+  currentPoint[0] += displacement
+
+  ctx.moveTo(...currentPoint)
+
+  for (const img of images) {
+    currentPoint = relativeCenter(img)
+    currentPoint[0] += displacement // Reduce horizontal scale of zig-zag
+    displacement *= -1
+
+    ctx.lineTo(...currentPoint)
+  }
+
+  ctx.stroke()
+
+  function relativeCenter (element) {
+    const rect = element.getBoundingClientRect()
+
+    return [rect.left + rect.width / 2 - canvasRect.left,
+            rect.top + rect.height / 2 - canvasRect.top]
+  }
 }
 
 function handleIntersections (entries, observer) {
