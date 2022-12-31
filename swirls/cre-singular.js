@@ -5,7 +5,7 @@ console.clear()
 
 const canvas = document.getElementById('main-canvas')
 const gl = canvas.getContext('webgl2')
-const gl2 = document.getElementById('second-canvas').getContext('webgl2')
+// const gl2 = document.getElementById('second-canvas').getContext('webgl2')
 const state = {
   dx: 0,
   dy: 0,
@@ -16,9 +16,9 @@ const mainCanvasRect =
     document.getElementById('main-canvas')
     .getBoundingClientRect()
 
-document.getElementById('legend').textContent =
-  gl.getParameter(gl.VERSION)
-  + ' / ' + gl.getParameter(gl.SHADING_LANGUAGE_VERSION)
+// document.getElementById('legend').textContent =
+//   gl.getParameter(gl.VERSION)
+//   + ' / ' + gl.getParameter(gl.SHADING_LANGUAGE_VERSION)
 
 function glMain (gl, props = {}) {
 
@@ -318,18 +318,20 @@ float fuzzyEquals(float a, float b) {
 }
 
 float f(vec2 p) {
-  vec2 v = (p - vec2(0.5, 0.5) ) / 0.25;
+  vec2 v = (p - vec2(0.5, 0.5) ) / 0.35;
   float r = distance(v, vec2(0.0, 0.0));
   float theta = atan(v.y, v.x);
-  float osc = sin(time / 3000.0);
-  const float range = 20.0;
+  float osc = sin(time / 4000.0);
+  const float range = 18.0;
 
   float sum = 0.0;
 
   for (float i = -range; i <= range; i += 2.0) {
-    sum += fuzzyEquals(
+    float blur = 1.0 - pow(i / range, 2.0);
+
+    sum += blur * fuzzyEquals(
       r, cos(
-        (0.5 + osc * 0.1)
+        (0.7 + osc * 0.3)
         * (theta + i * tau) )
       );
   }
@@ -786,4 +788,4 @@ function show (m, tag = undefined) {
 // honeycomb(gl, { clearColor: [0.1, 0.1, 0.25, 1], ab: 'A' })
 // honeycomb(gl2)
 flatPlane(gl, { clearColor: [0.51, 0.1, 0.25, 1], ab: 'A' })
-flatPlane(gl2)
+// flatPlane(gl2)

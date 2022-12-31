@@ -8,17 +8,47 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Voltaire&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="pastel.css">
+  <!-- <link rel="stylesheet" href="pastel.css"> -->
   <title>Welcome</title>
+
+  <script src="./swirls/gl-matrix.js"></script>
+  <script defer src="./swirls/cre-singular.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      display: flex;
+      color: #abe;
+      background-color: #000;
+      font-family: 'Voltaire', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    canvas {
+      width: 400px;
+      margin: 3rem auto;
+    }
+    .center-content {
+      display: flex;
+      flex-direction: column;
+
+      margin: 1rem auto;
+    }
+    #legend {
+      margin-top: 3rem;
+      color: #248;
+    }
+  </style>
 </head>
 
 <body>
-  <div class="ambient-bg"></div>
   <div class="center-content">
-  <h1>Welcome to my GitHub Page</h1>
-  <p>
-  This is a placeholder page intended to serve static content for practice projects.
-  </p>
+    <div>
+  <h1 style="text-align: center;">This site is a placeholder.</h1>
+  </div>
+  <canvas id="main-canvas" width="400" height="400"></canvas>
   </div>
 
 </body>
