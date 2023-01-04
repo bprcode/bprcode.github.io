@@ -410,14 +410,8 @@ vec3 colorSpinner (vec2 p) {
     vec2 dv = p - vec2(0.5);
 	float r = length(dv);
     float theta = atan(dv.y, dv.x) ;//+ mod(0.5*tau*time,tau);
-    theta += pow(1.0-r,2.0)*sin(time/300.0);
-    
-    return hslsmooth( vec3( mod((theta + pi
-      + r * theta// crazy factor
-    ) / tau, 1.0) //hue
-    , 1.0, // sat
-    1.0 // value
-    ) ) * 
+    theta += sin(mod(time, 15000.0) * theta);
+    return hslsmooth( vec3( mod((theta + pi) / tau, 1.0), 1.0, 1.0) ) * 
         (smoothstep(0.001, 0.002, r) -
         smoothstep(0.45, 0.46, r));
 }
@@ -991,4 +985,4 @@ function show (m, tag = undefined) {
 // honeycomb(gl, { clearColor: [0.1, 0.1, 0.25, 1], ab: 'A' })
 // honeycomb(gl2)
 flatPlane(gl, { clearColor: [0.51, 0.1, 0.25, 1], ab: 'A' })
-flatPlane(gl2)
+// flatPlane(gl2)
