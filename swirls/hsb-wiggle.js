@@ -247,7 +247,7 @@ function flatPlane (gl, props = {}) {
   try {
   // Compile and link the shaders
   const vs = compileShader(gl, followVert, gl.VERTEX_SHADER)
-  const fs = compileShader(gl, borkFrag, gl.FRAGMENT_SHADER)
+  const fs = compileShader(gl, hsbFrag, gl.FRAGMENT_SHADER)
   const program = gl.createProgram()
   gl.attachShader(program, vs)
   gl.attachShader(program, fs)
@@ -317,8 +317,9 @@ function linkProgram (context, program) {
 }
 
 function formatShaderError (error) {
+  error.cause ??= '<no cause field>'
   const lines = error.cause.split('\n')
-  const badLineNumber = parseInt(error.message.match(/\d:(\d+)/)[1])
+  const badLineNumber = parseInt(error.message.match(/\d:(\d+)/)?.[1])
   const badLine = lines[badLineNumber - 1]
   lines[badLineNumber - 1] = `<span style="color:#f44">${badLine}</span>`
 
@@ -329,7 +330,7 @@ function formatShaderError (error) {
   return html
 }
 
-const borkFrag =
+const hsbFrag =
 /* glsl */`
 #ifdef GL_ES
 precision mediump float;
@@ -338,6 +339,7 @@ precision mediump float;
 #define pi 3.14159265359
 #define tau 6.28318530718
 
+#define u_time time / 1000.0
 uniform float time;
 
 vec3 grape = vec3(0.149,0.141,0.912);
@@ -348,8 +350,12 @@ float plot (vec2 st, float pct){
           smoothstep( pct, pct+0.01, st.y);
 }
 
+float diracTiny (float t, float t0) {
+	return 1.0 - smoothstep(0.0, 0.01, abs(t - t0));
+}
+
 float dirac (float t, float t0) {
-	return 1.0 - smoothstep(0.0, 0.02, abs(t - t0));
+	return 1.0 - smoothstep(0.0, 0.04, abs(t - t0));
 }
 float diracWide (float t, float t0) {
 	return 1.0 - smoothstep(0.0, 0.3, abs(t - t0));
@@ -359,34 +365,66 @@ float sharpstep (float lo, float hi, float x) {
     return clamp( (x - lo)/(hi-lo), 0.0, 1.0);
 }
 
-vec3 hslsmooth (vec3 hsl) {
-    vec3 color = vec3(1.0, 0.0, 0.0) *
-        (smoothstep(2.0/6.0,1.0/6.0,hsl.x)
-        + smoothstep(4.0/6.0,5.0/6.0,hsl.x))
-        + vec3(0.0, 1.0, 0.0) *
-        (smoothstep(0.0/6.0,1.0/6.0,hsl.x)
-        *smoothstep(4.0/6.0,3.0/6.0,hsl.x))
-        + vec3(0.0, 0.0, 1.0) *
-        (smoothstep(2.0/6.0,3.0/6.0,hsl.x)
-        *smoothstep(6.0/6.0,5.0/6.0,hsl.x));
+vec3 hsvStops (vec3 hsv, vec3 stops) {
+    hsv.x -= stops.r; // start on r
+    hsv.x = mod(hsv.x, 1.0);
+    
+    
+    float greenMid = stops.g - stops.r;
+    float yellow = (greenMid) / 2.0;
+    float blueMid = stops.b - stops.r;
+    float cyan = (greenMid + blueMid) / 2.0;
+    
+    float blueWidth = (1.0 - stops.b) + stops.r;
+    float magenta = blueMid + blueWidth / 2.0;
+    
+    vec3 color = vec3(1.0, 0.0, 0.0) * // R
+        (smoothstep(greenMid, yellow, hsv.x)
+        + smoothstep(blueMid, magenta,hsv.x))
+        
+        + vec3(0.0, 1.0, 0.0) *	// G
+        (smoothstep(0.0, yellow, hsv.x)
+        *smoothstep(blueMid,cyan,hsv.x))
+        
+        + vec3(0.0, 0.0, 1.0) * // B
+        (smoothstep(greenMid,cyan,hsv.x)
+        *smoothstep(blueMid + blueWidth, magenta,hsv.x));
+        
     return mix(vec3(0.0),
-               mix(vec3(0.5), color, hsl.y),
-               hsl.z);
+               mix(vec3(0.5), color, hsv.y),
+               hsv.z);
 }
 
-vec3 hslsharp (vec3 hsl) {
+vec3 hsvsmooth (vec3 hsv) {
+    hsv.x = mod(hsv.x, 1.0);
     vec3 color = vec3(1.0, 0.0, 0.0) *
-        (sharpstep(2.0/6.0,1.0/6.0,hsl.x)
-        + sharpstep(4.0/6.0,5.0/6.0,hsl.x))
+        (smoothstep(2.0/6.0,1.0/6.0,hsv.x)
+        + smoothstep(4.0/6.0,5.0/6.0,hsv.x))
         + vec3(0.0, 1.0, 0.0) *
-        (sharpstep(0.0/6.0,1.0/6.0,hsl.x)
-        *sharpstep(4.0/6.0,3.0/6.0,hsl.x))
+        (smoothstep(0.0/6.0,1.0/6.0,hsv.x)
+        *smoothstep(4.0/6.0,3.0/6.0,hsv.x))
         + vec3(0.0, 0.0, 1.0) *
-        (sharpstep(2.0/6.0,3.0/6.0,hsl.x)
-        *sharpstep(6.0/6.0,5.0/6.0,hsl.x));
+        (smoothstep(2.0/6.0,3.0/6.0,hsv.x)
+        *smoothstep(6.0/6.0,5.0/6.0,hsv.x));
     return mix(vec3(0.0),
-               mix(vec3(0.5), color, hsl.y),
-               hsl.z);
+               mix(vec3(0.5), color, hsv.y),
+               hsv.z);
+}
+
+vec3 hsvsharp (vec3 hsv) {
+    hsv.x = mod(hsv.x, 1.0);
+    vec3 color = vec3(1.0, 0.0, 0.0) *
+        (sharpstep(2.0/6.0,1.0/6.0,hsv.x)
+        + sharpstep(4.0/6.0,5.0/6.0,hsv.x))
+        + vec3(0.0, 1.0, 0.0) *
+        (sharpstep(0.0/6.0,1.0/6.0,hsv.x)
+        *sharpstep(4.0/6.0,3.0/6.0,hsv.x))
+        + vec3(0.0, 0.0, 1.0) *
+        (sharpstep(2.0/6.0,3.0/6.0,hsv.x)
+        *sharpstep(6.0/6.0,5.0/6.0,hsv.x));
+    return mix(vec3(0.0),
+               mix(vec3(0.5), color, hsv.y),
+               hsv.z);
 }
 
 vec3 rainbowGrad (vec2 p) {
@@ -406,20 +444,25 @@ vec3 grid (vec2 p) {
         * vec3(0.3);
 }
 
+vec3 colorSpinnerStops (vec2 p, vec3 stops) {
+    vec2 dv = p - vec2(0.5);
+	float r = length(dv);
+    float theta = atan(dv.y, dv.x)
+        +r *sin(u_time*0.5);
+    return mix(vec3(0.0),
+               mix(vec3(1.0),
+        hsvStops( vec3(theta / tau, 1.0, 1.0), stops),
+               smoothstep(0.0, 0.2, r)),
+               smoothstep(0.9, 0.35, r));
+}
+
 vec3 colorSpinner (vec2 p) {
     vec2 dv = p - vec2(0.5);
 	float r = length(dv);
-    float theta = atan(dv.y, dv.x) ;//+ mod(0.5*tau*time,tau);
-    theta += pow(1.0-r,2.0)*sin(time/300.0);
-    
-    return hslsmooth( vec3( mod((theta + pi
-      + r * theta// crazy factor
-    ) / tau, 1.0) //hue
-    , 1.0, // sat
-    1.0 // value
-    ) ) * 
-        (smoothstep(0.001, 0.002, r) -
-        smoothstep(0.45, 0.46, r));
+    float theta = atan(dv.y, dv.x) + mod(0.5*tau*u_time,tau);
+    return hsvsmooth( vec3( mod((theta + pi) / tau, 1.0), 1.0, 1.0) ) * 
+        (smoothstep(0.1, 0.11, r) -
+        smoothstep(0.3, 0.31, r));
 }
 
 void main() {
@@ -428,83 +471,34 @@ void main() {
 
     vec3 pct = vec3(st.x);
 
-    color = colorSpinner(st);
-    // color = hslsmooth(vec3(st.x, st.y, st.y));
-    // color += vec3(1.0, 0.0, 0.0) * dirac(st.y, hslsmooth(st.x).r)
-    //     + vec3(0.0, 1.0, 0.0) * dirac(st.y, hslsmooth(st.x).g)
-    //     + vec3(0.0, 0.0, 1.0) * dirac(st.y, hslsmooth(st.x).b);
+    //color = colorSpinner(st);
+    vec3 stops = vec3(0.333+0.1*sin(u_time), 0.666+0.1*sin(u_time*1.2), 1.0+0.1*sin(u_time*1.8));
+     color = hsvStops(vec3(st.x, 1.0, 1.0),
+                     stops);
+    //color = colorSpinnerStops(st, stops);
+    
+    color = colorSpinnerStops(st, vec3(
+        0.0+0.15*sin(u_time*0.7),
+        0.333+0.15*sin(u_time*1.2),
+        0.666+0.15*sin(u_time*1.6)));
+    //color = hsvStops(vec3(st.x,1.0,1.0), vec3(0.0,0.333,0.666));
+    //color = hsvsmooth(vec3(st.x,1.0,st.y));
+    vec3 graph = vec3(
+        		dirac(st.y, color.r),
+                dirac(st.y, color.g),
+                dirac(st.y, color.b));
+    // color += vec3(1.0, 0.0, 0.0) * dirac(st.y, hsvsmooth(st.x).r)
+    //     + vec3(0.0, 1.0, 0.0) * dirac(st.y, hsvsmooth(st.x).g)
+    //     + vec3(0.0, 0.0, 1.0) * dirac(st.y, hsvsmooth(st.x).b);
     
 	//color += grid(st);
+    /*
+    color=color + graph*0.7
+        + vec3(0.5) * diracTiny(st.x, stops.r)
+        + vec3(0.5) * diracTiny(st.x, stops.g)
+        + vec3(0.5) * diracTiny(st.x, stops.b);
+    //*/
     gl_FragColor = vec4(color,1.0);
-}
-`
-
-const morpherFrag =
-/* glsl */`
-precision highp float;
-#define pi 3.1415926538
-#define tau 6.2831853076
-
-uniform float time;
-uniform float osc;
-uniform vec2 mouse;
-
-float fuzzyEquals(float a, float b) {
-  return smoothstep(0.1, 0.0, abs(a - b));
-}
-
-float fuzzyInequal(float a, float b) {
-  return smoothstep(0.0, -2.0, a - b);
-}
-
-// float f (vec2 p) {
-//   float r = distance(p, vec2(0.0, 0.0));
-//   float theta = atan(p.y, p.x);
-//   float theta2 = theta + tau;
-
-//   return fuzzyEquals((5.0+20.0*osc)*r, theta)
-//          +fuzzyEquals((5.0+20.0*osc)*r, theta2);
-// }
-
-// Polar-form equation, to be summed over many angles
-float q (float r, float theta) {
-  const float j = 1.5;
-  const float k = 6.0;
-  const float c = -6.5;
-  float b = osc * 10.0;
-
-  return fuzzyInequal(r,
-    2.0 + sin(
-    j * sin(
-    (sin(k *theta) + b)
-    ) + c
-    )
-  );
-}
-
-float polarPlane (vec2 p) {
-  const int revolutions = 3;
-
-  float r = distance(p, vec2(0.0, 0.0));
-  float theta0 = atan(p.y, p.x);
-
-  float sum = 0.0;
-  for (float i = 0.0; i < 2.0 * float(revolutions); i += 1.0) {
-    sum += q(r, theta0 + tau * i);
-  }
-
-  return sum;
-}
-
-void main(void) {
-  const float size = 400.0;
-  vec2 nPos = 8.0 * (gl_FragCoord.xy / size - vec2(0.5, 0.5));
-
-  float a = polarPlane(nPos);
-
-  gl_FragColor = vec4(
-          a * vec3(0.0, 0.2, 1.0),
-          1.0);
 }
 `
 
@@ -991,4 +985,4 @@ function show (m, tag = undefined) {
 // honeycomb(gl, { clearColor: [0.1, 0.1, 0.25, 1], ab: 'A' })
 // honeycomb(gl2)
 flatPlane(gl, { clearColor: [0.51, 0.1, 0.25, 1], ab: 'A' })
-flatPlane(gl2)
+// flatPlane(gl2)
