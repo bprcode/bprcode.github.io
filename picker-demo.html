@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Voltaire&display=swap" rel="stylesheet">
+
+
+  <title>In Which More is Rendered</title>
+
+  <link rel="icon" href="./code-slash.svg">
+  <script defer src="./swirls/gl-matrix.js"></script>
+  <script defer src="./picker-demo.js"></script>
+</head>
+
+<body>
+  <div class="center-content">
+    <div class="header">
+      <h1>sRGB / L*a*b* color space comparison</h1>
+      <span class="technical" id="version"></span>
+    </div>
+    <hr style="margin-bottom: 2rem;">
+    <div class="pickers">
+      <div class="picker-container">
+        <span class="picker-label">sRGB</span>
+          <canvas width="400" height="400" id="srgb-picker"></canvas>
+          <span class="picker-controls">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-moon" viewBox="0 0 16 16">
+              <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278zM4.858 1.311A7.269 7.269 0 0 0 1.025 7.71c0 4.02 3.279 7.276 7.319 7.276a7.316 7.316 0 0 0 5.205-2.162c-.337.042-.68.063-1.029.063-4.61 0-8.343-3.714-8.343-8.29 0-1.167.242-2.278.681-3.286z"/>
+            </svg>
+            <input id="srgb-brightness" type="range", min="0", max="100" value="50">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-brightness-high" viewBox="0 0 16 16">
+              <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+            </svg>
+          </span>
+      </div>
+
+      <div class="picker-container">
+        <span class="picker-label">L*a*b*</span>
+          <canvas width="400" height="400" id="lab-picker"></canvas>
+          <span class="picker-controls">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-moon" viewBox="0 0 16 16">
+              <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278zM4.858 1.311A7.269 7.269 0 0 0 1.025 7.71c0 4.02 3.279 7.276 7.319 7.276a7.316 7.316 0 0 0 5.205-2.162c-.337.042-.68.063-1.029.063-4.61 0-8.343-3.714-8.343-8.29 0-1.167.242-2.278.681-3.286z"/>
+            </svg>
+            <input id="lab-brightness" type="range", min="0", max="100" value="60">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-brightness-high" viewBox="0 0 16 16">
+              <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+            </svg>
+          </span>
+      </div>
+
+    </div>
+
+    <div class="gradient-set">
+      <div class="gradient-item">
+        <h3>Technical info</h3>
+        <canvas id="gradient-srgb-compressed" class="gradient-canvas"></canvas>
+      </div>
+
+      <div class="gradient-item">
+        <h3>Technical info</h3>
+        <canvas id="gradient-srgb-linear" class="gradient-canvas"></canvas>
+      </div>
+
+      <div class="gradient-item">
+        <h3>Technical info</h3>
+        <canvas id="gradient-lab-linear" class="gradient-canvas"></canvas>
+      </div>
+    </div>
+
+    <pre class="feedback"></pre>
+  </div>
+
+</body>
+</html>
+
+<style>
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body {
+  background-color: rgb(91, 83, 108);
+  color: #f8e0c8;
+  font-family: 'Voltaire', 'Courier', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.center-content {
+  max-width: 70rem;
+  margin: 0px auto;
+}
+
+.header h1 {
+  margin-bottom: 0.3rem;
+}
+
+.header pre {
+  font-size: 1.3rem;
+  margin-top: 0px;
+  padding-top: 0px;
+}
+
+.technical {
+  font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.pickers {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+@media (min-width: 576px) {
+  .center-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .pickers {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .pickers .picker-container:first-of-type {
+    margin-right: 2rem;
+  }
+}
+
+.picker-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.picker-label {
+  font-size: 1.8rem;
+  margin-bottom: 0.7rem;
+}
+
+.picker-controls {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.picker-container canvas {
+  margin-bottom: 2rem;
+}
+
+input[type="range"] {
+  width: 70%;
+  margin-bottom: 3rem;
+}
+
+canvas {
+  box-shadow: 12px 12px 0px #2224;
+  width: min(400px, 90vw);
+  height: min(400px, 90vw);
+}
+
+.gradient-set {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 5rem;
+
+}
+
+.gradient-item {
+  display: flex;
+  width: 80%;
+}
+
+.gradient-item h3 {
+  width: 30%;
+  font-size: 1.1rem;
+}
+.gradient-canvas {
+  width: 70%;
+  height: 50px;
+}
+
+#legend {
+  font-family:'Courier New', Courier, monospace;
+}
+</style>
