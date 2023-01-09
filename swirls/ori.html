@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Voltaire&display=swap" rel="stylesheet">
+
+  <title>In Which More is Rendered</title>
+
+  <link rel="icon" href="./code-slash.svg">
+  <script defer src="./ori.js"></script>
+</head>
+
+<body>
+  <div class="center-content">
+    <canvas width="400" height="400" id="main-canvas"></canvas>
+    <!-- <canvas width="400" height="400" id="second-canvas"></canvas> -->
+    <pre class="feedback"></pre>
+  </div>
+
+</body>
+</html>
+
+<style>
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body {
+  background-color: rgb(91, 83, 108);
+  color: #444;
+}
+
+.center-content {
+  max-width: 70rem;
+  margin: 0px auto;
+}
+
+canvas {
+  margin: 2rem auto;
+  display: block;
+  box-shadow: 12px 12px 0px #2224;
+  width: 500px;
+  height: 500px;
+}
+
+#legend {
+  font-family:'Courier New', Courier, monospace;
+}
+</style>

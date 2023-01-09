@@ -268,19 +268,11 @@ function addOtherEventListeners () {
 function glMain (gl, props = {}) {
   try {
   // Compile and link the shaders
-  pageLog(gl)
-  pageLog(Object.keys(props).join(', '))
-  
   const vsSource = props.vertexShader || followVert
   const fsSource = props.fragmentShader || colorSpaceFrag
   
-  pageLog('About to compile vertex shader with length: ' + vsSource.length)
-  const vs = compileShader(gl, vsSource,
-                            gl.VERTEX_SHADER)
-  pageLog('Compiling fragment shader with length: ' + fsSource.length)
-  const fs = compileShader(gl, fsSource,
-                            gl.FRAGMENT_SHADER)
-  pageLog('Done compiling shader pair')
+  const vs = compileShader(gl, vsSource, gl.VERTEX_SHADER)
+  const fs = compileShader(gl, fsSource, gl.FRAGMENT_SHADER)
   const program = gl.createProgram()
   gl.attachShader(program, vs)
   gl.attachShader(program, fs)
@@ -334,7 +326,6 @@ function glMain (gl, props = {}) {
 
   } catch (e) {
     const element = document.querySelector('.shader-feedback')
-    pageLog('Calling formatShaderError() with: ' + (e.message || 'falsy string?'))
     element.innerHTML = formatShaderError(e)
 
     element.style['color'] = '#abf'
@@ -348,13 +339,9 @@ function compileShader (context, source, type) {
   context.shaderSource(shader, source)
   context.compileShader(shader)
   if (!context.getShaderParameter(shader, context.COMPILE_STATUS)) {
-    pageLog('Error while compiling shader')
-    pageLog('Problematic source follows:')
-    pageLog(source)
     throw new Error(context.getShaderInfoLog(shader), { cause: source })
-  } else {
-    pageLog('Shader compiled successfully')
   }
+  
   return shader
 }
 
