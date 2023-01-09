@@ -1,3 +1,5 @@
+"use strict";
+
 try {
 const { mat4, vec3 } = glMatrix
 const π = Math.PI;
@@ -39,7 +41,7 @@ function initialize () {
   try {
   resetCanvasDimensions()
   addOtherEventListeners()
-  
+
   const canvas = document.getElementById('srgb-picker')
   
   const gl = canvas.getContext('webgl2',
