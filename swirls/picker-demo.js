@@ -339,8 +339,14 @@ function compileShader (context, source, type) {
   const shader = context.createShader(type)
   context.shaderSource(shader, source)
   context.compileShader(shader)
-  if (!context.getShaderParameter(shader, context.COMPILE_STATUS))
+  if (!context.getShaderParameter(shader, context.COMPILE_STATUS)) {
+    pageLog('Error while compiling shader')
+    pageLog('Problematic source follows:')
+    pageLog(source)
     throw new Error(context.getShaderInfoLog(shader), { cause: source })
+  } else {
+    pageLog('Shader compiled successfully')
+  }
   return shader
 }
 
