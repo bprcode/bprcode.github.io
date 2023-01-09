@@ -5,7 +5,6 @@ const τ = Math.PI * 2.0;
 const log = console.log.bind(console)
 console.clear()
 
-const canvas = document.getElementById('srgb-picker')
 const state = {
   dx: 0,
   dy: 0,
@@ -40,6 +39,8 @@ function initialize () {
   try {
   resetCanvasDimensions()
   addOtherEventListeners()
+  
+  const canvas = document.getElementById('srgb-picker')
   
   const gl = canvas.getContext('webgl2',
               { preserveDrawingBuffer: true })
