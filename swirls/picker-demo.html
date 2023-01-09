@@ -18,9 +18,16 @@
 
 <body>
   <div class="center-content">
-    <div class="header">
-      <h1>sRGB / L*a*b* color space comparison</h1>
-      <span class="subtitle" id="version"></span>
+    <div class="header-container">
+      <div class="header">
+        <h1>sRGB / L*a*b* color space comparison</h1>
+        <span class="technical" id="version"></span>
+      </div>
+
+      <div class="status">
+        <span id="first-color-status">Click to select color.</span>
+        <span id="second-color-status"></span>
+      </div>
     </div>
     <hr style="margin-bottom: 2rem;">
     <div class="pickers">
@@ -53,6 +60,27 @@
       </div>
 
     </div>
+
+    <div class="gradient-set">
+        <h3 class="gradient-label">Technical info</h3>
+        <canvas id="gradient-srgb-compressed" class="gradient-canvas"></canvas>
+
+        <h3 class="gradient-label">Technical info</h3>
+        <canvas id="gradient-srgb-linear" class="gradient-canvas"></canvas>
+
+        <h3 class="gradient-label">Technical info</h3>
+        <canvas id="gradient-lab-linear" class="gradient-canvas"></canvas>
+
+        <h3 class="gradient-label">Technical info</h3>
+        <canvas id="gradient-lab-linear" class="gradient-canvas"></canvas>
+
+        <h3 class="gradient-label">Technical info</h3>
+        <canvas id="gradient-lab-linear" class="gradient-canvas"></canvas>
+
+        <h3 class="gradient-label">Technical info</h3>
+        <canvas id="gradient-lab-linear" class="gradient-canvas"></canvas>
+    </div>
+
     <pre class="feedback"></pre>
   </div>
 
@@ -60,6 +88,11 @@
 </html>
 
 <style>
+:root {
+  --first-color-display: #fa0;
+  --second-color-display: #fa0;
+}
+
 html {
   box-sizing: border-box;
 }
@@ -74,10 +107,15 @@ body {
 }
 
 .center-content {
-  max-width: 70rem;
+  max-width: 65rem;
   margin: 0px auto;
 }
 
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 .header h1 {
   margin-bottom: 0.3rem;
 }
@@ -88,7 +126,44 @@ body {
   padding-top: 0px;
 }
 
-.subtitle {
+.status {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 1rem;
+  padding-right: 1.3rem;
+}
+
+.status span {
+  padding-left: 33px;
+  width: 5rem;
+  position: relative;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+#first-color-status::before {
+  position: absolute;
+  content: '';
+  background-color: var(--first-color-display);
+  width: 20px;
+  height: 20px;
+  left: 0px;
+  bottom: 0px;
+  display: block;
+}
+
+#second-color-status::before {
+  position: absolute;
+  content: '';
+  background-color: var(--second-color-display);
+  width: 20px;
+  height: 20px;
+  left: 0px;
+  bottom: 0px;
+  display: block;
+}
+
+.technical {
   font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
@@ -96,22 +171,6 @@ body {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-}
-
-@media (min-width: 576px) {
-  .center-content {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
-  .pickers {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
-  .pickers .picker-container:first-of-type {
-    margin-right: 2rem;
-  }
 }
 
 .picker-container {
@@ -144,11 +203,78 @@ input[type="range"] {
 
 canvas {
   box-shadow: 12px 12px 0px #2224;
-  width: min(500px, 90vw);
-  height: min(500px, 90vw);
+  width: min(400px, 90vw);
+  height: min(400px, 90vw);
+}
+
+@media (min-width: 700px) {
+  .pickers {
+    flex-direction: row;
+  }
+
+  .pickers canvas {
+    width: min(400px, 40vw);
+    height: min(400px, 40vw);
+  }
+}
+
+.pickers canvas {
+  cursor: crosshair;
+}
+
+.gradient-set {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  grid-auto-rows: 50px;
+  column-gap: 0.5rem;
+  width: 100%;
+  max-width: 55rem;
+  margin: 0px auto;
+  margin-bottom: 5rem;
+}
+
+.gradient-label {
+  margin-top: 0px;
+  margin-bottom: 0.3rem;
+  font-size: 0.7rem;
+  font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.gradient-canvas {
+  width: 100%;
+  height: 30px;
 }
 
 #legend {
   font-family:'Courier New', Courier, monospace;
 }
+
+@media (min-width: 576px) {
+  .center-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .pickers {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .picker-container:first-of-type {
+    margin-right: 1rem;
+  }
+
+  .gradient-set {
+    grid-template-columns: 250px 1fr;
+  }
+
+  .gradient-label {
+    font-size: 1.1rem;
+    font-family: 'Voltaire', 'Courier', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  .gradient-canvas {
+    height: 40px;
+  }
+}
+
 </style>

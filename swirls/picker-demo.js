@@ -1,3 +1,4 @@
+try {
 const { mat4, vec3 } = glMatrix
 const π = Math.PI;
 const τ = Math.PI * 2.0;
@@ -10,10 +11,14 @@ const state = {
   dy: 0,
   theta: 0,
   phi: 0,
-  srgbBrightness: 0.5,
   srgbAnimator: null,
-  labBrightness: 0.5,
-  labAnimator: null
+  labAnimator: null,
+  sRGBprops: {},
+  LabProps: {},
+  gradients: [], // { animator, props, context }
+  glContext: null,
+  gl2Context: null,
+  toggleColor: true,
 }
 
 function resetCanvasDimensions () {
@@ -22,17 +27,65 @@ function resetCanvasDimensions () {
     c.setAttribute('width', c.getBoundingClientRect().width)
     c.setAttribute('height', c.getBoundingClientRect().height)
   }
+
+  for (const c of document.querySelectorAll('.gradient-canvas')) {
+    c.setAttribute('width', c.getBoundingClientRect().width)
+    c.setAttribute('height', c.getBoundingClientRect().height)
+  }
 }
 
 document.addEventListener('DOMContentLoaded', initialize)
 
 function initialize () {
-  
+  try {
   resetCanvasDimensions()
   addOtherEventListeners()
   
-  const gl = canvas.getContext('webgl2')
-  const gl2 = document.getElementById('lab-picker').getContext('webgl2')
+  const gl = canvas.getContext('webgl2',
+              { preserveDrawingBuffer: true })
+  const gl2 = document.getElementById('lab-picker').getContext('webgl2',
+              { preserveDrawingBuffer: true })
+
+  state.glContext = gl
+  state.gl2Context = gl2
+
+  const gradientLabels = document.querySelectorAll('.gradient-label')
+  const gradientCanvases = document.querySelectorAll('.gradient-canvas')
+  const gradientBindings = [
+    { label: 'γ-compressed sRGB interpolation',
+      fragmentShader: compressedSRGBfrag },
+    { label: 'γ-expanded sRGB interpolation',
+      fragmentShader: expandedSRGBfrag },
+    { label: 'smoothed γ-expanded sRGB',
+      fragmentShader: smoothedSRGBfrag },
+    { label: 'L*a*b* linear interpolation',
+      fragmentShader: LabGradientFrag },
+    { label: 'L*C*h shortest arc',
+      fragmentShader: LChGradientFrag },
+    { label: 'L*C*h longest arc',
+      fragmentShader: LChLongFrag }
+  ]
+
+  const firstColor = [0.95, 0.125, 0.08]
+  const secondColor = [0.0, 0.9, 1.0]
+
+  const firstColorString = '#'
+    + Math.round(255*firstColor[0]).toString(16).padStart(2,'0')
+    + Math.round(255*firstColor[1]).toString(16).padStart(2,'0')
+    + Math.round(255*firstColor[2]).toString(16).padStart(2,'0')
+  const secondColorString = '#'
+    + Math.round(255*secondColor[0]).toString(16).padStart(2,'0')
+    + Math.round(255*secondColor[1]).toString(16).padStart(2,'0')
+    + Math.round(255*secondColor[2]).toString(16).padStart(2,'0')
+  document.getElementById('first-color-status')
+        .textContent = firstColorString
+  document.getElementById('second-color-status')
+        .textContent = secondColorString
+  document.documentElement.style
+    .setProperty('--first-color-display', firstColorString)
+  document.documentElement.style
+    .setProperty('--second-color-display', secondColorString)
+
   const versionElement = document.getElementById('version')
 
   if (versionElement) {
@@ -41,36 +94,131 @@ function initialize () {
       + ' / ' + gl.getParameter(gl.SHADING_LANGUAGE_VERSION)
   }
 
-  state.srgbBrightness = document.getElementById('srgb-brightness')
-                          .value / 100
-  state.labBrightness = document.getElementById('lab-brightness')
-                          .value / 100
+  gradientBindings.forEach((binding, index) => {
+    gradientLabels[index].textContent = binding.label
 
-  state.srgbAnimator =
-    glMain(gl, { clearColor: [0.51, 0.1, 0.25, 1], srgb: true })
-  state.labAnimator =
-    glMain(gl2)
+    const canvas = gradientCanvases[index]
+    const props = {
+      fragmentShader: gradientBindings[index].fragmentShader,
+      canvas: canvas,
+      firstColor: firstColor,
+      secondColor: secondColor
+    }
+
+    const context = canvas.getContext('webgl2')
+    const animator = glMain(context, props)
+    state.gradients.push({
+      animator: animator, props: props, context: context })
+  })
+
+  state.sRGBprops = {
+    canvas: document.getElementById('srgb-picker'),
+    clearColor: [0.51, 0.1, 0.25, 1],
+    fragmentShader: sRGBpickerFrag,
+    brightness: document.getElementById('srgb-brightness').value / 100
+  }
+
+  state.LabProps = {
+    canvas: document.getElementById('lab-picker'),
+    fragmentShader: LabPickerFrag,
+    brightness: document.getElementById('srgb-brightness').value / 100
+  }
+
+  state.srgbAnimator = glMain(gl, state.sRGBprops)
+  state.labAnimator = glMain(gl2, state.LabProps)
+
+} catch (error) {
+  document.querySelector('.feedback').textContent = 'Initialization error: 🚩 '
+    + error.message
+}
 }
 
 function addOtherEventListeners () {
 
+  window.addEventListener('resize', event => {
+
+    // Reset dimensions and viewports
+    for (const c of [
+      state.glContext,
+      state.gl2Context,
+      ...state.gradients.map(e => e.context)]) {
+      
+      c.canvas.width = c.canvas.clientWidth
+      c.canvas.height = c.canvas.clientHeight
+      c.viewport(0, 0, c.canvas.width, c.canvas.height)
+    }
+
+    // Redraw all gl canvases
+    state.srgbAnimator()
+    state.labAnimator()
+    for (const g of state.gradients) { g.animator() }
+  })
+
   document.getElementById('srgb-brightness')
   .addEventListener('input', event => {
-    state.srgbBrightness = event.target.value / 100
+    state.sRGBprops.brightness = event.target.value / 100
     state.srgbAnimator?.()
   })
 
   document.getElementById('lab-brightness')
   .addEventListener('input', event => {
-    state.labBrightness = event.target.value / 100
+    state.LabProps.brightness = event.target.value / 100
     state.labAnimator?.()
   })
 
+  function handlePick (canvas, context, x, y) {
+    const bounds = canvas.getBoundingClientRect()
+
+    const picked = pickCanvas(context,
+      x - bounds.left,
+      bounds.bottom - y)
+
+    const hexColorString = '#'
+                      + picked[0].toString(16).padStart(2,'0')
+                      + picked[1].toString(16).padStart(2,'0')
+                      + picked[2].toString(16).padStart(2,'0')
+
+    for (const g of state.gradients) {
+      if (state.toggleColor) {
+        g.props.firstColor = [picked[0], picked[1], picked[2]]
+                    .map(e => e / 255)
+      } else {
+        g.props.secondColor = [picked[0], picked[1], picked[2]]
+                    .map(e => e / 255)
+      }
+      g.animator()
+    }
+
+    if (state.toggleColor) {
+      document.getElementById('first-color-status')
+        .textContent = hexColorString
+      document.documentElement.style.setProperty(
+        '--first-color-display', hexColorString)
+    } else {
+      document.getElementById('second-color-status')
+        .textContent = hexColorString
+      document.documentElement.style.setProperty(
+        '--second-color-display', hexColorString)
+    }
+
+    state.toggleColor = !state.toggleColor
+  }
+
+  document.getElementById('lab-picker')
+    .addEventListener('mousedown', event => {
+      handlePick(document.getElementById('lab-picker'),
+        state.gl2Context,
+        event.clientX, event.clientY)  
+    })
   document.getElementById('srgb-picker')
     .addEventListener('mousedown', event => {
     state.lastX = event.clientX
     state.lastY = event.clientY
     state.mousedown = true;
+
+    handlePick(document.getElementById('srgb-picker'),
+                state.glContext,
+                event.clientX, event.clientY)
   })
   document.getElementById('srgb-picker')
     .addEventListener('mouseleave', event => {
@@ -100,13 +248,22 @@ function addOtherEventListeners () {
                 / event.target.offsetHeight
     
   })
+
+  function pickCanvas (context, x, y) {
+    const pixels = new Uint8Array(1 * 1 * 4)
+    context.readPixels(x, y, 1, 1,
+      context.RGBA, context.UNSIGNED_BYTE, pixels)
+    return pixels
+  }
 }
 
 function glMain (gl, props = {}) {
   try {
   // Compile and link the shaders
-  const vs = compileShader(gl, followVert, gl.VERTEX_SHADER)
-  const fs = compileShader(gl, colorSpaceFrag, gl.FRAGMENT_SHADER)
+  const vs = compileShader(gl, props.vertexShader || followVert,
+                            gl.VERTEX_SHADER)
+  const fs = compileShader(gl, props.fragmentShader || colorSpaceFrag,
+                            gl.FRAGMENT_SHADER)
   const program = gl.createProgram()
   gl.attachShader(program, vs)
   gl.attachShader(program, fs)
@@ -124,7 +281,8 @@ function glMain (gl, props = {}) {
   const mouse = gl.getUniformLocation(program, 'mouse')
   const resolution = gl.getUniformLocation(program, 'resolution')
   const brightness = gl.getUniformLocation(program, 'brightness')
-  const srgbMode = gl.getUniformLocation(program, 'srgbMode')
+  const firstColor = gl.getUniformLocation(program, 'firstColor')
+  const secondColor = gl.getUniformLocation(program, 'secondColor')
 
   // Introduce vertex data
   gl.enableVertexAttribArray(pos)
@@ -133,9 +291,6 @@ function glMain (gl, props = {}) {
 
   gl.enable(gl.CULL_FACE)
   gl.useProgram(program)
-  const canvasRect = document.getElementById('srgb-picker')
-                      .getBoundingClientRect()
-  gl.uniform2fv(resolution, [canvasRect.width, canvasRect.height])
   const clearColor = props.clearColor || [0.1, 0.1, 0.1, 1]
   gl.clearColor(...clearColor)
 
@@ -144,13 +299,13 @@ function glMain (gl, props = {}) {
     const dt = t - drawFrame.t0
 
     gl.clear(gl.COLOR_BUFFER_BIT)
+    gl.uniform2fv(resolution, [gl.canvas.width, gl.canvas.height])
     gl.uniform1f(time, dt)
     gl.uniform1f(osc, Math.sin(dt / 1000.0))
     gl.uniform2fv(mouse, [state.nx, state.ny])
-    gl.uniform1f(brightness, props.srgb
-                              ? state.srgbBrightness
-                              : state.labBrightness)
-    gl.uniform1i(srgbMode, Boolean(props.srgb))
+    gl.uniform1f(brightness, props.brightness)
+    if (props.firstColor) { gl.uniform3fv(firstColor, props.firstColor) }
+    if (props.secondColor) { gl.uniform3fv(secondColor, props.secondColor) }
 
     gl.drawArrays(gl.TRIANGLE_FAN, 0, square2d.length / 2)
 
@@ -197,8 +352,8 @@ function formatShaderError (error) {
   return html
 }
 
-// Compare different color spaces
-const colorSpaceFrag =
+// Color conversion functions -- can be prepended to GLSL source string
+const colorShaderCommonHeader =
 /* glsl */`
 #define pi 3.14159265359
 #define tau 6.28318530718
@@ -208,7 +363,8 @@ uniform vec2 resolution;
 uniform float time;
 uniform float osc;
 uniform float brightness;
-uniform bool srgbMode;
+uniform vec3 firstColor;
+uniform vec3 secondColor;
 
 float dirac (float t, float t0) {
   const float width = 0.02;
@@ -397,6 +553,49 @@ vec3 LabFromSRGB (vec3 srgb) {
           );
 }
 
+// Returns L*C*h coordinates from sRGB, with h angle in (-π..+π)
+vec3 LChFromSRGB (vec3 srgb) {
+  vec3 Lab = LabFromXYZ(XYZfromLinear(linearFromSRGB(srgb)));
+  return vec3(
+    Lab[0],
+    length(vec2(Lab[1], Lab[2])),
+    atan(Lab[2], Lab[1])
+  );
+}
+
+// Returns sRGB from LCh with h in the range (-π..+π)
+vec3 sRGBfromLCh (vec3 LCh) {
+  float a = LCh[1] * cos(LCh[2]);
+  float b = LCh[1] * sin(LCh[2]);
+
+  return sRGBfromLab(vec3(LCh[0], a, b));
+}
+
+// Interpolate between LCh1 and LCh2, taking the shortest path (radians)
+vec3 LChShortestLerp (vec3 LCh1, vec3 LCh2, float t) {
+  float dh = LCh2[2] - LCh1[2];
+  dh = mod(dh + pi, tau) - pi;
+  return vec3(
+    LCh1[0] * (1. - t) + LCh2[0] * (t),
+    LCh1[1] * (1. - t) + LCh2[1] * (t),
+    LCh1[2] + dh * t
+  );
+}
+
+// Interpolate between LCh1 and LCh2, taking the longest path (radians)
+// https://www.desmos.com/calculator/7nspcm1oeg
+vec3 LChLongestLerp (vec3 LCh1, vec3 LCh2, float t) {
+  float dh = LCh2[2] - LCh1[2];
+  float modulus = mod(dh, tau);
+  dh = modulus - pi + pi * sign(modulus - pi);
+
+  return vec3(
+    LCh1[0] * (1. - t) + LCh2[0] * (t),
+    LCh1[1] * (1. - t) + LCh2[1] * (t),
+    LCh1[2] + dh * t
+  );
+}
+
 // Returns 1 if all inputs are in (0..1), 0 otherwise.
 float gamutCheck (vec3 srgb) {
   float pass = 1.0;
@@ -407,45 +606,156 @@ float gamutCheck (vec3 srgb) {
 
   return pass;
 }
+`
 
+const smoothedSRGBfrag = colorShaderCommonHeader +
+/* glsl */`
+void main (void) {
+  vec2 st = gl_FragCoord.xy / resolution.xy;
+  vec3 color = sRGBfromLinear(
+                interpolate(
+                linearFromSRGB(firstColor),
+                linearFromSRGB(secondColor),
+                smoothstep(0.0, 1.0, st.x))
+  );
+
+  gl_FragColor = vec4(color, 1.);
+}
+`
+
+// Render a horizontal gradient between two uniform sRGB colors
+const compressedSRGBfrag = colorShaderCommonHeader + 
+/* glsl */`
+void main (void) {
+  vec2 st = gl_FragCoord.xy / resolution.xy;
+  vec3 color = vec3(0.0);
+
+  color = interpolate(firstColor, secondColor, st.x);
+  gl_FragColor = vec4(color, 1.);
+}
+`
+
+// Render a gamma-corrected gradient between two uniform sRGB colors
+const expandedSRGBfrag = colorShaderCommonHeader + 
+/* glsl */`
+void main (void) {
+  vec2 st = gl_FragCoord.xy / resolution.xy;
+  vec3 color = vec3(0.0);
+
+  color = 
+    sRGBfromLinear(
+      interpolate(
+        linearFromSRGB(firstColor),
+        linearFromSRGB(secondColor),
+        st.x
+      )
+    );
+  gl_FragColor = vec4(color, 1.);
+}
+`
+
+const LabGradientFrag = colorShaderCommonHeader + 
+/* glsl */`
+void main (void) {
+  vec2 st = gl_FragCoord.xy / resolution.xy;
+  vec3 color = vec3(0.0);
+
+  color = 
+    sRGBfromLab(
+    interpolate(
+      LabFromSRGB(firstColor),
+      LabFromSRGB(secondColor),
+      st.x
+    )
+    );
+  gl_FragColor = vec4(color, 1.);
+}
+`
+
+const LChGradientFrag = colorShaderCommonHeader +
+/* glsl */`
+void main (void) {
+  vec2 st = gl_FragCoord.xy / resolution.xy;
+  vec3 color = vec3(0.);
+
+  color =
+    sRGBfromLCh(
+      LChShortestLerp(
+        LChFromSRGB(firstColor),
+        LChFromSRGB(secondColor),
+        st.x
+      )
+    );
+
+  gl_FragColor = vec4(color, 1.);
+}
+`
+
+const LChLongFrag = colorShaderCommonHeader +
+/* glsl */`
+void main (void) {
+  vec2 st = gl_FragCoord.xy / resolution.xy;
+  vec3 color = vec3(0.);
+
+  color =
+    sRGBfromLCh(
+      LChLongestLerp(
+        LChFromSRGB(firstColor),
+        LChFromSRGB(secondColor),
+        st.x
+      )
+    );
+
+  gl_FragColor = vec4(color, 1.);
+}
+`
+
+// Render a color picker in the sRGB space
+const sRGBpickerFrag = colorShaderCommonHeader +
+/* glsl */`
 void main (void) {
   vec2 st = gl_FragCoord.xy / resolution.xy;
   vec2 qp = 2.0 * st - vec2(1.0); // Scaled to four-quadrant, 0..1 coordinates
-
-  const vec3 red = vec3(1.0, 0.0, 0.0);
-  const vec3 blue = vec3(0.0, 0.0, 1.0);
-  const vec3 yellow = vec3(1.0, 1.0, 0.0);
-  const vec3 green = vec3(0.0, 1.0, 0.0);
-  const vec3 black = vec3(0.0);
-  const vec3 white = vec3(1.0);
-  const vec3 gray = vec3(0.5);
 
   const float abMax = 120.0;
   
   vec3 color = vec3(0.0);
 
-  if (srgbMode) {
     color = RGBfromHSL(
         vec3( atan(qp.y, qp.x) / tau,
               smoothstep(0.0, 0.75, length(qp)),
               brightness))
         * (1.0 - step(0.75, length(qp)));
-  } else {
-    color =
-        sRGBfromLab(
-          vec3(100.0 * brightness, qp.x * abMax, qp.y * abMax)
-        );
-
-    vec3 clampedColor = vec3(clamp(color.r, 0.0, 1.0), clamp(color.g, 0.0, 1.0), clamp(color.b, 0.0, 1.0));
-    color =
-          step(0.0001, gamutCheck(color)) * clampedColor
-          + (1.0 - step(0.0001, gamutCheck(color)))
-            * clampedColor * 0.2;
-  }
 
   gl_FragColor = vec4(color, 1.0);
 }
 `
+// Render a color picker in the L*a*b* space
+const LabPickerFrag = colorShaderCommonHeader +
+/* glsl */`
+void main (void) {
+  vec2 st = gl_FragCoord.xy / resolution.xy;
+  vec2 qp = 2.0 * st - vec2(1.0); // Scaled to four-quadrant, 0..1 coordinates
+
+  const float abMax = 120.0;
+  
+  vec3 color = vec3(0.0);
+
+  color =
+      sRGBfromLab(
+        vec3(100.0 * brightness, qp.x * abMax, qp.y * abMax)
+      );
+
+  vec3 clampedColor = vec3(clamp(color.r, 0.0, 1.0), clamp(color.g, 0.0, 1.0), clamp(color.b, 0.0, 1.0));
+  color =
+        step(0.0001, gamutCheck(color)) * clampedColor
+        + (1.0 - step(0.0001, gamutCheck(color)))
+          * clampedColor * 0.2;
+
+  gl_FragColor = vec4(color, 1.0);
+}
+`
+
 
 // Display interesting hyperbolic star pattern
 const borkFrag =
@@ -1062,4 +1372,9 @@ function show (m, tag = undefined) {
   log(tr[1], tr[5], tr[9], tr[13])
   log(tr[2], tr[6], tr[10], tr[14])
   log(tr[3], tr[7], tr[11], tr[15])
+}
+
+} catch (unhandledError) {
+  document.querySelector('.feedback').textContent = '🚩 '
+    + unhandledError.message
 }
