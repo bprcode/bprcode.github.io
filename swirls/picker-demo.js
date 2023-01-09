@@ -109,7 +109,8 @@ function initialize () {
       fragmentShader: gradientBindings[index].fragmentShader,
       canvas: canvas,
       firstColor: firstColor,
-      secondColor: secondColor
+      secondColor: secondColor,
+      [gradientBindings[index].label]: 'debug'
     }
 
     const context = canvas.getContext('webgl2')
@@ -268,7 +269,7 @@ function glMain (gl, props = {}) {
   try {
   // Compile and link the shaders
   pageLog(gl)
-  pageLog(props)
+  pageLog(Object.keys(props).join(', '))
   pageLog('About to compile shader pair')
   const vs = compileShader(gl, props.vertexShader || followVert,
                             gl.VERTEX_SHADER)
@@ -327,11 +328,14 @@ function glMain (gl, props = {}) {
   return drawFrame
 
   } catch (e) {
-    document.querySelector('.feedback').innerHTML = formatShaderError(e)
+    const element = document.querySelector('.shader-feedback')
+    pageLog('Calling formatShaderError()')
 
-    document.querySelector('.feedback').style['color'] = '#abf'
-    document.querySelector('.feedback').style['background-color'] = '#111'
-    document.querySelector('.feedback').style['padding'] = '0.5rem'
+    element.innerHTML = formatShaderError(e)
+
+    element.style['color'] = '#abf'
+    element.style['background-color'] = '#111'
+    element.style['padding'] = '0.5rem'
   }
 }
 
@@ -1392,6 +1396,6 @@ function show (m, tag = undefined) {
 }
 
 } catch (unhandledError) {
-  document.querySelector('.feedback').textContent = '🚩 '
+  document.querySelector('.feedback').textContent = '🚩 Unhandled exception: '
     + unhandledError.message
 }
