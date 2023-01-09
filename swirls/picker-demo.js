@@ -44,9 +44,9 @@ function initialize () {
 
   const canvas = document.getElementById('srgb-picker')
   
-  const gl = canvas.getContext('webgl2',
+  const gl = canvas.getContext('webgl',
               { preserveDrawingBuffer: true })
-  const gl2 = document.getElementById('lab-picker').getContext('webgl2',
+  const gl2 = document.getElementById('lab-picker').getContext('webgl',
               { preserveDrawingBuffer: true })
 
   state.glContext = gl
