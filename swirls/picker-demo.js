@@ -270,10 +270,15 @@ function glMain (gl, props = {}) {
   // Compile and link the shaders
   pageLog(gl)
   pageLog(Object.keys(props).join(', '))
-  pageLog('About to compile shader pair')
-  const vs = compileShader(gl, props.vertexShader || followVert,
+  
+  const vsSource = props.vertexShader || followVert
+  const fsSource = props.fragmentShader || colorSpaceFrag
+  
+  pageLog('About to compile vertex shader with length: ' + vsSource.length)
+  const vs = compileShader(gl, vsSource,
                             gl.VERTEX_SHADER)
-  const fs = compileShader(gl, props.fragmentShader || colorSpaceFrag,
+  pageLog('Compiling fragment shader with length: ' + fsSource.length)
+  const fs = compileShader(gl, fsSource,
                             gl.FRAGMENT_SHADER)
   pageLog('Done compiling shader pair')
   const program = gl.createProgram()
