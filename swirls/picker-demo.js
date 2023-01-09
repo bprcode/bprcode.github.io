@@ -329,8 +329,7 @@ function glMain (gl, props = {}) {
 
   } catch (e) {
     const element = document.querySelector('.shader-feedback')
-    pageLog('Calling formatShaderError()')
-
+    pageLog('Calling formatShaderError() with: ' + (e.message || 'falsy string?'))
     element.innerHTML = formatShaderError(e)
 
     element.style['color'] = '#abf'
@@ -361,6 +360,7 @@ function linkProgram (context, program) {
 }
 
 function formatShaderError (error) {
+  try {
   const lines = error.cause?.split('\n') || ['~']
   const badLineNumber = parseInt(error.message.match(/\d:(\d+)/)?.[1])
   const badLine = lines[badLineNumber - 1]
@@ -371,6 +371,10 @@ function formatShaderError (error) {
                     .join('<br>')
 
   return html
+  } catch (error) {
+    pageLog('Error creating shader error message (yes, really)')
+    pageLog(error.message)
+  }
 }
 
 // Color conversion functions -- can be prepended to GLSL source string
