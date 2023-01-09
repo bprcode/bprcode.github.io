@@ -22,6 +22,10 @@ const state = {
   toggleColor: true,
 }
 
+function pageLog (message) {
+  document.querySelector('.feedback').textContent += '\n' + message
+}
+
 function resetCanvasDimensions () {
   for (const c of [document.getElementById('srgb-picker'),
                     document.getElementById('lab-picker')]) {
@@ -263,10 +267,14 @@ function addOtherEventListeners () {
 function glMain (gl, props = {}) {
   try {
   // Compile and link the shaders
+  pageLog(gl)
+  pageLog(props)
+  pageLog('About to compile shader pair')
   const vs = compileShader(gl, props.vertexShader || followVert,
                             gl.VERTEX_SHADER)
   const fs = compileShader(gl, props.fragmentShader || colorSpaceFrag,
                             gl.FRAGMENT_SHADER)
+  pageLog('Done compiling shader pair')
   const program = gl.createProgram()
   gl.attachShader(program, vs)
   gl.attachShader(program, fs)
