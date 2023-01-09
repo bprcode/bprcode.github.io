@@ -113,7 +113,7 @@ function initialize () {
       [gradientBindings[index].label]: 'debug'
     }
 
-    const context = canvas.getContext('webgl2')
+    const context = canvas.getContext('webgl')
     const animator = glMain(context, props)
     state.gradients.push({
       animator: animator, props: props, context: context })
