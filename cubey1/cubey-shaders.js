@@ -169,6 +169,52 @@ function buildShaders () {
   }
   `
 
+  // Double-oblique projection from 4d space, applying modelview matrices
+  // at each step.
+  shaders.oblique4dMV = 
+  /* glsl */ `
+  precision highp float;
+
+  attribute vec4 pos;
+  varying vec4 vColor;
+
+  uniform mat4 MV4;
+  uniform mat4 MV3;
+
+  #define k 0.1
+  #define q 1.2
+
+  void main (void) {
+    const mat4 Q = mat4(
+      1.,   0.,   0.,   0.,
+      0.,   1.,   0.,   0.,
+      0.,   0.,   1.,   0.,
+      -q,   q,   0.,   0.
+    );
+
+    const mat4 P = mat4(
+      0.25,  0.,   0.,     0.,
+      0.,   0.25,  0.,     0.,
+      k,    k,    -0.002,  0.,
+      0.,   0.,   -0.5,    1.
+    );
+
+    vec4 v = pos;
+    v = MV4 * v;
+
+    vColor = mix( vec4(0.9, 0.0, 0.4, 1.),
+                  vec4(0.0, 1.0, 0.7, 1.),
+                  clamp((-v.w+1.)/2., 0., 1.));
+
+    v = Q * v;
+    v.w = 1.;
+    // v = MV3 * v; Not for oblique.
+    v = P * v;
+
+    gl_Position = v;
+  }
+  `
+
   shaders.vertexProjector =
   /* glsl */ `
   precision highp float;
