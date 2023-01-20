@@ -816,9 +816,9 @@ function initListeners () {
   })
 
   function simplifySliderFraction (numerator) {
-    let denominator = 16
+    let denominator = 32
     numerator = parseInt(numerator)
-    for (let x = 8; x >= 2; x /= 2) {
+    for (let x = 16; x >= 2; x /= 2) {
       if (numerator % x === 0 && denominator % x === 0) {
         numerator /= x
         denominator /= x

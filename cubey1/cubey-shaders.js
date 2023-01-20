@@ -189,7 +189,7 @@ function buildShaders () {
       1.,   0.,   0.,   0.,
       0.,   1.,   0.,   0.,
       0.,   0.,   1.,   0.,
-      -q,   q,   0.,   0.
+      q,   -q,   0.,   0.
     );
 
     const mat4 P = mat4(
