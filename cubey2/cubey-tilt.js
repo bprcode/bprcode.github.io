@@ -10,8 +10,11 @@ const state = {
   dy: 0,
   theta: 0,
   phi: 0,
-  animation1: { keepAnimating: true },
-  animation2: { keepAnimating: true }
+  alpha: 0, // device orientation angles
+  beta: -25,
+  gamma: 0,
+  animation1: { keepAnimating: false },
+  animation2: { keepAnimating: false }
 }
 
 if (document.readyState === 'loading') {
@@ -24,8 +27,8 @@ function initialize () {
 try {
   initListeners()
 
-  for (const c of [document.getElementById('main-canvas')]//,
-                  ){// document.getElementById('second-canvas')]) {
+  for (const c of [document.getElementById('main-canvas'),
+                  document.getElementById('second-canvas')]) {
     if (c) {
       const rect = c.getBoundingClientRect()
       c.setAttribute('width', rect.width)
@@ -113,16 +116,16 @@ try {
   triCube.stride = 6
 
   const gl = document.getElementById('main-canvas').getContext('webgl')
-  // const gl2 = document.getElementById('second-canvas').getContext('webgl2')
-  // gl.canvas.parentElement.querySelector('.view-label').textContent =
-  //   gl.getParameter(gl.VERSION)
-  //   + ' / ' + gl.getParameter(gl.SHADING_LANGUAGE_VERSION)
-  // gl2.canvas.parentElement.querySelector('.view-label').textContent =
-  //   gl2.getParameter(gl.VERSION)
-  //   + ' / ' + gl2.getParameter(gl2.SHADING_LANGUAGE_VERSION)
+  const gl2 = document.getElementById('second-canvas').getContext('webgl')
+  document.getElementById('first-title').querySelector('.view-label')
+    .textContent = gl.getParameter(gl.VERSION)
+    + ' / ' + gl.getParameter(gl.SHADING_LANGUAGE_VERSION)
+  document.getElementById('second-title').querySelector('.view-label')
+    .textContent = gl2.getParameter(gl2.VERSION)
+    + ' / ' + gl2.getParameter(gl2.SHADING_LANGUAGE_VERSION)
 
   polyfillExtensions(gl)
-  // polyfillExtensions(gl2)
+  polyfillExtensions(gl2)
 
   // Provided as a callback to an OpenGL context animation loop.
   function orbiter () {
@@ -160,30 +163,55 @@ try {
 
     // Before 4d projection
     mult4(this.MV4,
-          rotateXY(τ * Math.sin(π/4 + this.dt / 5000.0)),
-          this.MV4)
-    mult4(this.MV4,
-          rotateYW(τ * Math.sin(π/4 + this.dt / 3000.0)),
-          this.MV4)
-    mult4(this.MV4,
-            rotateZW(τ * Math.sin(π/4 + this.dt / 4000.0)),
+            rotateXY(τ/16 * (state['xy-slider'] || 0)),
             this.MV4)
     mult4(this.MV4,
-            rotateYW(τ * Math.sin(π/4 + this.dt / 8000.0)),
+            rotateYZ(τ/16 * (state['yz-slider'] || 0)),
             this.MV4)
+    mult4(this.MV4,
+            rotateXZ(τ/16 * (state['xz-slider'] || 0)),
+            this.MV4)
+    mult4(this.MV4,
+            rotateXW(τ/16 * (state['xw-slider'] || 0)),
+            this.MV4)
+    mult4(this.MV4,
+            rotateYW(τ/16 * (state['yw-slider'] || 0)),
+            this.MV4)
+    mult4(this.MV4,
+            rotateZW(τ/16 * (state['zw-slider'] || 0)),
+            this.MV4)
+
+    if (state.autorotate) {
+      mult4(this.MV4,
+            rotateXY(τ * Math.sin(π/4 + this.dt / 5000.0)),
+            this.MV4)
+      mult4(this.MV4,
+            rotateYW(τ * Math.sin(π/4 + this.dt / 3000.0)),
+            this.MV4)
+      mult4(this.MV4,
+              rotateZW(τ * Math.sin(π/4 + this.dt / 4000.0)),
+              this.MV4)
+      mult4(this.MV4,
+              rotateYW(τ * Math.sin(π/4 + this.dt / 8000.0)),
+              this.MV4)
+    }
+
     // After 4d projection
     mult4(this.MV3, scaleMatrix(2.0), this.MV3)
+    mult4(this.MV3,
+          rotateYZ((90 - state.beta) * τ / 360),
+          this.MV3)
+    mult4(this.MV3,
+          rotateXZ((180 - state.gamma) * τ / 360),
+          this.MV3)
     mult4(this.MV3, translateMatrix(0, 0, -15), this.MV3)
-    // mult4(this.MV3, translateMatrix(2.5*Math.cos(this.dt/1000),
-    //         Math.sin(this.dt/2000), -20.0 + 8.0*Math.sin(this.dt/1000)),
-    //         this.MV3)
 
     this.gl.uniformMatrix4fv(this.u_MV3, false, this.MV3)
     this.gl.uniformMatrix4fv(this.u_MV4, false, this.MV4)
   }
 
   /* 4d oblique wireframe demo */
-  state.animation1.context = gl
+  state.animation1.context = gl // only needed for resize
   state.animation1.animator = glMain(gl,
     { components: 4, animationState: state.animation1 }, [
       {
@@ -251,6 +279,22 @@ try {
       stage: orbiter
     }
   ])//*/
+
+  state.animation2.context = gl2
+  state.animation2.animator = glMain(gl2,
+    { components: 4, animationState: state.animation2 }, [
+      {
+        vertexShader: shaders.oblique4dMV,
+        fragmentShader: shaders.wShader,
+        mesh: tesseract,
+        drawMode: gl2.LINES,
+        stage: fourbiter
+      }
+    ])
+
+  document.getElementById('xz-slider').value = 1
+  document.getElementById('xz-slider')
+    .dispatchEvent(new Event('input'))
 
 } catch (e) {
   document.querySelector('.feedback').style['visibility'] = 'visible'
@@ -571,7 +615,7 @@ function fanClose (strip) {
  * the coordinates of a tesseract.
  */
 function wireframeTesseract () {
-  const face = plotEdges
+  const ridge = plotEdges
   const tesseract = new Mesh
   //          x  y  z  w
   const a = [-1, 1, 1, 1]
@@ -593,38 +637,38 @@ function wireframeTesseract () {
   const s = [-1, 1,-1,-1]
 
   // w+ surface cube
-  face(a,b,c,d)
-  face(a,h,g,b)
-  face(h,e,f,g)
-  face(e,d,c,f)
-  face(a,d,e,h)
-  face(c,b,g,f)
+  ridge(a,b,c,d)
+  ridge(a,h,g,b)
+  ridge(h,e,f,g)
+  ridge(e,d,c,f)
+  ridge(a,d,e,h)
+  ridge(c,b,g,f)
 
   // w- surface cube
-  face(l,m,n,o)
-  face(s,r,m,l)
-  face(s,p,q,r)
-  face(o,n,q,p)
-  face(s,l,o,p)
-  face(m,r,q,n)
+  ridge(l,m,n,o)
+  ridge(s,r,m,l)
+  ridge(s,p,q,r)
+  ridge(o,n,q,p)
+  ridge(s,l,o,p)
+  ridge(m,r,q,n)
   
   // cell boundaries around y-axis
-  face(a,l,m,b)
-  face(d,o,n,c)
-  face(e,p,q,f)
-  face(h,s,r,g)
+  ridge(a,l,m,b)
+  ridge(d,o,n,c)
+  ridge(e,p,q,f)
+  ridge(h,s,r,g)
 
   // xz-parallel cell boundaries on y = -1
-  face(b,m,n,c)
-  face(g,r,m,b)
-  face(f,q,r,g)
-  face(c,n,q,f)
+  ridge(b,m,n,c)
+  ridge(g,r,m,b)
+  ridge(f,q,r,g)
+  ridge(c,n,q,f)
 
   // xz-parallel cell boundaries on y = +1
-  face(a,l,o,d)
-  face(h,s,l,a)
-  face(e,p,s,h)
-  face(d,o,p,e)
+  ridge(a,l,o,d)
+  ridge(h,s,l,a)
+  ridge(e,p,s,h)
+  ridge(d,o,p,e)
 
   function plotEdges (v0, v1, v2, v3) {
     tesseract.push( ...[
@@ -771,19 +815,21 @@ class Mesh extends Array {
 
 function initListeners () {
   window.addEventListener('resize', event => {
-    const c = state.animation1.context
-    c.canvas.width = c.canvas.clientWidth
-    c.canvas.height = c.canvas.clientHeight
-    c.viewport(0, 0, c.canvas.width, c.canvas.height)
+    for (const c of [state.animation1.context, state.animation2.context]) {
+      c.canvas.width = c.canvas.clientWidth
+      c.canvas.height = c.canvas.clientHeight
+      c.viewport(0, 0, c.canvas.width, c.canvas.height)
+    }
+
     state.animation1.animator()
+    state.animation2.animator()
   })
 
   window.addEventListener('deviceorientation', event => {
-    document.querySelector('.feedback').style['visibility'] = 'visible'
-    document.querySelector('.feedback').innerHTML =
-      `orientation: alpha ${event.alpha}`
-      +`<br>orientation: beta ${event.beta}`
-      +`<br>orientation: gamma ${event.gamma}`
+    state.alpha = event.alpha
+    state.beta = event.beta
+    state.gamma = event.gamma
+    state.animation1.animator()
   })
 
   document.getElementById('main-canvas')
@@ -792,7 +838,58 @@ function initListeners () {
     state.lastY = event.clientY
     state.mousedown = true
   })
-  
+
+  function simplifySliderFraction (numerator) {
+    let denominator = 64
+    numerator = parseInt(numerator)
+    for (let x = 32; x >= 2; x /= 2) {
+      if (numerator % x === 0 && denominator % x === 0) {
+        numerator /= x
+        denominator /= x
+      }
+    }
+
+    if (numerator === 0) { return '0' }
+    if (numerator === 1) { return 'τ/' + denominator} 
+    return numerator + 'τ/' + denominator
+  }
+
+  for (const s of document.querySelectorAll('.controls input[type="range"]')) {
+    s.addEventListener('input', event => {
+      s.nextElementSibling
+        .textContent = simplifySliderFraction(event.target.value)
+
+      state[s.id] = parseInt(event.target.value)
+      requestAnimationFrame(state.animation1.animator)
+      requestAnimationFrame(state.animation2.animator)
+    })
+  }
+  // document.getElementById('main-canvas')
+  //   .addEventListener('mouseenter', event => {
+  //   if (!state.animation1.keepAnimating
+  //       && state.animation1.animator) {
+  //     state.animation1.keepAnimating = true
+  //     requestAnimationFrame(state.animation1.animator)
+  //   }
+  // })
+  // document.getElementById('main-canvas')
+  //   .addEventListener('mouseleave', event => {
+  //   state.animation1.keepAnimating = false
+  //   state.mousedown = false
+  // })
+  // document.getElementById('second-canvas')
+  //   .addEventListener('mouseenter', event => {
+  //   if (!state.animation2.keepAnimating
+  //       && state.animation2.animator) {
+  //     state.animation2.keepAnimating = true
+  //     requestAnimationFrame(state.animation2.animator)
+  //   }
+  // })
+  // document.getElementById('second-canvas')
+  //   .addEventListener('mouseleave', event => {
+  //   state.animation2.keepAnimating = false
+  //   state.mousedown = false
+  // })
   document.getElementById('main-canvas')
     .addEventListener('mouseup', event => {
     state.mousedown = false
