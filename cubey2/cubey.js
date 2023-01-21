@@ -10,6 +10,9 @@ const state = {
   dy: 0,
   theta: 0,
   phi: 0,
+  alpha: 0, // device orientation angles
+  beta: 0,
+  gamma: 0,
   animation1: { keepAnimating: true },
   animation2: { keepAnimating: true }
 }
@@ -160,19 +163,25 @@ try {
 
     // Before 4d projection
     mult4(this.MV4,
-          rotateXY(τ * Math.sin(π/4 + this.dt / 5000.0)),
+          rotateXY(τ * Math.sin(π/4 + this.dt / 7500.0)),
           this.MV4)
     mult4(this.MV4,
-          rotateYW(τ * Math.sin(π/4 + this.dt / 3000.0)),
+          rotateYW(τ * Math.sin(π/4 + this.dt / 4500.0)),
           this.MV4)
     mult4(this.MV4,
-            rotateZW(τ * Math.sin(π/4 + this.dt / 4000.0)),
+            rotateZW(τ * Math.sin(π/4 + this.dt / 6000.0)),
             this.MV4)
     mult4(this.MV4,
-            rotateYW(τ * Math.sin(π/4 + this.dt / 8000.0)),
+            rotateYW(τ * Math.sin(π/4 + this.dt / 12000.0)),
             this.MV4)
     // After 4d projection
     mult4(this.MV3, scaleMatrix(2.0), this.MV3)
+    mult4(this.MV3,
+          rotateYZ((90 - state.beta) * τ / 360),
+          this.MV3)
+    mult4(this.MV3,
+          rotateXZ((180 - state.gamma) * τ / 360),
+          this.MV3)
     mult4(this.MV3, translateMatrix(0, 0, -15), this.MV3)
     // mult4(this.MV3, translateMatrix(2.5*Math.cos(this.dt/1000),
     //         Math.sin(this.dt/2000), -20.0 + 8.0*Math.sin(this.dt/1000)),
@@ -778,6 +787,12 @@ function initListeners () {
     state.animation1.animator()
   })
 
+  window.addEventListener('deviceorientation', event => {
+    state.alpha = event.alpha
+    state.beta = event.beta
+    state.gamma = event.gamma
+  })
+  
   document.getElementById('main-canvas')
     .addEventListener('mousedown', event => {
     state.lastX = event.clientX
