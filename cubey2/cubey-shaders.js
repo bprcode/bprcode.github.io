@@ -23,25 +23,48 @@ function buildShaders () {
   }
   `
 
-  shaders.debugVert =
+  // Basic texture demo
+  shaders.textureVert =
   /* glsl */`
-  precision highp float;
-
+  precision mediump float;
   attribute vec3 pos;
-  attribute vec3 normal;
-  uniform mat4 projection;
-  uniform mat4 modelview;
-  varying vec3 testV;
+  attribute vec2 aTexel;
+  varying vec2 vTexel;
 
   void main (void) {
-    vec3 cooked = mat3(modelview) * normal;
-    float dp = -dot(normalize(cooked), normalize(vec3(0.5, 0., -1.)));
-    dp = clamp(dp, 0., 1.);
+    gl_Position = vec4(pos, 1.);
+    vTexel = vec2(aTexel);
+  }
+  `
 
-    vec4 projected = projection * modelview * vec4(pos, 1.);
-    gl_Position = projection * modelview * vec4(pos.x, pos.y - 1., pos.z, 1.);
+  shaders.textureFrag =
+  /* glsl */`
+  precision mediump float;
+  #define tau 6.283185307
+  varying vec2 vTexel;
+  uniform sampler2D uTex;
+  uniform float uSize;
+  uniform float osc;
+  uniform float time;
 
-    testV = vec3(1., 0, .3) * dp;
+  float warp () {
+    return pow(cos(tau*mod(time, 10000.)/10000.), 2.);
+  }
+
+  void main (void) {
+    // gl_FragColor = vec4(abs(vTexel.x), (vTexel.y+1.)/2., 0.0, 1.0);
+    // gl_FragColor = mix(texture2D(uTex, vTexel), vec4(1.,0.,0.,1.), vTexel.x);
+    vec4 color = texture2D(uTex, vTexel);
+    float dx = 1. / uSize;
+    float dy = 1. / uSize;
+    dx *= cos(osc * tau);
+    dy *= sin(osc * tau);
+    dx *= warp();
+    dy *= warp();
+    color = 
+            + 0.5 * texture2D(uTex, vec2(vTexel.x - dx, vTexel.y - dy))
+            + 0.5 * texture2D(uTex, vec2(vTexel.x + dx, vTexel.y + dy));
+    gl_FragColor = color;
   }
   `
 
