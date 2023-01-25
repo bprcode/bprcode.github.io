@@ -20,24 +20,44 @@
 <body>
   <div class="center-content">
     <header>
-      <h1>Image Processing Experiments</h1>
+      <h1>Image processing experiments</h1>
       <hr>
     </header>
     <div class="views">
 
       <span class="view-title" id="first-title">
-        <div>4d perspective projection</div>
+        <div>Original Image</div>
         <div class="view-label">Initializing WebGL...</div>
       </span>
 
       <span class="view-title" id="second-title">
-        <div>Processing test</div>
+        <div>Processing Test</div>
         <div class="view-label">Initializing WebGL...</div>
       </span>
         
       <canvas width="300" height="300" id="main-canvas"></canvas>
       <canvas width="300" height="300" id="second-canvas"></canvas>
 
+      <fieldset class="kernel">
+        <legend>Convolution kernel</legend>
+        <input type="text" size="2" value="0.0">
+        <input type="text" size="2" value="0.0">
+        <input type="text" size="2" value="0.0">
+        <input type="text" size="2" value="0.0">
+        <input type="text" size="2" value="1.0">
+        <input type="text" size="2" value="0.0">
+        <input type="text" size="2" value="0.0">
+        <input type="text" size="2" value="0.0">
+        <input type="text" size="2" value="0.0">
+      </fieldset>
+
+      <fieldset class="presets">
+        <legend>Preset kernels</legend>
+        <input type="radio" id="radio1" name="radio-preset"> <label for="radio1">edge detect</label>
+        <input type="radio" id="radio2" name="radio-preset"> <label for="radio2">Gaussian blur</label>
+        <input type="radio" id="radio3" name="radio-preset"> <label for="radio3">emboss</label>
+        <input type="radio" id="radio4" name="radio-preset"> <label for="radio4">unsharpen</label>
+      </fieldset>
       <pre class="feedback"></pre>
     </div>
   </div>
@@ -111,6 +131,8 @@ canvas {
     'second'
     'title1'
     'first'
+    'kernel'
+    'presets'
     'info';
   grid-gap: 1.5rem;
 }
@@ -121,6 +143,7 @@ canvas {
     grid-template-areas:
       'title1 title2'
       'first second'
+      'kernel presets'
       'info info';
   }
 
@@ -138,6 +161,36 @@ canvas {
   font-size: 1rem;
   max-width: 400px;
   font-family: 'Courier New', Courier, monospace;
+}
+
+.kernel {
+  margin: 0px auto;
+  display: grid;
+  grid-area: kernel;
+  width: max-content;
+  border: 2px solid #888;
+  border-radius: 8px;
+  gap: 5px;
+  grid-template-columns: minmax(0px, 1fr) minmax(0px, 1fr) minmax(0px, 1fr);
+}
+
+.kernel input {
+  border: none;
+  border-radius: 5px;
+  background-color: #fff1;
+  color: var(--light-text);
+  width: 50px;
+  height: 50px;
+  text-align: center;
+}
+
+.presets {
+  border: 2px solid #888;
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: minmax(0px, 24px) minmax(0px, 1fr);
+  gap: 8px;
+  grid-area: presets;
 }
 
 #first-title {

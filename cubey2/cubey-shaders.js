@@ -46,24 +46,36 @@ function buildShaders () {
   uniform float uSize;
   uniform float osc;
   uniform float time;
+  uniform float kernel[9];
 
-  float warp () {
-    return pow(cos(tau*mod(time, 10000.)/10000.), 2.);
-  }
+  // float warp () {
+  //   return pow(cos(tau*mod(time, 10000.)/10000.), 2.);
+  // }
 
   void main (void) {
     // gl_FragColor = vec4(abs(vTexel.x), (vTexel.y+1.)/2., 0.0, 1.0);
     // gl_FragColor = mix(texture2D(uTex, vTexel), vec4(1.,0.,0.,1.), vTexel.x);
-    vec4 color = texture2D(uTex, vTexel);
+    // vec4 color = texture2D(uTex, vTexel);
     float dx = 1. / uSize;
     float dy = 1. / uSize;
-    dx *= cos(osc * tau);
-    dy *= sin(osc * tau);
-    dx *= warp();
-    dy *= warp();
-    color = 
-            + 0.5 * texture2D(uTex, vec2(vTexel.x - dx, vTexel.y - dy))
-            + 0.5 * texture2D(uTex, vec2(vTexel.x + dx, vTexel.y + dy));
+    vec4 color;
+    color =
+        texture2D(uTex, vec2(vTexel.x - dx, vTexel.y + dy)) * kernel[0]
+      + texture2D(uTex, vec2(vTexel.x,      vTexel.y + dy)) * kernel[1]
+      + texture2D(uTex, vec2(vTexel.x + dx, vTexel.y + dy)) * kernel[2]
+      + texture2D(uTex, vec2(vTexel.x - dx,      vTexel.y)) * kernel[3]
+      + texture2D(uTex, vec2(vTexel.x,           vTexel.y)) * kernel[4]
+      + texture2D(uTex, vec2(vTexel.x + dx,      vTexel.y)) * kernel[5]
+      + texture2D(uTex, vec2(vTexel.x - dx, vTexel.y - dy)) * kernel[6]
+      + texture2D(uTex, vec2(vTexel.x,      vTexel.y - dy)) * kernel[7]
+      + texture2D(uTex, vec2(vTexel.x + dx, vTexel.y - dy)) * kernel[8];
+    // dx *= cos(osc * tau);
+    // dy *= sin(osc * tau);
+    // dx *= warp();
+    // dy *= warp();
+    // color = 
+    //         + 0.5 * texture2D(uTex, vec2(vTexel.x - dx, vTexel.y - dy))
+    //         + 0.5 * texture2D(uTex, vec2(vTexel.x + dx, vTexel.y + dy));
     gl_FragColor = color;
   }
   `

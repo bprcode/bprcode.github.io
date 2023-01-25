@@ -13,6 +13,7 @@ const state = {
   alpha: 0, // device orientation angles
   beta: 0,
   gamma: 0,
+  kernel: Array(9).fill(0),
   animation1: { keepAnimating: true },
   animation2: { keepAnimating: true }
 }
@@ -138,6 +139,7 @@ try {
   function initTexturer () {
     const gl = this.gl
     this.uTex = gl.getUniformLocation(this.program, 'uTex')
+    this.uKernel = gl.getUniformLocation(this.program, 'kernel')
     this.uSize = gl.getUniformLocation(this.program, 'uSize')
 
     // Initialize the attribute buffer for texture coordinates:
@@ -164,7 +166,7 @@ try {
     gl.bindBuffer(gl.ARRAY_BUFFER, null)
 
     // Initialize a texture:
-    const textureSize = 16
+    const textureSize = 128
     gl.uniform1f(this.uSize, textureSize)
     this.texOb = gl.createTexture()
     gl.bindTexture(gl.TEXTURE_2D, this.texOb)
@@ -214,6 +216,7 @@ try {
   // Per-frame operations for texturing demo
   function stageTexturer () {
     const gl = this.gl
+    gl.uniform1fv(this.uKernel, state.kernel)
     // gl.activeTexture(gl.TEXTURE0)
     // gl.bindTexture(gl.TEXTURE_2D, this.texOb)
     // gl.uniform1i(this.uTex, 0)
@@ -283,18 +286,21 @@ try {
     this.gl.uniformMatrix4fv(this.uMV4, false, this.MV4)
   }
 
+  const squareMesh = Mesh.from(square2d)
+  squareMesh.stride = 2
+
   /* 4d tesseract demo */
-  state.animation1.context = gl
-  state.animation1.animator = glMain(gl,
-    { components: 4, animationState: state.animation1 }, [
-      {
-        drawMode: gl.LINES,
-        vertexShader: shaders.vertexProjector4d,
-        fragmentShader: shaders.wShader,
-        mesh: tesseract,
-        stage: fourbiter
-      }
-    ])
+  // state.animation1.context = gl
+  // state.animation1.animator = glMain(gl,
+  //   { components: 4, animationState: state.animation1 }, [
+  //     {
+  //       drawMode: gl.LINES,
+  //       vertexShader: shaders.vertexProjector4d,
+  //       fragmentShader: shaders.wShader,
+  //       mesh: tesseract,
+  //       stage: fourbiter
+  //     }
+  //   ])
 
   /* 3d oblique wireframe demo
   state.animation1.animator = glMain(gl,
@@ -326,8 +332,22 @@ try {
   ])//*/
 
   // texture demo
-  const squareMesh = Mesh.from(square2d)
-  squareMesh.stride = 2
+  state.animation1.context = gl
+  state.animation1.animator = glMain(gl,
+    { components: 2, animationState: state.animation1 }, [
+      {
+        drawMode: gl.TRIANGLE_FAN,
+        vertexShader: shaders.textureVert,
+        fragmentShader: shaders.textureFrag,
+        mesh: texSquare,
+        init: initTexturer,
+        stage: function () {
+          const gl = this.gl
+          gl.uniform1fv(this.uKernel, [0,0,0,0,1,0,0,0,0])
+        }
+      }
+    ])
+
   state.animation2.context = gl2
   state.animation2.animator = glMain(gl2,
     { components: 2, animationState: state.animation2 }, [
@@ -897,7 +917,61 @@ function initListeners () {
     c.viewport(0, 0, c.canvas.width, c.canvas.height)
     state.animation1.animator()
   })
-  
+
+  for (const [i,e] of document.querySelectorAll('.kernel input').entries()) {
+    state.kernel[i] = e.value
+
+    e.addEventListener('input', event => {
+      state.kernel[i] = parseFloat(event.target.value)
+    })
+    e.addEventListener('focus', event => {
+      event.target.select()
+    })
+    e.addEventListener('blur', event => {
+      if (isNaN(parseFloat(event.target.value))) {
+        event.target.value = 0.0
+        event.target.dispatchEvent(new Event('input'))
+      }
+    })
+  }
+
+  function loadKernel (k) {
+    for (const [i,e] of document.querySelectorAll('.kernel input')
+                        .entries()) {
+      e.value = k[i]
+      e.dispatchEvent(new Event('input'))
+    }
+  }
+
+  const kernelPresets = [
+    [ // edge detect
+      -0.125, -0.125, -0.125,
+      -0.125,  1,     -0.125,
+      -0.125, -0.125, -0.125
+   ],
+   [ // Gaussian blur
+      0.045, 0.122, 0.045,
+      0.122, 0.332, 0.122,
+      0.045, 0.122, 0.045
+   ],
+   [ // emboss
+      -2, -1,  0,
+      -1,  1,  1,
+      0,  1,  2
+   ],
+   [ // unsharpen
+    -1, -1, -1,
+    -1,  9, -1,
+    -1, -1, -1
+   ]
+  ]
+  for (const [i,e] of document.querySelectorAll('.presets input').entries()) {
+    e.addEventListener('change', event => {
+      log('change i=', i)
+      loadKernel(kernelPresets[i])
+    })
+  }
+
   document.getElementById('main-canvas')
     .addEventListener('mousedown', event => {
     state.lastX = event.clientX
@@ -909,6 +983,7 @@ function initListeners () {
     .addEventListener('mouseup', event => {
     state.mousedown = false
   })
+
   document.getElementById('main-canvas')
     .addEventListener('mousemove', event => {
     if (state.mousedown) {
