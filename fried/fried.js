@@ -58,98 +58,47 @@ try {
     gl2.getParameter(gl2.VERSION)
     + ' / ' + gl2.getParameter(gl2.SHADING_LANGUAGE_VERSION)
 
-  function initCube () {
-    /** @type {WebGLRenderingContext} */
-    const gl = this.gl
-
-    this.normal = gl.getAttribLocation(this.program, 'normal')
-    gl.enableVertexAttribArray(this.normal)
-    gl.vertexAttribPointer(this.normal,
-      3, gl.FLOAT, false, this.mesh.byteStride,
-      3 * Float32Array.BYTES_PER_ELEMENT)
-
-    this.MV = []
-  }
-
-  function drawCube () {
-    /** @type {WebGLRenderingContext} */
-    const gl = this.gl
-
-    ident(this.MV)
-    mult4(this.MV,
-      rotateXY(τ * Math.sin(π/4 + this.dt / 5000.0)), this.MV)
-    mult4(this.MV,
-      rotateXZ(τ * Math.sin(π/4 + this.dt / 4000.0)), this.MV)
-    mult4(this.MV, translateMatrix(2.5*Math.cos(this.dt/1000),
-      Math.sin(this.dt/2000), -30.0 + 8.0*Math.sin(this.dt/1000)),
-      this.MV)
-
-    gl.uniformMatrix4fv(this.modelview, false, this.MV)
-
-    gl.drawArrays(gl.TRIANGLES, 0, this.mesh.blocks)
-  }
-
-  function initPorky () {
+  // Rendering pass for outputting depth to a color texture
+  // as an alternative to WEBGL_depth_texture
+  function initDepthCube () {
     /** @type {WebGLRenderingContext} */
     const gl = this.gl
 
     this.MV = []
-  }
 
-  function drawPorky () {
-    /** @type {WebGLRenderingContext} */
-    const gl = this.gl
+    this.shared.fbSize ??= 128
+    const fbSize = this.shared.fbSize
 
-    ident(this.MV)
-    mult4(this.MV,
-      rotateXY(τ * Math.sin(π/4 + this.dt / 5000.0)), this.MV)
-    mult4(this.MV,
-      rotateXZ(τ * Math.sin(π/4 + this.dt / 4000.0)), this.MV)
-    mult4(this.MV, translateMatrix(2.5*Math.cos(this.dt/1000),
-      Math.sin(this.dt/2000), -30.0 + 8.0*Math.sin(this.dt/1000)),
-      this.MV)
+    const depthTexture = gl.createTexture()
+    // const colorTexture = gl.createTexture()
+    
+    // gl.bindTexture(gl.TEXTURE_2D, colorTexture)
+    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    // gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
+    //   fbSize, fbSize, 0, gl.RGBA,
+    //   gl.UNSIGNED_BYTE, null)
 
-    gl.uniformMatrix4fv(this.modelview, false, this.MV)
-
-    gl.drawArrays(gl.LINES, 0, this.mesh.blocks)
-  }
-
-  function initBloomCube () {
-    /** @type {WebGLRenderingContext} */
-    const gl = this.gl
-
-    this.MV = []
-    this.normal = gl.getAttribLocation(this.program, 'normal')
-    gl.enableVertexAttribArray(this.normal)
-    gl.vertexAttribPointer(this.normal,
-      3, gl.FLOAT, false, this.mesh.byteStride,
-      3 * Float32Array.BYTES_PER_ELEMENT)
-
-    const fbSize = gl.canvas.width // Width and height of framebuffer
-    // debug: but really, can use a MUCH smaller buffer for bloom --
-    // it looks fine for a blur effect and is much faster
-
-    const brightSource = gl.createTexture()
-    gl.bindTexture(gl.TEXTURE_2D, brightSource)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.bindTexture(gl.TEXTURE_2D, depthTexture)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
-      fbSize, fbSize, 0, gl.RGBA,
-      gl.UNSIGNED_BYTE, null)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT,
+      fbSize, fbSize, 0, gl.DEPTH_COMPONENT,
+      gl.UNSIGNED_SHORT, null)
 
-    const depthBuffer = gl.createRenderbuffer()
-    gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer)
-    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16,
-      fbSize, fbSize)
+    // Bind a depth texture and a (junk, unused) color attachment
+    const fbo = gl.createFramebuffer()
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
+    // gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
+    //   gl.TEXTURE_2D, colorTexture, 0)
 
-    const fboBright = gl.createFramebuffer()
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fboBright)
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-      gl.TEXTURE_2D, brightSource, 0)
-    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,
-      gl.RENDERBUFFER, depthBuffer)
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,
+      gl.TEXTURE_2D, depthTexture, 0)
+    gl.bindTexture(gl.TEXTURE_2D, null) // pointless?
 
     const framebufferStatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
     if (framebufferStatus !== gl.FRAMEBUFFER_COMPLETE) {
@@ -157,127 +106,40 @@ try {
         + parseFramebufferStatus(framebufferStatus))
     }
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-
-    this.shared.fbSize = fbSize
-    this.shared.fboBright = fboBright
-    this.shared.brightSource = brightSource
+    this.shared.fboDepth = fbo
+    this.shared.depthTexture = depthTexture 
+    // this.shared.colorTexture = colorTexture // Probably pointless?
   }
 
-  function drawBloomCube () {
+  function drawDepthCube () {
     /** @type {WebGLRenderingContext} */
     const gl = this.gl
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.shared.fboBright)
+    gl.bindTexture(gl.TEXTURE_2D, null)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.shared.fboDepth)
     gl.viewport(0, 0, this.shared.fbSize, this.shared.fbSize)
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-    
+
+    gl.enable(gl.DEPTH_TEST)
+    gl.clear(gl.DEPTH_BUFFER_BIT)
+
     ident(this.MV)
     mult4(this.MV,
       rotateXY(τ * Math.sin(π/4 + this.dt / 5000.0)), this.MV)
       mult4(this.MV,
       rotateXZ(τ * Math.sin(π/4 + this.dt / 4000.0)), this.MV)
-    mult4(this.MV, translateMatrix(2.5*Math.cos(this.dt/1000),
-      Math.sin(this.dt/2000), -30.0 + 8.0*Math.sin(this.dt/1000)),
+    mult4(this.MV,
+      translateMatrix(
+        2.5*Math.cos(τ * this.dt/3000),
+        Math.sin(τ * this.dt/12000),
+        -30.0 + 8.0*Math.sin(τ * this.dt/6000)),
       this.MV)
 
     gl.uniformMatrix4fv(this.modelview, false, this.MV)
 
     gl.drawArrays(gl.TRIANGLES, 0, this.mesh.blocks)
-    
+
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
-  }
-
-  function initBloomQuad () {
-    /** @type {WebGLRenderingContext} */
-    const gl = this.gl
-    
-    this.uTex = gl.getUniformLocation(this.program, 'uTex')
-    this.aTexel = gl.getAttribLocation(this.program, 'aTexel')
-    this.kernel = gl.getUniformLocation(this.program, 'kernel')
-    this.blurStep = gl.getUniformLocation(this.program, 'blurStep')
-
-    // Provide texture coordinates as an attribute
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo)
-    gl.enableVertexAttribArray(this.aTexel)
-    gl.vertexAttribPointer(this.aTexel, 2, gl.FLOAT, false,
-      this.mesh.byteStride, 2 * Float32Array.BYTES_PER_ELEMENT)
-    gl.bindBuffer(gl.ARRAY_BUFFER, null)
-
-    // Provide normalized Gaussian weights
-    gl.uniform1fv(this.kernel, [
-      .204092, .180051, .123785, .066496, .027622
-    ])
-
-    // Initialize two framebuffers, each with a color texture,
-    // to alternate between when blur rendering
-    const fbSize = this.shared.fbSize
-    const fboAlternates = [gl.createFramebuffer(), gl.createFramebuffer()]
-    const texAlternates = [gl.createTexture(), gl.createTexture()]
-
-    for (let i = 0; i < fboAlternates.length; i++) {
-      gl.bindTexture(gl.TEXTURE_2D, texAlternates[i])
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
-        fbSize, fbSize, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
-      
-      gl.bindFramebuffer(gl.FRAMEBUFFER, fboAlternates[i])
-      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-        gl.TEXTURE_2D, texAlternates[i], 0)
-
-      const framebufferStatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
-      if (framebufferStatus !== gl.FRAMEBUFFER_COMPLETE) {
-        logError('Framebuffer incomplete: '
-          + parseFramebufferStatus(framebufferStatus))
-      }
-    }
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-
-    this.fboAlternates = fboAlternates
-    this.texAlternates = texAlternates
-  }
-  
-  function drawBloomQuad () {
-    /** @type {WebGLRenderingContext} */
-    const gl = this.gl
-
-    let bx = 1/this.shared.fbSize * Math.cos(π * this.dt/1000)
-    let by = 0
-
-    gl.disable(gl.DEPTH_TEST)
-    gl.viewport(0, 0, this.shared.fbSize, this.shared.fbSize)
-
-    let readSource = this.shared.brightSource
-    for (let i = 0; i < 10; i++) {
-
-      // Set write destination
-      gl.bindFramebuffer(gl.FRAMEBUFFER, this.fboAlternates[i % 2])
-
-      // Set read source
-      gl.bindTexture(gl.TEXTURE_2D, readSource)
-      
-      gl.uniform2fv(this.blurStep, [bx, by])
-      ;[bx, by] = [by, bx]
-
-      gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
-
-      // Next iteration, read from the texture we just drew:
-      readSource = this.texAlternates[i % 2]
-    }
-
-    // Composite the final result onto the main canvas:
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
-    gl.bindTexture(gl.TEXTURE_2D, readSource)
-    gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
-
-    // Clean up:
-    gl.enable(gl.DEPTH_TEST)
   }
 
   function initTexturedQuad () {
@@ -325,6 +187,16 @@ try {
   function drawTexturedQuad () {
     /** @type {WebGLRenderingContext} */
     const gl = this.gl
+
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
+  }
+
+  function drawQuadFromDepth () {
+    /** @type {WebGLRenderingContext} */
+    const gl = this.gl
+
+    gl.bindTexture(gl.TEXTURE_2D, this.shared.depthTexture)
+    // gl.bindTexture(gl.TEXTURE_2D, this.demoTexture)
     gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
   }
 
@@ -332,19 +204,19 @@ try {
   state.animation1.draw = glStart(gl, { animationState: state.animation1 },
   [
     {
-      vertexShader: shaders.vertsWithNormals,
-      fragmentShader: shaders.redShader,
+      vertexShader: shaders.depthVertHack,
+      fragmentShader: shaders.depthFragHack,
       mesh: geometry.triCube,
-      init: initBloomCube,
-      draw: drawBloomCube
+      init: initDepthCube,
+      draw: drawDepthCube
     },
     {
       vertexShader: shaders.textureVert,
-      fragmentShader: shaders.bloom1d,
+      fragmentShader: shaders.depthExperimentFrag,
       mesh: geometry.texSquare,
-      init: initBloomQuad,
-      draw: drawBloomQuad
-    }
+      init: initTexturedQuad,
+      draw: drawQuadFromDepth
+    },
   ])
 
   state.animation2.context = gl2
@@ -358,49 +230,6 @@ try {
       draw: drawTexturedQuad
     },
   ])
-
-  /*state.animation1.context = gl
-  state.animation1.animator = glMain(gl,
-    { components: 3, animationState: state.animation1 }, [
-    {
-      vertexShader: shaders.vertsWithNormals,
-      fragmentShader: shaders.redShader,
-      mesh: geometry.triCube,
-      drawMode: gl.TRIANGLES,
-      supplyNormals: true,
-      stage: stageFramey,
-      init: initFramey
-    },
-    {
-      vertexShader: shaders.vertsWithNormals,
-      fragmentShader: shaders.blueShader,
-      mesh: generateNormalPorcupine(geometry.triCube),
-      drawMode: gl.LINES,
-      stage: orbiter
-    },
-    {
-      vertexShader: shaders.projectingTexturer,
-      fragmentShader: shaders.rippleTexture,
-      mesh: geometry.texQuad,
-      drawMode: gl2.TRIANGLE_FAN,
-      skipDraw: true,
-      init: initFrameyTexturer,
-      stage: stageFrameyTexturer
-    }
-  ])*/
-
-  // state.animation2.context = gl2
-  // state.animation2.animator = glMain(gl2,
-  //   { components: 2, animationState: state.animation2 }, [
-  //   {
-  //     vertexShader: shaders.textureVert,
-  //     fragmentShader: shaders.textureFrag,
-  //     mesh: geometry.texSquare,
-  //     drawMode: gl2.TRIANGLE_FAN,
-  //     init: initTexturer,
-  //     stage: stageTexturer
-  //   }
-  // ])
 
 } catch (e) {
   logError('\n🚩 Initialization error: ' + e.message
@@ -422,8 +251,26 @@ function polyfillExtensions (gl) {
     gl.isVertexArray = vaoExt.isVertexArrayOES.bind(vaoExt)
     gl.bindVertexArray = vaoExt.bindVertexArrayOES.bind(vaoExt)
   }
+
+  const depthTextureExt = gl.getExtension('WEBGL_depth_texture')
+  if (!depthTextureExt) {
+    throw new Error('This browser does not support depth textures.'
+     + ' Unable to display content.')
+  } else {
+    gl.depthTextureExt = depthTextureExt // Prevent garbage collection.
+  }
 }
 
+/**
+ * Initialize a WebGL rendering loop with a list of rendering phases.
+ * @param {WebGLRenderingContext} gl The webgl context to use.
+ * @param {Object} shared An object containing state shared between phases.
+ * Must include a reference to animationState, which controls animation loops.
+ * @param {Array} phases An array of rendering phase objects. Each specifies
+ * the vertex and fragment shader to use, the mesh to upload as an attribute
+ * array, and optionally an init() and draw() method.
+ * @returns {Function} The frame-drawing function for RequestAnimationFrame.
+ */
 function glStart (gl, shared, phases = []) {
 try {
   if (!phases.length) { throw new Error('No rendering phases specified.') }
@@ -493,7 +340,6 @@ try {
   // Commonly shared GL state
   gl.enable(gl.CULL_FACE)
   gl.enable(gl.DEPTH_TEST)
-  gl.clearColor(0.1, 0.1, 0.1, 1)
 
   // Drawing function returned by glStart.
   // Draws each phase.
@@ -506,6 +352,7 @@ try {
     }
     const dt = t - drawFrame.t0
 
+    gl.clearColor(0.1, 0.1, 0.1, 1)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
     for (const p of phases) {
@@ -684,4 +531,274 @@ function show (m, tag = undefined) {
   log(tr[1], tr[5], tr[9], tr[13])
   log(tr[2], tr[6], tr[10], tr[14])
   log(tr[3], tr[7], tr[11], tr[15])
+}
+
+
+function initBloomCube () {
+  /** @type {WebGLRenderingContext} */
+  const gl = this.gl
+
+  this.MV = []
+  this.normal = gl.getAttribLocation(this.program, 'normal')
+  gl.enableVertexAttribArray(this.normal)
+  gl.vertexAttribPointer(this.normal,
+    3, gl.FLOAT, false, this.mesh.byteStride,
+    3 * Float32Array.BYTES_PER_ELEMENT)
+
+  this.shared.fbSize ??= 128
+  const fbSize = this.shared.fbSize
+
+  const brightSource = gl.createTexture()
+  gl.bindTexture(gl.TEXTURE_2D, brightSource)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
+    fbSize, fbSize, 0, gl.RGBA,
+    gl.UNSIGNED_BYTE, null)
+
+  const depthBuffer = gl.createRenderbuffer()
+  gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer)
+  gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16,
+    fbSize, fbSize)
+
+  const fboBright = gl.createFramebuffer()
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fboBright)
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
+    gl.TEXTURE_2D, brightSource, 0)
+  gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,
+    gl.RENDERBUFFER, depthBuffer)
+
+  const framebufferStatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
+  if (framebufferStatus !== gl.FRAMEBUFFER_COMPLETE) {
+    logError('Framebuffer incomplete: '
+      + parseFramebufferStatus(framebufferStatus))
+  }
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+
+  this.shared.fboBright = fboBright
+  this.shared.brightSource = brightSource
+}
+
+function drawBloomCube () {
+  /** @type {WebGLRenderingContext} */
+  const gl = this.gl
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, this.shared.fboBright)
+  gl.viewport(0, 0, this.shared.fbSize, this.shared.fbSize)
+  gl.clearColor(0, 0, 0, 0)
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+  
+  ident(this.MV)
+  mult4(this.MV,
+    rotateXY(τ * Math.sin(π/4 + this.dt / 5000.0)), this.MV)
+    mult4(this.MV,
+    rotateXZ(τ * Math.sin(π/4 + this.dt / 4000.0)), this.MV)
+  mult4(this.MV, translateMatrix(
+                  2.5*Math.cos(τ * this.dt/3000),
+                  Math.sin(τ * this.dt/12000),
+                  -30.0 + 8.0*Math.sin(τ * this.dt/6000)),
+    this.MV)
+
+  gl.uniformMatrix4fv(this.modelview, false, this.MV)
+
+  gl.enable(gl.BLEND)
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+  gl.drawArrays(gl.TRIANGLES, 0, this.mesh.blocks)
+  gl.disable(gl.BLEND)
+  
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+}
+
+function initBloomQuad () {
+  /** @type {WebGLRenderingContext} */
+  const gl = this.gl
+  
+  this.uTex = gl.getUniformLocation(this.program, 'uTex')
+  this.aTexel = gl.getAttribLocation(this.program, 'aTexel')
+  this.kernel = gl.getUniformLocation(this.program, 'kernel')
+  this.blurStep = gl.getUniformLocation(this.program, 'blurStep')
+
+  // Provide texture coordinates as an attribute
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo)
+  gl.enableVertexAttribArray(this.aTexel)
+  gl.vertexAttribPointer(this.aTexel, 2, gl.FLOAT, false,
+    this.mesh.byteStride, 2 * Float32Array.BYTES_PER_ELEMENT)
+  gl.bindBuffer(gl.ARRAY_BUFFER, null)
+
+  // Provide normalized Gaussian weights
+  gl.uniform1fv(this.kernel, [
+    .204092, .180051, .123785, .066496, .027622
+  ])
+
+  // Initialize two framebuffers, each with a color texture,
+  // to alternate between when blur rendering
+  this.shared.fbSize ??= 128
+  const fbSize = this.shared.fbSize
+  const fboAlternates = [gl.createFramebuffer(), gl.createFramebuffer()]
+  const texAlternates = [gl.createTexture(), gl.createTexture()]
+
+  for (let i = 0; i < fboAlternates.length; i++) {
+    gl.bindTexture(gl.TEXTURE_2D, texAlternates[i])
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
+      fbSize, fbSize, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
+    
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fboAlternates[i])
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D, texAlternates[i], 0)
+
+    const framebufferStatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
+    if (framebufferStatus !== gl.FRAMEBUFFER_COMPLETE) {
+      logError('Framebuffer incomplete: '
+        + parseFramebufferStatus(framebufferStatus))
+    }
+  }
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+
+  this.fboAlternates = fboAlternates
+  this.texAlternates = texAlternates
+}
+
+function drawBloomQuad () {
+  /** @type {WebGLRenderingContext} */
+  const gl = this.gl
+
+  let bx = 1/this.shared.fbSize * Math.cos(π * this.dt/1000)
+  // debug:
+  bx = 1/this.shared.fbSize
+  let by = 0
+
+  gl.disable(gl.DEPTH_TEST)
+  gl.enable(gl.BLEND)
+  gl.viewport(0, 0, this.shared.fbSize, this.shared.fbSize)
+
+  const needErase = [true, true]
+
+  let readSource = this.shared.brightSource
+  for (let i = 0; i < 10; i++) {
+
+    // Set write destination
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fboAlternates[i % 2])
+    if(needErase[i % 2]) {
+      gl.clear(gl.COLOR_BUFFER_BIT)
+      needErase[i % 2] = false
+    }
+
+    // Set read source
+    gl.bindTexture(gl.TEXTURE_2D, readSource)
+    
+    gl.uniform2fv(this.blurStep, [bx, by])
+    ;[bx, by] = [by, bx]
+
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
+
+    // Next iteration, read from the texture we just drew:
+    readSource = this.texAlternates[i % 2]
+  }
+
+  // Composite the final result onto the main canvas:
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+  gl.bindTexture(gl.TEXTURE_2D, readSource)
+  gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
+
+  // Clean up:
+  gl.disable(gl.BLEND)
+  gl.enable(gl.DEPTH_TEST)
+}
+
+function initCube () {
+  /** @type {WebGLRenderingContext} */
+  const gl = this.gl
+
+  this.normal = gl.getAttribLocation(this.program, 'normal')
+  gl.enableVertexAttribArray(this.normal)
+  gl.vertexAttribPointer(this.normal,
+    3, gl.FLOAT, false, this.mesh.byteStride,
+    3 * Float32Array.BYTES_PER_ELEMENT)
+
+  this.MV = []
+}
+
+function drawCube () {
+  /** @type {WebGLRenderingContext} */
+  const gl = this.gl
+
+  ident(this.MV)
+  mult4(this.MV,
+    rotateXY(τ * Math.sin(π/4 + this.dt / 5000.0)), this.MV)
+  mult4(this.MV,
+    rotateXZ(τ * Math.sin(π/4 + this.dt / 4000.0)), this.MV)
+  mult4(this.MV, translateMatrix(2.5*Math.cos(this.dt/1000),
+    Math.sin(this.dt/2000), -30.0 + 8.0*Math.sin(this.dt/1000)),
+    this.MV)
+
+  gl.uniformMatrix4fv(this.modelview, false, this.MV)
+
+  gl.drawArrays(gl.TRIANGLES, 0, this.mesh.blocks)
+}
+
+function initPorky () {
+  /** @type {WebGLRenderingContext} */
+  const gl = this.gl
+
+  this.MV = []
+}
+
+function drawPorky () {
+  /** @type {WebGLRenderingContext} */
+  const gl = this.gl
+
+  ident(this.MV)
+  mult4(this.MV,
+    rotateXY(τ * Math.sin(π/4 + this.dt / 5000.0)), this.MV)
+  mult4(this.MV,
+    rotateXZ(τ * Math.sin(π/4 + this.dt / 4000.0)), this.MV)
+  mult4(this.MV, translateMatrix(2.5*Math.cos(this.dt/1000),
+    Math.sin(this.dt/2000), -30.0 + 8.0*Math.sin(this.dt/1000)),
+    this.MV)
+
+  gl.uniformMatrix4fv(this.modelview, false, this.MV)
+
+  gl.drawArrays(gl.LINES, 0, this.mesh.blocks)
+}
+
+function initPlainCube () {
+  /** @type {WebGLRenderingContext} */
+  const gl = this.gl
+
+  this.MV = []
+  this.normal = gl.getAttribLocation(this.program, 'normal')
+  gl.enableVertexAttribArray(this.normal)
+  gl.vertexAttribPointer(this.normal,
+    3, gl.FLOAT, false, this.mesh.byteStride,
+    3 * Float32Array.BYTES_PER_ELEMENT)
+}
+
+function drawPlainCube () {
+  /** @type {WebGLRenderingContext} */
+  const gl = this.gl
+
+  ident(this.MV)
+  mult4(this.MV,
+    rotateXY(τ * Math.sin(π/4 + this.dt / 5000.0)), this.MV)
+    mult4(this.MV,
+    rotateXZ(τ * Math.sin(π/4 + this.dt / 4000.0)), this.MV)
+  mult4(this.MV, translateMatrix(
+                  2.5*Math.cos(this.dt/1000),
+                  Math.sin(this.dt/2000),
+                  -30.0 + 8.0*Math.sin(this.dt/1000)),
+    this.MV)
+
+  gl.uniformMatrix4fv(this.modelview, false, this.MV)
+
+  gl.drawArrays(gl.TRIANGLES, 0, this.mesh.blocks)
 }

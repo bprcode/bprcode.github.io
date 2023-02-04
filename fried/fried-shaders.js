@@ -3,6 +3,73 @@
 function buildShaders () {
   const shaders = {}
 
+  shaders.passthroughFrag =
+  /* glsl */`
+  precision mediump float;
+  varying vec4 vColor;
+
+  void main (void) {
+    gl_FragColor = vColor;
+  }
+  `
+
+  shaders.focusVert =
+  /* glsl */`
+  precision mediump float;
+
+  attribute vec3 pos;
+  attribute vec3 normal;
+  uniform mat4 projection;
+  uniform mat4 modelview;
+  varying vec4 vColor;
+
+  void main (void) {
+    const vec3 lightDirection = normalize(vec3(0.5, 0., -1.));
+
+    vec3 cooked = mat3(modelview) * normal;
+    float dp = -dot(normalize(cooked), lightDirection);
+    dp = clamp(dp, 0., 1.);
+
+    vec4 v = modelview * vec4(pos, 1.);
+    gl_Position = projection * v;
+
+    vColor = vec4(
+              vec3(1., 0, .3) * dp + vec3(0., 0., .2),
+              1.
+              //clamp((v.x + 2.5) / 5., 0., 1.)
+              // clamp(1. - abs(v.z + 30.0) / 8.0, 0., 1.)
+              );
+  }
+  `
+
+  shaders.experimentalBloom =
+  /* glsl */`
+  precision mediump float;
+  varying vec2 vTexel;
+
+  uniform sampler2D uTex;
+  uniform float kernel[5];
+  uniform vec2 blurStep;
+
+  void main (void) {
+    vec2 dv = blurStep;
+
+    // double-weight on 0 element:
+    vec4 blurColor = texture2D(uTex, vTexel) * kernel[0];
+    blurColor += texture2D(uTex, vTexel - 1.*dv) * kernel[1]
+                +texture2D(uTex, vTexel + 1.*dv) * kernel[1];
+    blurColor += texture2D(uTex, vTexel - 2.*dv) * kernel[2]
+                +texture2D(uTex, vTexel + 2.*dv) * kernel[2];
+    blurColor += texture2D(uTex, vTexel - 3.*dv) * kernel[3]
+                +texture2D(uTex, vTexel + 3.*dv) * kernel[3];
+    blurColor += texture2D(uTex, vTexel - 4.*dv) * kernel[4]
+                +texture2D(uTex, vTexel + 4.*dv) * kernel[4];
+
+    gl_FragColor = mix(texture2D(uTex, vTexel), blurColor,
+                    1. - gl_FragCoord.x / 128.);
+  }
+  `
+
   shaders.vertsWithNormals =
   /* glsl */`
   precision highp float;
@@ -11,19 +78,62 @@ function buildShaders () {
   attribute vec3 normal;
   uniform mat4 projection;
   uniform mat4 modelview;
-  varying vec3 testV;
+  varying vec4 vColor;
 
   void main (void) {
     vec3 cooked = mat3(modelview) * normal;
     float dp = -dot(normalize(cooked), normalize(vec3(0.5, 0., -1.)));
     dp = clamp(dp, 0., 1.);
 
-    // vec4 projected = projection * modelview * vec4(pos, 1.);
     gl_Position = projection * modelview * vec4(pos, 1.);
 
-    testV = vec3(1., 0, .3) * dp + vec3(0., 0., .2);
+    vColor = vec4(
+              vec3(1., 0, .3) * dp + vec3(0., 0., .2),
+              1.);
   }
   `
+
+shaders.depthVertHack =
+/* glsl */`
+precision highp float;
+
+attribute vec3 pos;
+uniform mat4 projection;
+uniform mat4 modelview;
+varying vec4 vColor;
+
+void main (void) {
+  vec4 position = projection * modelview * vec4(pos, 1.);
+  gl_Position = position;
+  vColor = position;
+}
+`
+
+shaders.depthFragHack =
+/* glsl */`
+precision highp float;
+
+varying vec4 vColor;
+
+void main(void) {
+  gl_FragColor = vec4(vColor.z/40., vColor.z/40., vColor.z/40., 1.);
+}
+`
+
+shaders.justDepthVert =
+/* glsl */`
+precision highp float;
+
+attribute vec3 pos;
+uniform mat4 projection;
+uniform mat4 modelview;
+varying vec4 vColor;
+
+void main (void) {
+  gl_Position = projection * modelview * vec4(pos, 1.);
+  vColor = vec4(0., 0.5, 1., 1.);
+}
+`
 
   shaders.projectingTexturer =
   /* glsl */`
@@ -44,7 +154,7 @@ function buildShaders () {
   // Basic texture demo
   shaders.textureVert =
   /* glsl */`
-  precision mediump float;
+  precision highp float;
   attribute vec3 pos;
   attribute vec2 aTexel;
   varying vec2 vTexel;
@@ -52,6 +162,53 @@ function buildShaders () {
   void main (void) {
     gl_Position = vec4(pos, 1.);
     vTexel = vec2(aTexel);
+  }
+  `
+
+  shaders.depthExperimentFrag =
+  /* glsl */`
+  precision highp float;
+  varying vec2 vTexel;
+  uniform sampler2D uTex;
+
+  void main (void) {
+    // float n = 0.451;
+    // float f = 1000.0;
+    // float z = texture2D(uTex, vTexel.st).x;
+    // float grey = (2.0 * n) / (f + n - z*(f-n));
+    // vec4 color = vec4(grey, grey, grey, 1.0);
+    // gl_FragColor = color;
+    float r = texture2D(uTex, vTexel).r;
+
+    // exaggerate depth variation:
+    vec4 color = vec4(pow(r, 4.),
+                  0., 0., 1.);
+    // color.r = step(1.0, color.r);
+    gl_FragColor = color;
+  }
+  `
+
+  shaders.debugTextureVert =
+  /* glsl */`
+  precision mediump float;
+  attribute vec3 pos;
+  varying vec2 vTexel;
+
+  void main (void) {
+    gl_Position = vec4(pos,1.);
+    vTexel = pos.xy * .5 + .5;
+  }
+  `
+  
+  shaders.debugTextureFrag =
+  /* glsl */`
+  precision mediump float;
+  varying vec2 vTexel;
+  uniform sampler2D uTex;
+
+  void main (void) {
+    vec4 color = texture2D(uTex, vTexel);
+    gl_FragColor = vec4(color.r, 0., 0., 1.);
   }
   `
 
@@ -133,37 +290,6 @@ function buildShaders () {
     // color = 
     //         + 0.5 * texture2D(uTex, vec2(vTexel.x - dx, vTexel.y - dy))
     //         + 0.5 * texture2D(uTex, vec2(vTexel.x + dx, vTexel.y + dy));
-    gl_FragColor = color;
-  }
-  `
-
-  shaders.rippleTexture =
-  /* glsl */`
-  precision mediump float;
-  #define tau 6.283185307
-  varying vec2 vTexel;
-  uniform sampler2D uTex;
-  uniform float uSize;
-  uniform float osc;
-  uniform float time;
-  uniform float kernel[9];
-
-  void main (void) {
-    // float dx = 2. * (0.5+sin(tau * gl_FragCoord.y / uSize))  * osc / uSize;
-    // float dy = 0. / uSize;
-    float dx = 1. / uSize;
-    float dy = 1. / uSize;
-    vec4 color;
-    color =
-        texture2D(uTex, vec2(vTexel.x - dx, vTexel.y + dy)) * kernel[0]
-      + texture2D(uTex, vec2(vTexel.x,      vTexel.y + dy)) * kernel[1]
-      + texture2D(uTex, vec2(vTexel.x + dx, vTexel.y + dy)) * kernel[2]
-      + texture2D(uTex, vec2(vTexel.x - dx,      vTexel.y)) * kernel[3]
-      + texture2D(uTex, vec2(vTexel.x,           vTexel.y)) * kernel[4]
-      + texture2D(uTex, vec2(vTexel.x + dx,      vTexel.y)) * kernel[5]
-      + texture2D(uTex, vec2(vTexel.x - dx, vTexel.y - dy)) * kernel[6]
-      + texture2D(uTex, vec2(vTexel.x,      vTexel.y - dy)) * kernel[7]
-      + texture2D(uTex, vec2(vTexel.x + dx, vTexel.y - dy)) * kernel[8];
     gl_FragColor = color;
   }
   `
@@ -347,16 +473,6 @@ function buildShaders () {
 
   void main (void) {
     gl_Position = projection * vec4(pos, 1.0);
-  }
-  `
-
-  shaders.redShader =
-  /* glsl */`
-  precision highp float;
-  varying vec3 testV;
-
-  void main (void) {
-    gl_FragColor = vec4(testV, 1.);
   }
   `
 

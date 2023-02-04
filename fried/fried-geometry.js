@@ -52,6 +52,9 @@ function buildGeometry () {
     ...transformMesh3(fanClose(geometry.quadLoop.slice(0, 12)),
         translateMatrix(0,0,2)))
 
+  // center the cube:
+  geometry.triCube.replace(v => [v[0], v[1], v[2] - 2], 3)
+
   geometry.triCube.replace(v => { // Compute and interleave normals
     const n = triangleNormal3(v)
     return [
