@@ -212,6 +212,32 @@ void main (void) {
   }
   `
 
+  shaders.blurCompositorFrag =
+  /* glsl */`
+  precision mediump float;
+  uniform sampler2D blurTex;
+  uniform sampler2D clearTex;
+  uniform sampler2D depthTex;
+  varying vec2 vTexel;
+
+  void main (void) {
+    float depth = texture2D(depthTex, vTexel).r;
+    float focalDistance = 0.984;
+    float fieldWidth = 0.0035;
+
+    gl_FragColor =
+      mix(
+      texture2D(clearTex, vTexel),
+      texture2D(blurTex, vTexel),
+        clamp(
+          smoothstep(0., fieldWidth,
+          abs(depth - focalDistance))
+          // smoothstep(focalDistance - fieldWidth, focalDistance + fieldWidth,
+          // depth
+        , 0., 1.));
+  }
+  `
+
   shaders.plainTextureFrag =
   /* glsl */`
   precision mediump float;

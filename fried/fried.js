@@ -42,6 +42,9 @@ try {
     }
   }
 
+  // turns out compositing doesn't go so well with lower res
+  // might be able to perform some transform to recover?
+  const lofiRez = document.querySelector('canvas').width
   const shaders = buildShaders()
   const geometry = buildGeometry()
 
@@ -58,6 +61,19 @@ try {
     gl2.getParameter(gl2.VERSION)
     + ' / ' + gl2.getParameter(gl2.SHADING_LANGUAGE_VERSION)
 
+  function commonCubeAnimation () {
+    ident(this.MV)
+    mult4(this.MV,
+      rotateXY(τ * Math.sin(π/4 + this.dt / 5000.0)), this.MV)
+      mult4(this.MV,
+      rotateXZ(τ * Math.sin(π/4 + this.dt / 4000.0)), this.MV)
+    mult4(this.MV, translateMatrix(
+                    2.5*Math.cos(this.dt/1000),
+                    Math.sin(this.dt/2000),
+                    -30.0 + 8.0*Math.sin(this.dt/1000)),
+      this.MV)
+  }
+
   // Rendering pass for outputting depth to a color texture
   // as an alternative to WEBGL_depth_texture
   function initDepthCube () {
@@ -70,31 +86,18 @@ try {
     const fbSize = this.shared.fbSize
 
     const depthTexture = gl.createTexture()
-    // const colorTexture = gl.createTexture()
-    
-    // gl.bindTexture(gl.TEXTURE_2D, colorTexture)
-    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    // gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
-    //   fbSize, fbSize, 0, gl.RGBA,
-    //   gl.UNSIGNED_BYTE, null)
 
     gl.bindTexture(gl.TEXTURE_2D, depthTexture)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT,
       fbSize, fbSize, 0, gl.DEPTH_COMPONENT,
       gl.UNSIGNED_SHORT, null)
 
-    // Bind a depth texture and a (junk, unused) color attachment
     const fbo = gl.createFramebuffer()
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
-    // gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-    //   gl.TEXTURE_2D, colorTexture, 0)
 
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,
       gl.TEXTURE_2D, depthTexture, 0)
@@ -107,32 +110,21 @@ try {
     }
 
     this.shared.fboDepth = fbo
-    this.shared.depthTexture = depthTexture 
-    // this.shared.colorTexture = colorTexture // Probably pointless?
+    this.shared.depthTexture = depthTexture
   }
 
   function drawDepthCube () {
     /** @type {WebGLRenderingContext} */
     const gl = this.gl
 
-    gl.bindTexture(gl.TEXTURE_2D, null)
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.shared.fboDepth)
     gl.viewport(0, 0, this.shared.fbSize, this.shared.fbSize)
 
     gl.enable(gl.DEPTH_TEST)
     gl.clear(gl.DEPTH_BUFFER_BIT)
+    gl.colorMask(false, false, false, false)
 
-    ident(this.MV)
-    mult4(this.MV,
-      rotateXY(τ * Math.sin(π/4 + this.dt / 5000.0)), this.MV)
-      mult4(this.MV,
-      rotateXZ(τ * Math.sin(π/4 + this.dt / 4000.0)), this.MV)
-    mult4(this.MV,
-      translateMatrix(
-        2.5*Math.cos(τ * this.dt/3000),
-        Math.sin(τ * this.dt/12000),
-        -30.0 + 8.0*Math.sin(τ * this.dt/6000)),
-      this.MV)
+    commonCubeAnimation.call(this)
 
     gl.uniformMatrix4fv(this.modelview, false, this.MV)
 
@@ -140,6 +132,46 @@ try {
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+    gl.colorMask(true, true, true, true)
+  }
+
+  function initBlurCompositor () {
+    /** @type {WebGLRenderingContext} */
+    const gl = this.gl
+
+    this.aTexel = gl.getAttribLocation(this.program, 'aTexel')
+    this.uBlurTex = gl.getUniformLocation(this.program, 'blurTex')
+    this.uClearTex = gl.getUniformLocation(this.program, 'clearTex')
+    this.uDepthTex = gl.getUniformLocation(this.program, 'depthTex')
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo)
+    gl.enableVertexAttribArray(this.aTexel)
+    gl.vertexAttribPointer(this.aTexel, 2, gl.FLOAT, false,
+      this.mesh.byteStride, 2 * Float32Array.BYTES_PER_ELEMENT)
+    gl.bindBuffer(gl.ARRAY_BUFFER, null)
+
+    gl.uniform1i(this.uBlurTex, 0)
+    gl.uniform1i(this.uClearTex, 1)
+    gl.uniform1i(this.uDepthTex, 2)
+  }
+
+  function compositeBlur () {
+    /** @type {WebGLRenderingContext} */
+    const gl = this.gl
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+
+    // Think we can skip rebinding texture0 -- should be used by
+    // previous stages
+    // gl.activeTexture(gl.TEXTURE0)
+    // gl.bindTexture(gl.TEXTURE_2D, this.shared.blurTexture)
+    // blurTexture should probably already be bound
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
+
+    // // Clean up:
+    gl.disable(gl.BLEND)
+    gl.enable(gl.DEPTH_TEST)
   }
 
   function initTexturedQuad () {
@@ -184,10 +216,272 @@ try {
     }
   }
 
+  function initBlur () {
+    /** @type {WebGLRenderingContext} */
+    const gl = this.gl
+    
+    this.uTex = gl.getUniformLocation(this.program, 'uTex')
+    this.aTexel = gl.getAttribLocation(this.program, 'aTexel')
+    this.kernel = gl.getUniformLocation(this.program, 'kernel')
+    this.blurStep = gl.getUniformLocation(this.program, 'blurStep')
+  
+    // Provide texture coordinates as an attribute
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo)
+    gl.enableVertexAttribArray(this.aTexel)
+    gl.vertexAttribPointer(this.aTexel, 2, gl.FLOAT, false,
+      this.mesh.byteStride, 2 * Float32Array.BYTES_PER_ELEMENT)
+    gl.bindBuffer(gl.ARRAY_BUFFER, null)
+  
+    // Provide normalized Gaussian weights
+    gl.uniform1fv(this.kernel, [
+      .204092, .180051, .123785, .066496, .027622
+    ])
+  
+    // Initialize two framebuffers, each with a color texture,
+    // to alternate between when blur rendering
+    const fboAlternates = [gl.createFramebuffer(), gl.createFramebuffer()]
+    const texAlternates = [gl.createTexture(), gl.createTexture()]
+  
+    for (let i = 0; i < fboAlternates.length; i++) {
+      gl.bindTexture(gl.TEXTURE_2D, texAlternates[i])
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
+        lofiRez, lofiRez, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
+      
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fboAlternates[i])
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
+        gl.TEXTURE_2D, texAlternates[i], 0)
+  
+      const framebufferStatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
+      if (framebufferStatus !== gl.FRAMEBUFFER_COMPLETE) {
+        logError('Framebuffer incomplete: '
+          + parseFramebufferStatus(framebufferStatus))
+      }
+    }
+  
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+  
+    this.fboAlternates = fboAlternates
+    this.texAlternates = texAlternates
+  }
+  
+  function drawBlur () {
+    /** @type {WebGLRenderingContext} */
+    const gl = this.gl
+  
+    let bx = 1/lofiRez * Math.cos(π * this.dt/1000)
+    // debug:
+    bx = 1/lofiRez
+    let by = 0
+  
+    gl.disable(gl.DEPTH_TEST)
+    gl.enable(gl.BLEND)
+    gl.viewport(0, 0, lofiRez, lofiRez)
+  
+    const needErase = [true, true]
+    const iterations = 10
+  
+    let readSource = this.shared.lofiTexture
+    for (let i = 0; i < iterations; i++) {
+  
+      // Set write destination
+      gl.bindFramebuffer(gl.FRAMEBUFFER, this.fboAlternates[i % 2])
+      if(needErase[i % 2]) {
+        gl.clear(gl.COLOR_BUFFER_BIT)
+        needErase[i % 2] = false
+      }
+  
+      // Set read source
+      gl.bindTexture(gl.TEXTURE_2D, readSource)
+      
+      gl.uniform2fv(this.blurStep, [bx, by])
+      ;[bx, by] = [by, bx]
+  
+      gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
+  
+      // Next iteration, read from the texture we just drew:
+      readSource = this.texAlternates[i % 2]
+    }
+  
+    // Make the results available to the compositor:
+    this.shared.blurTexture = readSource
+  }
+
+  function initClearCube () {
+    /** @type {WebGLRenderingContext} */
+    const gl = this.gl
+  
+    this.MV = []
+    this.normal = gl.getAttribLocation(this.program, 'normal')
+    gl.enableVertexAttribArray(this.normal)
+    gl.vertexAttribPointer(this.normal,
+      3, gl.FLOAT, false, this.mesh.byteStride,
+      3 * Float32Array.BYTES_PER_ELEMENT)
+
+    const clearTexture = gl.createTexture()
+    const res = gl.canvas.width
+
+    gl.bindTexture(gl.TEXTURE_2D, clearTexture)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
+      res, res, 0, gl.RGBA,
+      gl.UNSIGNED_BYTE, null)
+    
+    const depthBuffer = gl.createRenderbuffer()
+    gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer)
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16,
+      res, res)
+
+    const fboClear = gl.createFramebuffer()
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fboClear)
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D, clearTexture, 0)
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,
+      gl.RENDERBUFFER, depthBuffer)
+
+    const framebufferStatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
+    if (framebufferStatus !== gl.FRAMEBUFFER_COMPLETE) {
+      logError('Framebuffer incomplete: '
+        + parseFramebufferStatus(framebufferStatus))
+    }
+
+    gl.activeTexture(gl.TEXTURE0 + 1)
+    gl.bindTexture(gl.TEXTURE_2D, clearTexture)
+
+    gl.activeTexture(gl.TEXTURE0)
+
+    this.shared.clearTexture = clearTexture
+    this.fboClear = fboClear
+    this.res = res
+  }
+  
+  function drawClearCube () {
+    /** @type {WebGLRenderingContext} */
+    const gl = this.gl
+  
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fboClear)
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    gl.viewport(0, 0, this.res, this.res)
+
+    commonCubeAnimation.call(this)
+  
+    gl.uniformMatrix4fv(this.modelview, false, this.MV)
+  
+    gl.drawArrays(gl.TRIANGLES, 0, this.mesh.blocks)
+  }
+
+  function initNormalCube () {
+    /** @type {WebGLRenderingContext} */
+    const gl = this.gl
+  
+    this.MV = []
+    this.normal = gl.getAttribLocation(this.program, 'normal')
+    gl.enableVertexAttribArray(this.normal)
+    gl.vertexAttribPointer(this.normal,
+      3, gl.FLOAT, false, this.mesh.byteStride,
+      3 * Float32Array.BYTES_PER_ELEMENT)
+  }
+  
+  function drawNormalCube () {
+    /** @type {WebGLRenderingContext} */
+    const gl = this.gl
+  
+    commonCubeAnimation.call(this)
+  
+    gl.uniformMatrix4fv(this.modelview, false, this.MV)
+  
+    gl.drawArrays(gl.TRIANGLES, 0, this.mesh.blocks)
+  }
+
+  function initLofiCube () {
+    /** @type {WebGLRenderingContext} */
+    const gl = this.gl
+  
+    this.MV = []
+    this.normal = gl.getAttribLocation(this.program, 'normal')
+    gl.enableVertexAttribArray(this.normal)
+    gl.vertexAttribPointer(this.normal,
+      3, gl.FLOAT, false, this.mesh.byteStride,
+      3 * Float32Array.BYTES_PER_ELEMENT)
+  
+    const lofiTexture = gl.createTexture()
+    gl.bindTexture(gl.TEXTURE_2D, lofiTexture)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
+      lofiRez, lofiRez, 0, gl.RGBA,
+      gl.UNSIGNED_BYTE, null)
+  
+    const depthTexture = gl.createTexture()
+    gl.bindTexture(gl.TEXTURE_2D, depthTexture)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT,
+      lofiRez, lofiRez, 0, gl.DEPTH_COMPONENT,
+      gl.UNSIGNED_SHORT, null)
+  
+    const fboLofi = gl.createFramebuffer()
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fboLofi)
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D, lofiTexture, 0)
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,
+      gl.TEXTURE_2D, depthTexture, 0)
+  
+    const framebufferStatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
+    if (framebufferStatus !== gl.FRAMEBUFFER_COMPLETE) {
+      logError('Framebuffer incomplete: '
+        + parseFramebufferStatus(framebufferStatus))
+    }
+  
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+  
+    gl.activeTexture(gl.TEXTURE0 + 2)
+    gl.bindTexture(gl.TEXTURE_2D, depthTexture)
+
+    gl.activeTexture(gl.TEXTURE0)
+
+    this.shared.fboLofi = fboLofi
+    this.shared.lofiTexture = lofiTexture
+    this.shared.depthTexture = depthTexture
+  }
+  
+  function drawLofiCube () {
+    /** @type {WebGLRenderingContext} */
+    const gl = this.gl
+  
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.shared.fboLofi)
+    gl.viewport(0, 0, lofiRez, lofiRez)
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    
+    commonCubeAnimation.call(this)
+  
+    gl.uniformMatrix4fv(this.modelview, false, this.MV)
+  
+    gl.drawArrays(gl.TRIANGLES, 0, this.mesh.blocks)
+  }
+
   function drawTexturedQuad () {
     /** @type {WebGLRenderingContext} */
     const gl = this.gl
 
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
+  }
+
+  function drawTestQuad () {
+    /** @type {WebGLRenderingContext} */
+    const gl = this.gl
+
+    gl.bindTexture(gl.TEXTURE_2D, this.shared.lofiTexture)
     gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
   }
 
@@ -222,13 +516,50 @@ try {
   state.animation2.context = gl2
   state.animation2.draw = glStart(gl2, { animationState: state.animation2 },
   [
-    {
-      vertexShader: shaders.textureVert,
-      fragmentShader: shaders.plainTextureFrag,
-      mesh: geometry.texSquare,
-      init: initTexturedQuad,
-      draw: drawTexturedQuad
+    /* Rendering plan:
+    Render hi-res scene to texture unit 0
+    Render blurry lo-fi scene to texture unit 1
+    Render depth texture to texture unit 2
+    Finally, compose 0 and 1, weighted by 2, onto the main canvas.
+    DEBUG -- TODO, LATER: Combine the high-res draw and the composition
+    operation into one pass. It is not necessary to store the high-res
+    texture. Just use the output as it's rendered.
+    */
+    { // draw the scene clearly, at full resolution:
+      vertexShader: shaders.vertsWithNormals,
+      fragmentShader: shaders.passthroughFrag,
+      mesh: geometry.triCube,
+      init: initClearCube,
+      draw: drawClearCube
     },
+    { // draw the lofi scene to a color and depth attachment:
+      vertexShader: shaders.vertsWithNormals,
+      fragmentShader: shaders.passthroughFrag,
+      mesh: geometry.triCube,
+      init: initLofiCube,
+      draw: drawLofiCube
+    },
+    { // post-process the output with iterated Gaussian blur:
+      vertexShader: shaders.textureVert,
+      fragmentShader: shaders.bloom1d,
+      mesh: geometry.texSquare,
+      init: initBlur,
+      draw: drawBlur
+    },
+    { // compose the final scene:
+      vertexShader: shaders.textureVert,
+      fragmentShader: shaders.blurCompositorFrag,
+      mesh: geometry.texSquare,
+      init: initBlurCompositor,
+      draw: compositeBlur
+    }
+    // {
+    //   vertexShader: shaders.vertsWithNormals,
+    //   fragmentShader: shaders.passthroughFrag,
+    //   mesh: geometry.triCube,
+    //   init: initNormalCube,
+    //   draw: drawNormalCube
+    // }
   ])
 
 } catch (e) {
@@ -769,36 +1100,4 @@ function drawPorky () {
   gl.uniformMatrix4fv(this.modelview, false, this.MV)
 
   gl.drawArrays(gl.LINES, 0, this.mesh.blocks)
-}
-
-function initPlainCube () {
-  /** @type {WebGLRenderingContext} */
-  const gl = this.gl
-
-  this.MV = []
-  this.normal = gl.getAttribLocation(this.program, 'normal')
-  gl.enableVertexAttribArray(this.normal)
-  gl.vertexAttribPointer(this.normal,
-    3, gl.FLOAT, false, this.mesh.byteStride,
-    3 * Float32Array.BYTES_PER_ELEMENT)
-}
-
-function drawPlainCube () {
-  /** @type {WebGLRenderingContext} */
-  const gl = this.gl
-
-  ident(this.MV)
-  mult4(this.MV,
-    rotateXY(τ * Math.sin(π/4 + this.dt / 5000.0)), this.MV)
-    mult4(this.MV,
-    rotateXZ(τ * Math.sin(π/4 + this.dt / 4000.0)), this.MV)
-  mult4(this.MV, translateMatrix(
-                  2.5*Math.cos(this.dt/1000),
-                  Math.sin(this.dt/2000),
-                  -30.0 + 8.0*Math.sin(this.dt/1000)),
-    this.MV)
-
-  gl.uniformMatrix4fv(this.modelview, false, this.MV)
-
-  gl.drawArrays(gl.TRIANGLES, 0, this.mesh.blocks)
 }
