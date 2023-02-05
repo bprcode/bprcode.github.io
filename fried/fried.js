@@ -233,9 +233,8 @@ try {
     gl.bindBuffer(gl.ARRAY_BUFFER, null)
   
     // Provide normalized Gaussian weights
-    gl.uniform1fv(this.kernel, [
-      .204092, .180051, .123785, .066496, .027622
-    ])
+    gl.uniform1fv(this.kernel,
+      normalizedGaussianKernel(0.1, shaders.blurKernelSize))
   
     // Initialize two framebuffers, each with a color texture,
     // to alternate between when blur rendering
@@ -282,7 +281,7 @@ try {
     gl.viewport(0, 0, lofiRez, lofiRez)
   
     const needErase = [true, true]
-    const iterations = 10
+    const iterations = 8
   
     let readSource = this.shared.lofiTexture
     for (let i = 0; i < iterations; i++) {
@@ -1100,4 +1099,43 @@ function drawPorky () {
   gl.uniformMatrix4fv(this.modelview, false, this.MV)
 
   gl.drawArrays(gl.LINES, 0, this.mesh.blocks)
+}
+
+/**
+ * Compute an array of values from a Gaussian distribution
+ * The results are weighted to match their usage in the shader,
+ * such that [0] + 2*Σ[1..steps - 1] = 1.0
+ * https://www.desmos.com/calculator/go97pnmify
+ * @param {number} sigma standard deviation (prior to normalization)
+ * @param {number} steps the number of elements for the one-sided kernel
+ */
+function normalizedGaussianKernel (sigma, steps) {
+  const yMin = 0.06 // The lowest y value to include
+  const xMax = Math.sqrt(-2 * sigma ** 2 * Math.log(yMin * sigma *
+                Math.sqrt(2 * π))) // the x value for yMin
+
+  const dx = xMax / (steps - 1)
+  const distribution = []
+  let x = 0
+  let sum = 0
+
+  for (let i = 0; i < steps; i++) {
+    const gx = g(x)
+    distribution.push(gx)
+    sum += 2*gx // each element, except the 0th, will be sampled twice
+    x += dx
+  }
+
+  sum -= g(0) // correct for the first element's weight
+
+  // normalize the result:
+  distribution.forEach((e,i) => distribution[i] = e / sum)
+
+  log(distribution)
+  return distribution
+
+  function g (x) {
+    return 1 / (sigma * Math.sqrt(2 * π))
+            * Math.exp(-0.5 * (x/sigma) ** 2)
+  }
 }

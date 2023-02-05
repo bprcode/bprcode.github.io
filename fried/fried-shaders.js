@@ -2,6 +2,7 @@
 
 function buildShaders () {
   const shaders = {}
+  shaders.blurKernelSize = 7
 
   shaders.passthroughFrag =
   /* glsl */`
@@ -223,17 +224,14 @@ void main (void) {
   void main (void) {
     float depth = texture2D(depthTex, vTexel).r;
     float focalDistance = 0.984;
-    float fieldWidth = 0.0035;
+    float fieldWidth = 0.004;
 
     gl_FragColor =
       mix(
       texture2D(clearTex, vTexel),
       texture2D(blurTex, vTexel),
         clamp(
-          smoothstep(0., fieldWidth,
-          abs(depth - focalDistance))
-          // smoothstep(focalDistance - fieldWidth, focalDistance + fieldWidth,
-          // depth
+          abs(depth - focalDistance)/fieldWidth
         , 0., 1.));
   }
   `
@@ -255,7 +253,8 @@ void main (void) {
   varying vec2 vTexel;
   
   uniform sampler2D uTex;
-  uniform float kernel[5];
+  #define kernelSize ${shaders.blurKernelSize}
+  uniform float kernel[kernelSize];
   uniform vec2 blurStep;
 
   void main (void) {
@@ -263,14 +262,18 @@ void main (void) {
 
     // double-weight on 0 element:
     vec4 color = texture2D(uTex, vTexel) * kernel[0];
-    color += texture2D(uTex, vTexel - 1.*dv) * kernel[1]
-            +texture2D(uTex, vTexel + 1.*dv) * kernel[1];
-    color += texture2D(uTex, vTexel - 2.*dv) * kernel[2]
-            +texture2D(uTex, vTexel + 2.*dv) * kernel[2];
-    color += texture2D(uTex, vTexel - 3.*dv) * kernel[3]
-            +texture2D(uTex, vTexel + 3.*dv) * kernel[3];
-    color += texture2D(uTex, vTexel - 4.*dv) * kernel[4]
-            +texture2D(uTex, vTexel + 4.*dv) * kernel[4];
+    for (int i = 1; i < kernelSize; i++) {
+      color += texture2D(uTex, vTexel - float(i)*dv) * kernel[i]
+              +texture2D(uTex, vTexel + float(i)*dv) * kernel[i];
+    }
+    // color += texture2D(uTex, vTexel - 1.*dv) * kernel[1]
+    //         +texture2D(uTex, vTexel + 1.*dv) * kernel[1];
+    // color += texture2D(uTex, vTexel - 2.*dv) * kernel[2]
+    //         +texture2D(uTex, vTexel + 2.*dv) * kernel[2];
+    // color += texture2D(uTex, vTexel - 3.*dv) * kernel[3]
+    //         +texture2D(uTex, vTexel + 3.*dv) * kernel[3];
+    // color += texture2D(uTex, vTexel - 4.*dv) * kernel[4]
+    //         +texture2D(uTex, vTexel + 4.*dv) * kernel[4];
 
     gl_FragColor = color;
   }
