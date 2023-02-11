@@ -652,7 +652,6 @@ try {
   shared.nearPlane ??= 0.1
   shared.farPlane ??= 1000
 
-  log('using near=' + shared.nearPlane, ' far=' + shared.farPlane)
   shared.projection = frustum({ near: shared.nearPlane,
                                 far: shared.farPlane,
                                 fov: 25, aspect: 1.0 })
@@ -803,6 +802,12 @@ function initListeners () {
       ctx.viewport(0, 0, ctx.canvas.width, ctx.canvas.height)
       if (!s.keepAnimating) { requestAnimationFrame(s.draw) }
     }
+  })
+
+  window.addEventListener('deviceorientation', event => {
+    state.alpha = event.alpha
+    state.beta = event.beta
+    state.gamma = event.gamma
   })
 
   for (const [i,e] of
