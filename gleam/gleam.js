@@ -4,7 +4,6 @@ const π = Math.PI
 const τ = π * 2
 const log = console.log.bind(console)
 const el = document.getElementById.bind(document)
-console.clear()
 
 const state = {
   sliders: [],
@@ -31,9 +30,9 @@ function logError (message) {
 
 function initialize () {
 try {
-  const shaders = buildShaders()
-  const geometry = buildGeometry()
-  const painters = buildPainters()
+  // const shaders = buildShaders()
+  // const geometry = buildGeometry()
+  // const painters = buildPainters()
 
   initListeners()
 

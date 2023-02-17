@@ -1,78 +1,176 @@
 'use strict';
 
-function buildGeometry () {
-  if (buildGeometry.geometry) { return buildGeometry.geometry }
-  const geometry = {}
+class Mesh extends Array {
+  stride = 1
 
-  // Build geometry
-  geometry.hexagon = [
-    -1,    0,
-    -0.5, -0.8660254,
-     0.5, -0.8660254,
-     1,    0,
-     0.5,  0.8660254,
-    -0.5,  0.8660254,
-  ]
+  static from (...args) {
+    let rv = super.from(...args)
+    if (args[0].stride) { rv.stride = args[0].stride }
+    return rv
+  }
 
-  geometry.square2d = [
-    -1, -1,
-    1,  -1,
-    1,  1,
-    -1, 1,
-  ]
+  get blocks () {
+    return this.length / this.stride
+  }
 
-  geometry.texSquare = Mesh.from(geometry.square2d)
-  geometry.texSquare.stride = 2
-  geometry.texSquare.interleave(v => [(v[0] + 1) / 2, (v[1] + 1) / 2])
-  geometry.texSquare.stride = 4
+  get byteStride () {
+    return this.stride * Float32Array.BYTES_PER_ELEMENT
+  }
 
-  geometry.flatQuad = new Mesh(
-    -1,  1,  1, //front
-    -1, -1,  1,
-     1, -1,  1,
-     1,  1,  1,
-  )
-  
-  geometry.quadLoop = new Mesh(
-    -1,  1,  1, //front
-    -1, -1,  1,
-     1, -1,  1,
-     1,  1,  1,
-    -1,  1,  1
-  )
-  
-  geometry.quadLoop.stride = 3
+  log (title = '') {
+    console.log(`  ` + title + ` ${this.length} elements / `
+      + `${this.stride} stride = `
+      + `${this.blocks} blocks`)
 
-  geometry.triCube = extrudeLineStrip(geometry.quadLoop, 0, 0, 2.0)
+    for (let i = 0; i < this.length; i += this.stride) {
+      let output =  `${i / this.stride})`.padEnd(5)
+        + '<'.padStart(5)
+      for (let j = 0; j < this.stride; j++) {
+        output += this[i+j].toFixed(2).padStart(7)
+                  + ( j < this.stride - 1
+                      ? ','
+                      : '' )
+      }
+      output += '  >'
+      console.log(output)
+    }
+  }
 
-  geometry.tesseract = wireframeTesseract()
-  geometry.donutTesseract = openTesseract()
-  geometry.normalTesseract = normalTesseract()
+  replace (callback, stride = this.stride) {
+    const result = []
+    let lastReplaceLength = 0
 
-  geometry.triCube.replace(breakQuad, 12)
-  geometry.triCube.push(
-    ...fanClose(geometry.quadLoop.slice(0, 12)).invertTriangles(),
-    ...transformMesh3(fanClose(geometry.quadLoop.slice(0, 12)),
-        translateMatrix(0,0,2)))
+    for (let i = 0; i < this.length; i += stride) {
+      const prior = []
 
-  // center the cube:
-  geometry.triCube.replace(v => [v[0], v[1], v[2] - 2], 3)
+      for (let j = 0; j < stride; j++) {
+        prior.push(this[i + j])
+      }
 
-  geometry.triCube.replace(v => { // Compute and interleave normals
-    const n = triangleNormal3(v)
-    return [
-      v[0], v[1], v[2], ...n,
-      v[3], v[4], v[5], ...n,
-      v[6], v[7], v[8], ...n,
-    ]
-  }, 9)
-  geometry.triCube.stride = 6
+      const replacement = callback(prior)
+      result.push(...replacement)
 
-  geometry.squareMesh = Mesh.from(geometry.square2d)
-  geometry.squareMesh.stride = 2
+      lastReplaceLength = replacement.length
+    }
 
-  return buildGeometry.geometry = geometry
+    this.stride = lastReplaceLength
+    this.length = 0
+    this.push(...result)
+    return this
+  }
+
+  interleave (callback, stride = this.stride) {
+    const result = []
+    let lastInsertLength = 0
+
+    for (let i = 0; i < this.length; i += stride) {
+      const prior = []
+
+      for (let j = 0; j < stride; j++) {
+        prior.push(this[i + j])
+      }
+
+      const insert = callback(prior)
+      result.push(...prior, ...insert)
+
+      lastInsertLength = insert.length
+    }
+
+    this.stride += lastInsertLength
+    this.length = 0
+    this.push(...result)
+    return this
+  }
+
+  invertTriangles () {
+    return this.replace(invertTriangle, 9)
+  }
+
+  sproutNormals () {
+    return this.replace(v => { // Compute and interleave normals
+      const n = triangleNormal3(v)
+      return [
+        v[0], v[1], v[2], ...n,
+        v[3], v[4], v[5], ...n,
+        v[6], v[7], v[8], ...n,
+      ]
+    }, 9)
+  }
 }
+
+// function buildGeometry () {
+//   if (buildGeometry.geometry) { return buildGeometry.geometry }
+const geometry = {}
+
+// Build geometry
+geometry.hexagon = [
+  -1,    0,
+  -0.5, -0.8660254,
+    0.5, -0.8660254,
+    1,    0,
+    0.5,  0.8660254,
+  -0.5,  0.8660254,
+]
+
+geometry.square2d = [
+  -1, -1,
+  1,  -1,
+  1,  1,
+  -1, 1,
+]
+
+geometry.texSquare = Mesh.from(geometry.square2d)
+geometry.texSquare.stride = 2
+geometry.texSquare.interleave(v => [(v[0] + 1) / 2, (v[1] + 1) / 2])
+geometry.texSquare.stride = 4
+
+geometry.flatQuad = new Mesh(
+  -1,  1,  1, //front
+  -1, -1,  1,
+    1, -1,  1,
+    1,  1,  1,
+)
+
+geometry.quadLoop = new Mesh(
+  -1,  1,  1, //front
+  -1, -1,  1,
+    1, -1,  1,
+    1,  1,  1,
+  -1,  1,  1
+)
+
+geometry.quadLoop.stride = 3
+
+geometry.triCube = extrudeLineStrip(geometry.quadLoop, 0, 0, 2.0)
+
+geometry.tesseract = wireframeTesseract()
+geometry.donutTesseract = openTesseract()
+geometry.normalTesseract = normalTesseract()
+
+geometry.triCube.replace(breakQuad, 12)
+geometry.triCube.push(
+  ...fanClose(geometry.quadLoop.slice(0, 12)).invertTriangles(),
+  ...transformMesh3(fanClose(geometry.quadLoop.slice(0, 12)),
+      translateMatrix(0,0,2)))
+
+// center the cube:
+geometry.triCube.replace(v => [v[0], v[1], v[2] - 2], 3)
+
+geometry.triCube.replace(v => { // Compute and interleave normals
+  const n = triangleNormal3(v)
+  return [
+    v[0], v[1], v[2], ...n,
+    v[3], v[4], v[5], ...n,
+    v[6], v[7], v[8], ...n,
+  ]
+}, 9)
+geometry.triCube.stride = 6
+
+geometry.squareMesh = Mesh.from(geometry.square2d)
+geometry.squareMesh.stride = 2
+
+//   return buildGeometry.geometry = geometry
+// }
 
 function flip3Quad (q) {
   return [
@@ -474,102 +572,4 @@ function breakQuad (q) {
     q[6], q[7], q[8],
     q[9], q[10], q[11]
   ]
-}
-
-class Mesh extends Array {
-  stride = 1
-
-  static from (...args) {
-    let rv = super.from(...args)
-    if (args[0].stride) { rv.stride = args[0].stride }
-    return rv
-  }
-
-  get blocks () {
-    return this.length / this.stride
-  }
-
-  get byteStride () {
-    return this.stride * Float32Array.BYTES_PER_ELEMENT
-  }
-
-  log (title = '') {
-    console.log(`  ` + title + ` ${this.length} elements / `
-      + `${this.stride} stride = `
-      + `${this.blocks} blocks`)
-
-    for (let i = 0; i < this.length; i += this.stride) {
-      let output =  `${i / this.stride})`.padEnd(5)
-        + '<'.padStart(5)
-      for (let j = 0; j < this.stride; j++) {
-        output += this[i+j].toFixed(2).padStart(7)
-                  + ( j < this.stride - 1
-                      ? ','
-                      : '' )
-      }
-      output += '  >'
-      console.log(output)
-    }
-  }
-
-  replace (callback, stride = this.stride) {
-    const result = []
-    let lastReplaceLength = 0
-
-    for (let i = 0; i < this.length; i += stride) {
-      const prior = []
-
-      for (let j = 0; j < stride; j++) {
-        prior.push(this[i + j])
-      }
-
-      const replacement = callback(prior)
-      result.push(...replacement)
-
-      lastReplaceLength = replacement.length
-    }
-
-    this.stride = lastReplaceLength
-    this.length = 0
-    this.push(...result)
-    return this
-  }
-
-  interleave (callback, stride = this.stride) {
-    const result = []
-    let lastInsertLength = 0
-
-    for (let i = 0; i < this.length; i += stride) {
-      const prior = []
-
-      for (let j = 0; j < stride; j++) {
-        prior.push(this[i + j])
-      }
-
-      const insert = callback(prior)
-      result.push(...prior, ...insert)
-
-      lastInsertLength = insert.length
-    }
-
-    this.stride += lastInsertLength
-    this.length = 0
-    this.push(...result)
-    return this
-  }
-
-  invertTriangles () {
-    return this.replace(invertTriangle, 9)
-  }
-
-  sproutNormals () {
-    return this.replace(v => { // Compute and interleave normals
-      const n = triangleNormal3(v)
-      return [
-        v[0], v[1], v[2], ...n,
-        v[3], v[4], v[5], ...n,
-        v[6], v[7], v[8], ...n,
-      ]
-    }, 9)
-  }
 }
