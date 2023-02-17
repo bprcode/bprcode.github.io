@@ -1,6 +1,7 @@
 'use strict';
 
 function buildGeometry () {
+  if (buildGeometry.geometry) { return buildGeometry.geometry }
   const geometry = {}
 
   // Build geometry
@@ -70,7 +71,7 @@ function buildGeometry () {
   geometry.squareMesh = Mesh.from(geometry.square2d)
   geometry.squareMesh.stride = 2
 
-  return geometry
+  return buildGeometry.geometry = geometry
 }
 
 function flip3Quad (q) {
