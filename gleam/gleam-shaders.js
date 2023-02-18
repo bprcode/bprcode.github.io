@@ -50,6 +50,95 @@ void main (void) {
 }
 `
 
+shaders.wFrag_ALTERNATE =
+/* glsl */`
+precision mediump float;
+varying float w;
+#define wMid ${(shaders.wOffset).toFixed(6)}
+#define wFar (wMid - 2.)
+#define wNear (wMid + 2.)
+
+void main (void) {
+  // Encode normalized w-component into alpha channel:
+  float a = clamp(w / wFar, 0., 1.);
+
+  // Use negatives since edge0 must be < edge1 per the spec:
+  float t = smoothstep(-wNear, -wFar, -w);
+
+  vec4 color =  mix(  vec4(0.05, 0.0, 0.5, a),
+                      vec4(0.4, 0.5, 0.9, a),
+                      clamp(t, 0., 1.));
+
+  color.r *= 2.5;
+  gl_FragColor = color;
+}
+`
+
+shaders.glassTestFrag_ALTERNATE =
+/* glsl */`
+precision mediump float;
+varying vec4 vNormal;
+varying vec4 vWorld4d;
+varying float w;
+
+#define wMid ${(shaders.wOffset).toFixed(6)}
+#define wFar (wMid - 2.)
+#define wNear (wMid + 2.)
+
+void main (void) {
+  // Encode normalized w-component into alpha channel:
+  float a = clamp(w / wFar, 0., 1.);
+
+  // Use negatives since edge0 must be < edge1 per the spec:
+  float t = smoothstep(-wNear, -wFar, -w);
+
+  vec4 color =  mix(  vec4(0.9, 0.0, 0.4, a),
+                      vec4(0.0, 1.0, 0.7, a),
+                      clamp(t, 0., 1.));
+
+  vec4 wLight1 = normalize(-vec4(1., 0., -1., 0.));
+  vec4 wLight2 = normalize(-vec4(0., 1., 0., 1.));
+  vec4 wLight3 = normalize(-vec4(0., 0., 0., 1.));
+  vec4 wLight4 = normalize(-vec4(0., 0., 1., 0.));
+  vec4 normal = normalize(vNormal);
+  float s1 = dot(normal, wLight1);
+  float s2 = dot(normal, wLight2);
+  float s3 = dot(normal, wLight3);
+  vec4 lightColor1 = vec4(0.333, 0., 0., 0.);
+  vec4 lightColor2 = vec4(0., 0.25, 0.5, 0.);
+  vec4 lightColor3 = vec4(0., 0.1, 0.4, 0.);
+  vec4 lightColor4 = vec4(0.05, 0.0, 0.2, 0.);
+  s1 = clamp(s1, 0., 1.);
+  s2 = clamp(s2, 0., 1.);
+  s3 = clamp(s3, 0., 1.);
+  color = s1 * lightColor1 + s2 * lightColor2 + s3 * lightColor3;
+  color.a = a;
+
+  // debug -- specular testing:
+  vec4 viewDirection = normalize(vWorld4d);
+  vec4 reflected = reflect(viewDirection, normal);
+  float specular1 = clamp(
+    abs(dot(reflected, wLight1)),
+    0., 1.);
+  float specular2 = clamp(
+    abs(dot(reflected, wLight2)),
+    0., 1.);
+  float specular3 = clamp(
+    abs(dot(reflected, wLight3)),
+    0., 1.);
+  float specular4 = clamp(
+    abs(dot(reflected, wLight4)),
+    0., 1.);
+
+  vec4 shine =
+    pow(specular1, 26.) * (lightColor1 * 3. + vec4(0.3))
+    + pow(specular2, 26.) * (lightColor2 * 3. + vec4(0.3))
+    + pow(specular3, 26.) * (lightColor1 * 3. + vec4(0.3)) // using 1
+    + pow(specular4, 80.) * (lightColor4 * 7. + vec4(0.3));
+  gl_FragColor = shine + vec4(1., 0.3, 0., 0.) * pow(a, 4.)/10.;
+}
+`
+
 shaders.glassTestFrag =
 /* glsl */`
 precision mediump float;
@@ -73,11 +162,19 @@ void main (void) {
 
   vec4 wLight = normalize(-vec4(1., 0., -1., 0.));
   vec4 wLight2 = normalize(-vec4(0., 1., 0., 1.));
+  vec4 wLight3 = normalize(-vec4(0., 0., 0., 1.));
   float s = dot(normalize(vNormal), wLight);
   float s2 = dot(normalize(vNormal), wLight2);
-  color.r = clamp(s/3., 0., 1.);
-  color.g = clamp(s2/4., 0., 1.);
-  color.b = clamp(s2/2., 0., 1.);
+  float s3 = dot(normalize(vNormal), wLight3);
+  vec4 lightColor = vec4(0.333, 0., 0., 0.);
+  vec4 lightColor2 = vec4(0., 0.25, 0.5, 0.);
+  vec4 lightColor3 = vec4(0., 0.1, 0.4, 0.);
+  s = clamp(s, 0., 1.);
+  s2 = clamp(s2, 0., 1.);
+  s3 = clamp(s3, 0., 1.);
+  color = s * lightColor + s2 * lightColor2 + s3 * lightColor3;
+  color.a = a;
+
   gl_FragColor = color;
 }
 `
@@ -340,6 +437,56 @@ void main (void) {
   v.w = 1.;
 
   gl_Position = projection * M3 * v;
+}
+`
+
+shaders.normals4dVert_ALTERNATE = 
+/* glsl */ `
+precision mediump float;
+
+attribute vec4 pos;
+attribute vec4 normal;
+varying vec4 vNormal;
+varying vec4 vWorld4d;
+varying float w;
+
+uniform mat4 M4;
+uniform mat4 M3;
+uniform mat4 projection;
+
+void main (void) {
+  const float wOffset = ${(shaders.wOffset).toFixed(6)};
+  const float wNear = 1.0;
+  vec4 p = pos;
+
+  // To transform the normals (without using inverse transpose):
+  // Apply M4 (assumed to contain just rotations or uniform scaling)
+  // Apply just the non-translational part of M3
+  // Restore the w-component
+  vec4 n = M4 * normal;
+  vec3 n3 = mat3(M3) * vec3(n);
+  vNormal = vec4(n3, n.w);
+
+  p = M4 * p;
+  p.w += wOffset;
+
+  w = p.w; // pass transformed w-value to fragment shader
+
+  vec3 unprojected = vec3(p); // Transformed x, y, z, sans projection.
+
+  float s = wNear / (-p.w);
+  mat4 P4to3 = mat4(
+    s,  0., 0., 0.,
+    0., s,  0., 0.,
+    0., 0., s,  0.,
+    0., 0., 0., 0.
+  );
+
+  p = P4to3 * p;
+  p.w = 1.;
+
+  vWorld4d = vec4(vec3(M3 * vec4(unprojected, 1.)), w);
+  gl_Position = projection * M3 * p;
 }
 `
 

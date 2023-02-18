@@ -40,8 +40,8 @@ painters.commonTesseractAnimation = function () {
   }
   
   if (state.checkboxes[1]) {
-    state.beta = this.dt / 230
-    state.gamma = this.dt / 170
+    state.beta = this.dt / 170
+    state.gamma = this.dt / 110
   }
 
   // After 4d projection

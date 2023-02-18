@@ -21,18 +21,18 @@
 <body>
   <div class="center-content">
     <header>
-      <h1>Render experiments</h1>
+      <h1>4d lighting experiments</h1>
       <hr>
     </header>
     <div class="views">
 
       <span class="view-title" id="first-title">
-        <div>First canvas</div>
+        <div>Diffuse illumination</div>
         <div class="view-label">Initializing WebGL...</div>
       </span>
 
       <span class="view-title" id="second-title">
-        <div>Second canvas</div>
+        <div>Pure specularity</div>
         <div class="view-label">Initializing WebGL...</div>
       </span>
         
@@ -158,8 +158,8 @@ input[type="range"] {
 
 canvas {
   box-shadow: 12px 12px 0px #2224;
-  width: min(400px, 80vw);
-  height: min(400px, 80vw);
+  width: min(400px, 95vw, 95vh);
+  height: min(400px, 95vw, 95vh);
   margin-top: -0.5rem;
   margin-left: auto;
   margin-right: auto;
@@ -196,8 +196,8 @@ canvas {
   }
 
   canvas {
-    width: min(500px, 65vh);
-    height: min(500px, 65vh);
+    width: min(600px, 75vh, 75vw);
+    height: min(600px, 75vh, 75vw);
     /* width: min(400px, 50vh, 45vw);
     height: min(400px, 50vh, 45vw); */
   }

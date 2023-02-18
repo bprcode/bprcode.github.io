@@ -30,6 +30,8 @@ function logError (message) {
 
 function initialize () {
 try {
+  // To enable static definition in VSCode, these objects have been
+  // exposed as globals in their respective files:
   // const shaders = buildShaders()
   // const geometry = buildGeometry()
   // const painters = buildPainters()
@@ -51,8 +53,12 @@ try {
       'webgl', { alpha: false, premultipliedAlpha: false, antialias: false })
   }
 
-  const gl2 = el('second-canvas').getContext(
-      'webgl', { alpha: false, premultipliedAlpha: false, antialias: false  })
+  let gl2 = el('second-canvas').getContext(
+      'webgl2', { alpha: false, premultipliedAlpha: false, antialias: false  })
+  if (!gl2) {
+    gl2 = el('main-canvas').getContext(
+      'webgl', { alpha: false, premultipliedAlpha: false, antialias: false })
+  }
 
   for (const [ctx, label] of [
     [gl, el('first-title').querySelector('.view-label')],
@@ -116,7 +122,7 @@ try {
   [
     {
       vertexShader: shaders.projector4dVert,
-      fragmentShader: shaders.greenFromWFrag,
+      fragmentShader: shaders.wFrag_ALTERNATE,
       mesh: geometry.donutTesseract,
       components: 4,
       init: painters.initClearTesseract,
@@ -137,8 +143,8 @@ try {
       draw: painters.drawTesseractCompositor
     },
     { // Draw diffuse light panes:
-      vertexShader: shaders.normals4dVert,
-      fragmentShader: shaders.glassTestFrag,
+      vertexShader: shaders.normals4dVert_ALTERNATE,
+      fragmentShader: shaders.glassTestFrag_ALTERNATE,
       mesh: geometry.normalTesseract,
       components: 4,
       init: painters.initGlassTesseract,
@@ -349,6 +355,12 @@ function initListeners () {
       ctx.viewport(0, 0, ctx.canvas.width, ctx.canvas.height)
       if (!s.keepAnimating) { requestAnimationFrame(s.draw) }
     }
+  })
+
+  window.addEventListener('deviceorientation', event => {
+    state.alpha = event.alpha
+    state.beta = event.beta
+    state.gamma = event.gamma
   })
 
   for (const [i,e] of
