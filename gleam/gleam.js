@@ -30,9 +30,11 @@ function logError (message) {
 
 function initialize () {
 try {
-  const shaders = buildShaders()
-  const geometry = buildGeometry()
-  const painters = buildPainters()
+  // These have been exposed as global objects to allow VSCode
+  // to parse the symbols before runtime.
+  // const shaders = buildShaders()
+  // const geometry = buildGeometry()
+  // const painters = buildPainters()
 
   initListeners()
 
@@ -54,7 +56,7 @@ try {
   let gl2 = el('second-canvas').getContext(
       'webgl2', { alpha: false, premultipliedAlpha: false, antialias: false  })
   if (!gl2) {
-    gl2 = el('main-canvas').getContext(
+    gl2 = el('second-canvas').getContext(
       'webgl', { alpha: false, premultipliedAlpha: false, antialias: false })
   }
 

@@ -98,8 +98,8 @@ class Mesh extends Array {
   }
 }
 
-function buildGeometry () {
-  if (buildGeometry.geometry) { return buildGeometry.geometry }
+// function buildGeometry () {
+//   if (buildGeometry.geometry) { return buildGeometry.geometry }
 const geometry = {}
 
 // Build geometry
@@ -169,8 +169,8 @@ geometry.triCube.stride = 6
 geometry.squareMesh = Mesh.from(geometry.square2d)
 geometry.squareMesh.stride = 2
 
-  return buildGeometry.geometry = geometry
-}
+//   return buildGeometry.geometry = geometry
+// }
 
 function flip3Quad (q) {
   return [

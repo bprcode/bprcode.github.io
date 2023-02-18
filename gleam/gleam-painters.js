@@ -1,9 +1,9 @@
 'use strict';
 
-function buildPainters () {
-  if (buildPainters.painters) { return buildPainters.painters }
+// function buildPainters () {
+//   if (buildPainters.painters) { return buildPainters.painters }
 const painters = {}
-const shaders = buildShaders()
+// const shaders = buildShaders()
 
 painters.commonCubeAnimation = function () {
   ident(this.M)
@@ -291,7 +291,7 @@ painters.initClearTesseract = function () {
       this.shared.fboAA = fboAA
 
   } else {
-    log('WebGL1 -- skipping MSAA initialization')
+    logError('✔ Bypassing MSAA.')
   }
   
   this.M3 = []
@@ -500,8 +500,8 @@ painters.drawTesseractCompositor = function () {
   gl.enable(gl.DEPTH_TEST)
 }
 
-  return buildPainters.painters = painters
-}
+//   return buildPainters.painters = painters
+// }
 
 /**
  * Allocate a blank WebGLTexture and initialize it with common parameters.

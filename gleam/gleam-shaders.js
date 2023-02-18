@@ -1,7 +1,7 @@
 'use strict';
 
-function buildShaders () {
-  if (buildShaders.shaders) { return buildShaders.shaders }
+// function buildShaders () {
+//   if (buildShaders.shaders) { return buildShaders.shaders }
 const shaders = {}
 shaders.blurKernelSize = 9
 
@@ -548,5 +548,5 @@ void main (void) {
 }
 `
 
-  return buildShaders.shaders = shaders
-}
+//   return buildShaders.shaders = shaders
+// }
