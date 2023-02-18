@@ -30,11 +30,9 @@ function logError (message) {
 
 function initialize () {
 try {
-  // To enable static definition in VSCode, these objects have been
-  // exposed as globals in their respective files:
-  // const shaders = buildShaders()
-  // const geometry = buildGeometry()
-  // const painters = buildPainters()
+  const shaders = buildShaders()
+  const geometry = buildGeometry()
+  const painters = buildPainters()
 
   initListeners()
 
