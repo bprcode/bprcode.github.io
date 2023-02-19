@@ -10,9 +10,10 @@ const state = {
   checkboxes: [],
   dx: 0,
   dy: 0,
-  alpha: 0, // device orientation angles
-  beta: 0,
-  gamma: 0,
+  // device orientation angles
+  alpha: 0, alphaIndex: 0, averageAlpha: 0, rollingAlpha: Array(200).fill(0),
+  beta: 0, betaIndex: 0, averageBeta: 0, rollingBeta: Array(200).fill(0),
+  gamma: 0, gammaIndex: 0, averageGamma: 0, rollingGamma: Array(200).fill(0),
   animation1: { keepAnimating: true },
   animation2: { keepAnimating: true }
 }
@@ -389,6 +390,34 @@ function initListeners () {
     state.alpha = event.alpha
     state.beta = event.beta
     state.gamma = event.gamma
+
+    // debug
+    const n = state.rollingAlpha.length
+    state.alphaIndex++
+    state.alphaIndex %= n
+    state.averageAlpha -= state.rollingAlpha[state.alphaIndex % n] / n
+    state.rollingAlpha[state.alphaIndex] = event.alpha
+    state.averageAlpha += event.alpha / n
+    
+    state.betaIndex++
+    state.betaIndex %= n
+    state.averageBeta -= state.rollingBeta[state.betaIndex % n] / n
+    state.rollingBeta[state.betaIndex] = event.beta
+    state.averageBeta += event.beta / n
+    
+    state.gammaIndex++
+    state.gammaIndex %= n
+    state.averageGamma -= state.rollingGamma[state.gammaIndex % n] / n
+    state.rollingGamma[state.gammaIndex] = event.gamma
+    state.averageGamma += event.gamma / n
+
+    el('angles').innerHTML =
+    `α: ${state.alpha.toFixed(2)}<br>`
+    +`α avg: ${state.averageAlpha.toFixed(2)}<br>`
+    +`β: ${state.beta.toFixed(2)}<br>`
+    +`β avg: ${state.averageBeta.toFixed(2)}<br>`
+    +`γ: ${state.gamma.toFixed(2)}<br>`
+    +`γ avg: ${state.averageGamma.toFixed(2)}`
   })
 
   for (const [i,e] of

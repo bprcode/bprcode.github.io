@@ -39,18 +39,20 @@ painters.commonTesseractAnimation = function () {
           this.M4)
   }
   
+  let beta = state.averageBeta
+  let gamma = state.averageGamma
   if (state.checkboxes[1]) {
-    state.beta = this.dt / 170
-    state.gamma = this.dt / 110
+    beta = this.dt / 170
+    gamma = this.dt / 110
   }
 
   // After 4d projection
   mult4(this.M3, scaleMatrix(2.0), this.M3)
   mult4(this.M3,
-        rotateYZ((90 - state.beta) * τ / 360),
+        rotateYZ((90 + beta) * τ / 360),
         this.M3)
   mult4(this.M3,
-        rotateXZ((180 - state.gamma) * τ / 360),
+        rotateXZ((180 - gamma) * τ / 360),
         this.M3)
   mult4(this.M3, translateMatrix(0, 0, -20), this.M3)
 }
