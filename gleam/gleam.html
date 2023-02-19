@@ -29,11 +29,13 @@
       <span class="view-title" id="first-title">
         <div>Diffuse illumination</div>
         <div class="view-label">Initializing WebGL...</div>
+        <div><span id="fps-1"></span> FPS</div>
       </span>
 
       <span class="view-title" id="second-title">
         <div>Pure specularity</div>
         <div class="view-label">Initializing WebGL...</div>
+        <div><span id="fps-2"></span> FPS</div>
       </span>
         
       <canvas width="50" height="50" id="main-canvas" style="background:#0f0;"></canvas>
@@ -151,9 +153,10 @@ input[type="range"] {
 }
 
 .center-content {
-  max-width: 820px;
+  max-width: 1020px;
   margin: 0px auto;
   font-size: 1.2rem;
+  overflow: hidden;
 }
 
 canvas {
@@ -168,7 +171,7 @@ canvas {
 .views {
   margin: 1.9rem auto;
   width: max-content;
-  max-width: 90vw;
+  max-width: 100%;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
@@ -196,8 +199,8 @@ canvas {
   }
 
   canvas {
-    width: min(500px, 45vw);
-    height: min(500px, 45vw);
+    width: min(500px, 42vw);
+    height: min(500px, 42vw);
     /* width: min(400px, 50vh, 45vw);
     height: min(400px, 50vh, 45vw); */
   }

@@ -77,6 +77,9 @@ try {
   }
 
   state.animation1.context = gl
+  state.animation1.showFPS = () => {
+    el('fps-1').textContent = state.animation1.lastFPS.toFixed(1)
+  }
   state.animation1.draw = glPipeline(gl,
     { animationState: state.animation1,
       nearPlane: 1,
@@ -115,6 +118,9 @@ try {
   ])
 
   state.animation2.context = gl2
+  state.animation2.showFPS = () => {
+    el('fps-2').textContent = state.animation2.lastFPS.toFixed(1)
+  }
   state.animation2.draw = glPipeline(gl2,
     { animationState: state.animation2,
       nearPlane: 1,
@@ -274,6 +280,7 @@ try {
   // Drawing function returned by glPipeline.
   // Draws each phase.
   function drawFrame (t) {
+    countFrame(t, shared.animationState)
     drawFrame.pauseTime ??= 0
     drawFrame.t0 ??= t
     if (drawFrame.pauseTime) {
@@ -316,6 +323,27 @@ try {
   }
   log(e)
 }
+}
+
+/**
+ * Track FPS, averaged about every second.
+ * If animationState.showFPS is defined, call it periodically.
+ * @param {*} time 
+ * @param {*} animationState 
+ */
+function countFrame (time, animationState) {
+  animationState.intervalStart ??= time
+  animationState.frameCount ??= 0
+
+  animationState.frameCount++
+  const dt = time - animationState.intervalStart
+
+  if (dt > 1000) {
+    animationState.lastFPS = 1000 * animationState.frameCount / dt
+    animationState.intervalStart = time
+    animationState.frameCount = 0
+    animationState.showFPS?.()
+  }
 }
 
 function compileShader (context, source, type) {
