@@ -262,8 +262,8 @@ try {
   function quatView () {
     // debug -- testing quaternions for 3d orientation
     // 0.5 to take half-size angles for quaternion rotations
-    const tw = 0.5 * τ * Math.sin(π/7 + this.dt / 6750)
-    const t = 0.5*this.dt * τ / 20000
+    const tw = 0.75 * τ * Math.sin(π/7 + this.dt / 6750)
+    const t = 0.5*this.dt * τ / 30000
     // N.B. must normalize the 3-vec separate of w-component
     const qL = Quaternion.from([
       -0.577350269*Math.sin(t),

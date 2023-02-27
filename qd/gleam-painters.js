@@ -50,13 +50,13 @@ painters.commonTesseractAnimation = function () {
   if (this.shared.applyView) { this.shared.applyView.call(this) }
 
   mult4(this.M3, scaleMatrix(2.0), this.M3)
-  // mult4(this.M3,
-  //       rotateYZ((90 + beta) * τ / 360),
-  //       this.M3)
-  // mult4(this.M3,
-  //       rotateXZ((180 - gamma) * τ / 360),
-  //       this.M3)
-  mult4(this.M3, translateMatrix(0, 0, -20), this.M3)
+  mult4(this.M3,
+        rotateYZ((90 + beta) * τ / 360),
+        this.M3)
+  mult4(this.M3,
+        rotateXZ((180 - gamma) * τ / 360),
+        this.M3)
+  mult4(this.M3, translateMatrix(0, 0, -14), this.M3)
 }
 
 painters.initBlurCompositor = function () {
