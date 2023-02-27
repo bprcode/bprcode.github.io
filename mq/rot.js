@@ -241,10 +241,19 @@ try {
   arb4[12] = 0; arb4[13] = 0; arb4[14] = 0; arb4[15] = 1;
 
   function quatView () {
+    this.t ??= 0
+    this.tLast ??= this.dt
+
+    if (!state.mousedown) {
+      this.t += this.dt - this.tLast
+    }
+    this.tLast = this.dt
+
     // debug -- testing quaternions for 3d orientation
     // 0.5 to take half-size angles for quaternion rotations
-    const tw = 0.5 * τ * Math.sin(π/4 + this.dt / 6750)
-    const t = 0.5*this.dt * τ / 20000
+    const tw = 0.5 * τ * Math.sin(π/4 + this.t / 6750)
+    const t = 0.5*this.t * τ / 20000
+
     // N.B. must normalize the 3-vec separate of w-component
     const qL = Quaternion.from([
       -0.577350269*Math.sin(t),
@@ -277,10 +286,18 @@ try {
   }
 
   function matrixView () {
+    this.t ??= 0
+    this.tLast ??= this.dt
+
+    if (!state.mousedown) {
+      this.t += this.dt - this.tLast
+    }
+    this.tLast = this.dt
+
     ident3(arbitrary)
     // E Rz Einv
     mult3(arbitrary, Einv, arbitrary)
-    mult3(arbitrary, Rz3(this.dt * τ / 20000), arbitrary)
+    mult3(arbitrary, Rz3(this.t * τ / 20000), arbitrary)
     mult3(arbitrary, E, arbitrary)
     arb4[0] = arbitrary[0]; arb4[1] = arbitrary[1]; arb4[2] = arbitrary[2];
     arb4[4] = arbitrary[3]; arb4[5] = arbitrary[4]; arb4[6] = arbitrary[5];
@@ -290,7 +307,7 @@ try {
 
     // Single 4D rotation for comparison
     mult4(this.M4,
-        rotateYW(τ * Math.sin(π/4 + this.dt / 6750)),
+        rotateYW(τ * Math.sin(π/4 + this.t / 6750)),
         this.M4)
 
     // Apply user input rotations
