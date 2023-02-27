@@ -295,7 +295,7 @@ painters.initClearTesseract = function () {
       this.shared.fboAA = fboAA
 
   } else {
-    logError('✔ Bypassing MSAA.')
+    // logError('✔ Bypassing MSAA.')
   }
   
   this.M3 = []
