@@ -344,14 +344,27 @@ function quatConjugate (q) {
 class Quaternion extends Array {
   static product (q, p) { return Quaternion.from(quatProduct(q,p)) }
 
-  static slerp (qi, qf, t) {
+  /**
+   * Perform spherical linear interpolation, assuming the input quaternions
+   * are normalized.
+   * @param {Quaternion} qi The initial (normalized) quaternion.
+   * @param {Quaternion} qf The final (normalized) quaternion.
+   * @param {Number} t The interpolation scalar.
+   * @returns {Quaternion} The interpolated result.
+   */
+  static slerpUnit (qi, qf, t) {
     let Ω = Math.acos(qi.inner(qf))
+    // Skip interpolation for out-of-range inputs:
+    if (Number.isNaN(Ω)) { return qf }
+
     if (Ω > π/2) {  // Since qf and -qf represent equivalent orientations,
-                  // take the shortest path.
+                    // take the shortest path.
       qf = qf.negative()
       Ω = Math.acos(qi.inner(qf))
+      // Check for very unlikely numerical imprecision error:
+      if (Number.isNaN(Ω)) { return qf }
     }
-    if (Math.abs(Ω) < 0.000001) { return qi }
+    if (Math.abs(Ω) < 0.000001) { return qf }
 
     const qt = new Quaternion
     const sinΩ = Math.sin(Ω)

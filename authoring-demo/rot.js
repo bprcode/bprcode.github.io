@@ -302,11 +302,11 @@ try {
         // Slerp between two model orientations:
         state.modelSnapT += (this.dt - this.tLast) / 2000 
         state.modelSnapT = Math.min(state.modelSnapT, 1)
-        state.modelL = Quaternion.slerp(
+        state.modelL = Quaternion.slerpUnit(
                         state.initialModelL,
                         state.finalModelL,
                         easeQuartic(state.modelSnapT))
-        state.modelR = Quaternion.slerp(
+        state.modelR = Quaternion.slerpUnit(
                         state.initialModelR,
                         state.finalModelR,
                         easeQuartic(state.modelSnapT))
@@ -316,11 +316,11 @@ try {
         // Drift back to a centered view:
         state.viewSnapT += (this.dt - this.tLast) / 2000
         state.viewSnapT = Math.min(state.viewSnapT, 1)
-        state.viewL = Quaternion.slerp(
+        state.viewL = Quaternion.slerpUnit(
                         state.releasedViewL,
                         Quaternion.from([0,0,0,1]),
                         state.viewSnapT)
-        state.viewR = Quaternion.slerp(
+        state.viewR = Quaternion.slerpUnit(
                         state.releasedViewR,
                         Quaternion.from([0,0,0,1]),
                         state.viewSnapT)
