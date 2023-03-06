@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="icon" href="favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Voltaire&display=swap"
+    rel="stylesheet">
+
+  <title></title>
+</head>
+
+<body>
+  
+  <div class="ambient-bg"></div>
+  <div class="center-content">
+  <div class="visualizers">
+  <table class="qtable">
+    <thead>
+      <tr>
+        <th id="table-head" colspan="5"></th>
+      </tr>
+      <tr>
+        <th>q</th>
+        <th>i</th>
+        <th>j</th>
+        <th>k</th>
+        <th>w</th>
+      </tr>
+    </thead>
+    <tr id="tright">
+      <th scope="row">right</th>
+      <td class="vi">1</td>
+      <td class="vj">2</td>
+      <td class="vk">3</td>
+      <td class="vw">4</td>
+    </tr>
+    <tr id="tup">
+      <th scope="row">up</th>
+      <td class="vi">5</td>
+      <td class="vj">6</td>
+      <td class="vk">7</td>
+      <td class="vw">8</td>
+    </tr>
+    <tr id="tout">
+      <th scope="row">out</th>
+      <td class="vi">9</td>
+      <td class="vj">10</td>
+      <td class="vk">11</td>
+      <td class="vw">12</td>
+    </tr>
+    <tr id="taway">
+      <th scope="row">away</th>
+      <td class="vi">13</td>
+      <td class="vj">14</td>
+      <td class="vk">15</td>
+      <td class="vw">16</td>
+    </tr>
+    <tr id="tskew">
+      <th scope="row">skew</th>
+      <td class="vi">13</td>
+      <td class="vj">14</td>
+      <td class="vk">15</td>
+      <td class="vw">16</td>
+    </tr>
+  </table>
+  <span id="s-1">
+    <canvas id="canvas-1" width="100" height="100"></canvas>
+  </span>
+  <span id="s-2">
+    <canvas id="canvas-2" width="100" height="100"></canvas>
+  </span>
+  </div>
+
+  </div>
+</body>
+</html>
+<style>
+body {
+  background-color: #111;
+  color: #eee;
+  display: grid;
+  place-items: center;
+}
+
+canvas {
+  position: relative;
+  margin: 20px;
+  width: 200px;
+  height: 200px;
+  box-shadow: 10px 10px 0px #0004;
+}
+
+#s-1 {
+  position: relative;
+}
+
+#s-1::before {
+  left: 100px;
+  top: 20px;
+  content: 'j';
+  z-index: 2;
+  color: #111;
+  position: absolute;
+}
+
+#s-1::after {
+  left: 200px;
+  top: 130px;
+  content: 'i';
+  z-index: 2;
+  color: #111;
+  position: absolute;
+}
+
+#s-2 {
+  position: relative;
+}
+
+#s-2::before {
+  left: 100px;
+  top: 20px;
+  content: 'w';
+  z-index: 2;
+  color: #111;
+  position: absolute;
+}
+
+#s-2::after {
+  left: 200px;
+  top: 130px;
+  content: 'k';
+  z-index: 2;
+  color: #111;
+  position: absolute;
+}
+
+.visualizers {
+  position: relative;
+  margin-top: 5em;
+  display: flex;
+  flex-direction: row;
+}
+
+.qtable {
+  margin: 20px;
+  font-family: 'Courier New', Courier, monospace;
+  height: 200px;
+  background-color: #114;
+}
+
+.qtable tr:nth-child(1) {
+  background-color: #611;
+}
+.qtable tr:nth-child(2) {
+  background-color: #141;
+}
+.qtable tr:nth-child(3) {
+  background-color: #117;
+}
+.qtable tr:nth-child(4) {
+  background-color: #516;
+}
+.qtable tr:nth-child(5) {
+  background-color: #111;
+}
+
+.qtable th {
+  width: 4em;
+}
+
+.qtable td {
+  width: 4em;
+  text-align: center;
+}
+
+thead tr th {
+  background-color: #555;
+}
+
+</style>
+<script src="./sundry-matrix.js"></script>
+<!-- just for show() -->
+<script src="./gleam-painters.js"></script>
+<script>
+const log = console.log.bind(console)
+
+function show3x3 (M, label) {
+  const F = M.map(e => e.toFixed(2).padStart(7))
+  if (label) {console.log(label)}
+  console.log(F[0], F[3], F[6])
+  console.log(F[1], F[4], F[7])
+  console.log(F[2], F[5], F[8])
+}
+
+function qshow (q, tr) {
+  for ([i,e] of Object.entries(tr.querySelectorAll('td'))) {
+    e.textContent =
+      String(q[i].toFixed(2))
+      .replace('0.00', '0')
+      .replace('0.', '.')
+      .replace('1.00', '1')
+      .padStart(3)
+  }
+}
+
+function qsee (q, label) {
+  const vcol = 'color:#fd0'
+  const kcol = 'color:#0a8'
+  console.log(`${String(label || '').padEnd(10)}`
+    + `%c${fix(q[0])}%ci + `
+    + `%c${fix(q[1])}%cj + `
+    + `%c${fix(q[2])}%ck + `
+    + `%c${fix(q[3])}`,
+    vcol, kcol,
+    vcol, kcol,
+    vcol, kcol,
+    vcol
+  )
+
+  function fix (v) {
+    return String(v.toFixed(1))
+      .replace('0.', '.').replace('1.0', '1').padStart(3)
+  }
+}
+
+function extract3x3 (M) {
+  return [
+    M[0], M[1], M[2],
+    M[4], M[5], M[6],
+    M[8], M[9], M[10]
+  ]
+}
+
+const A = [
+  3,2,0,
+  0,0,1,
+  2,-2,1
+]
+
+const T1 = [
+  -22, 0.5, 7,
+  13, 123, 709,
+  442, -8, 19
+]
+
+const T2 = [
+  4,13,57,
+  -3,647,65536,
+  -22,0.01,2
+]
+
+const X = [
+  1,0,0,
+  0,1,0,
+  0,0,1
+]
+
+// goal: recover Rx, Ry
+const E = [
+  0.7071067811865476, 0.7071067811865476,
+  0.7071067811865476, -0.7071067811865476,
+  1,0,0
+]
+
+const Rz4 = rotateXY(Math.PI/4)
+const Rx4 = rotateYZ(-35.26438968275*Math.PI/180)
+const Ry4 = rotateXZ(45*Math.PI/180)
+const Rz3 = extract3x3(Rz4)
+const Rx3 = extract3x3(Rx4)
+const Ry3 = extract3x3(Ry4)
+
+
+const M = [1,0,0,0,1,0,0,0,1]
+mult3(M, inverse3x3(E), M)  // get e0e1e2 from xyz
+mult3(M, Rz3, M)  // rotate in e0e1 plane
+mult3(M, E, M)  // retrieve xyz from e0e1e2
+
+// mult3vec(v, M, v)
+// mult3vec(u, M, u)
+// mult3vec(p, M, p)
+// log('v\': ', v) // expecting -e1
+// log('u\': ', u) // expecting -e1+e2
+// log('p\': ', p) // 
+
+const sin = Math.sin
+const cos = Math.cos
+const t0 = Date.now()
+
+const right = Quaternion.from([1,0,0,0])
+const up =    Quaternion.from([0,1,0,0])
+const out =   Quaternion.from([0,0,1,0])
+const away =  Quaternion.from([0,0,0,1])
+const skew =  Quaternion.from([.1,.2,.3,.4])
+
+Quaternion.from(skew).log('skew')
+Quaternion.from(skew).conjugate().log('skew conjugated')
+
+const ctx1 = document.getElementById('canvas-1').getContext('2d')
+const ctx2 = document.getElementById('canvas-2').getContext('2d')
+
+function drawGrid () {
+  for (const ctx of [ctx1, ctx2]) {
+    ctx.strokeStyle = `rgb(160,160,160)`
+    ctx.fillStyle = `rgb(230,230,230)`
+    ctx.fillRect(0,0,100,100)
+    ctx.beginPath()
+    ctx.moveTo(0,50)
+    ctx.lineTo(100,50)
+    ctx.moveTo(50,0)
+    ctx.lineTo(50,100)
+    ctx.stroke()
+  }
+}
+
+function drawQuat (q) {
+  ctx1.beginPath()
+  ctx1.moveTo(50,50)
+  ctx1.lineTo(50 + 50*q[0], 50 - 50*q[1])
+  ctx1.stroke()
+
+  ctx2.beginPath()
+  ctx2.moveTo(50,50)
+  ctx2.lineTo(50 + 50*q[2], 50 - 50*q[3])
+  ctx2.stroke()
+}
+
+drawGrid()
+
+// qsee(right, 'right')
+// qsee(up, 'up')
+// qsee(out, 'out')
+// qsee(away, 'away')
+console.log('dot: ', right.inner(right))
+console.log('dot: ', right.inner(up))
+const left = Quaternion.from([-1, 0, 0, 0])
+console.log('geodesic/2, up: ', right.geodesicDistance(up)/2)
+Quaternion.slerp(right, left, 0).log('slerp test 0')
+Quaternion.slerp(right, left, 0.25).log('slerp test 0.25')
+Quaternion.slerp(right, left, 0.5).log('slerp test 0.5')
+Quaternion.slerp(right, left, 1.0).log('slerp test 1.0')
+
+function normalize (a, b, c, d) {
+  const h = Math.hypot(a,b,c,d)
+  return [a/h, b/h, c/h, d/h]
+}
+
+setInterval(() => {
+  const dt = (Date.now() - t0)/1000
+  const Θ = dt/3 * Math.PI / 2
+  document.getElementById('table-head').textContent = 'Θ = ' + 
+    ((Θ * 180 / Math.PI)%360).toFixed(2) + '°'
+
+  const q0 = Quaternion.from([1, 1, 0, 0]).normalize()
+  const q1 = Quaternion.from([0, 0, 1, 1]).normalize()
+  const α = Math.acos(q0.inner(q0))
+  const qs = Quaternion.slerp(q0, q1, (1+Math.sin(Θ))/2)
+
+  qshow(q0, document.getElementById('tright'))
+  qshow(q1, document.getElementById('tup'))
+  qshow(q0, document.getElementById('tout'))
+
+  drawGrid()
+  ctx1.strokeStyle = 'rgb(220,0,0)'
+  ctx2.strokeStyle = 'rgb(220,0,0)'
+  drawQuat(q0)
+  ctx1.strokeStyle = 'rgb(0,190,0)'
+  ctx2.strokeStyle = 'rgb(0,190,0)'
+  drawQuat(q1)
+  ctx1.strokeStyle = 'rgb(0,0,220)'
+  ctx2.strokeStyle = 'rgb(0,0,220)'
+  drawQuat(qs)
+}, 100)
+
+// setInterval(() => {
+
+//   const dt = (Date.now() - t0)/1000
+//   const Θ = dt/3 * Math.PI / 2
+//   document.getElementById('table-head').textContent = 'Θ = ' + 
+//     ((Θ * 180 / Math.PI)%360).toFixed(2) + '°'
+  
+//   const u = [1,1,0]
+//   const uMag = Math.hypot(...u)
+//   u[0] /= uMag; u[1] /= uMag; u[2] /= uMag;
+//   u[0] *= sin(Θ); u[1] *= sin(Θ); u[2] *= sin(Θ);
+//   // const opL = normalize(u[0],u[1],u[2], cos(Θ))
+//   // const opR = normalize(-u[0],-u[1],-u[2], cos(Θ))
+
+//   const qL = new Quaternion
+//   const qR = new Quaternion
+
+//   const spinKL = Quaternion.from([0, 0, sin(Θ), cos(Θ)])
+//   const spinKR = Quaternion.from([0, 0, -sin(Θ), cos(Θ)])
+//   // qL.premultiply( [sin(Θ), 0, 0, cos(Θ)]).normalize()
+//   // qR.postmultiply([-sin(Θ), 0, 0, cos(Θ)]).normalize()
+
+//   // qL.premultiply([sin(π/7), 0, 0, cos(π/7)])
+//   // qR.postmultiply([-sin(π/7), 0, 0, cos(π/7)])
+
+//   // Transform the spinKL, spinKR operator pair to local space
+//   spinKL.apply(qL, qL.conjugate())
+//   spinKR.apply(qR.conjugate(), qR)
+
+//   // Concatenate the transformed operator
+//   qL.premultiply(spinKL).normalize()
+//   qR.postmultiply(spinKR).normalize()
+
+//   const r2 = Quaternion.from(right) .apply(qL, qR)
+//   const u2 = Quaternion.from(up)    .apply(qL, qR)
+//   const o2 = Quaternion.from(out)   .apply(qL, qR)
+//   const a2 = Quaternion.from(away)  .apply(qL, qR)
+//   const s2 = Quaternion.from(skew)  .apply(qL, qR)
+
+//   qshow(r2, document.getElementById('tright'))
+//   qshow(u2, document.getElementById('tup'))
+//   qshow(o2, document.getElementById('tout'))
+//   qshow(a2, document.getElementById('taway'))
+//   qshow(s2, document.getElementById('tskew'))
+
+//   drawGrid()
+//   ctx1.strokeStyle = 'rgb(220,0,0)'
+//   ctx2.strokeStyle = 'rgb(220,0,0)'
+//   drawQuat(r2)
+//   ctx1.strokeStyle = 'rgb(0,190,0)'
+//   ctx2.strokeStyle = 'rgb(0,190,0)'
+//   drawQuat(u2)
+//   ctx1.strokeStyle = 'rgb(0,0,220)'
+//   ctx2.strokeStyle = 'rgb(0,0,220)'
+//   drawQuat(o2)
+//   ctx1.strokeStyle = 'rgb(180,0,220)'
+//   ctx2.strokeStyle = 'rgb(180,0,220)'
+//   drawQuat(a2)
+// }, 100)
+
+</script>

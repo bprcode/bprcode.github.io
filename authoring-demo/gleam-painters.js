@@ -56,7 +56,7 @@ painters.commonTesseractAnimation = function () {
   // mult4(this.M3,
   //       rotateXZ((180 - gamma) * τ / 360),
   //       this.M3)
-  mult4(this.M3, translateMatrix(0, 0, -14), this.M3)
+  mult4(this.M3, translateMatrix(0, 0, -20), this.M3)
 }
 
 painters.initBlurCompositor = function () {
@@ -295,7 +295,7 @@ painters.initClearTesseract = function () {
       this.shared.fboAA = fboAA
 
   } else {
-    // logError('✔ Bypassing MSAA.')
+    logError('✔ Bypassing MSAA.')
   }
   
   this.M3 = []
