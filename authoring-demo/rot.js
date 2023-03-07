@@ -682,7 +682,7 @@ function applyOrientationAnimations (dt) {
   el('current-r').textContent = state.modelR.toFixedString()
 }
 
-function takePositionSnapshot () {
+function takePositionSnapshot (source = state) {
   const snap = document.createElement('div')
   const img = document.createElement('img')
   const close = document.createElement('button')
@@ -690,21 +690,31 @@ function takePositionSnapshot () {
 
   // Create new snapshot element
   snap.classList.add('individual-snapshot')
+  snap.classList.add('position-snapshot')
   snap.classList.add('square-shadow')
-  snap.dataset.quatL = state.modelL.toString()
-  snap.dataset.quatR = state.modelR.toString()
+  snap.dataset.quatL = source.modelL.toString()
+  snap.dataset.quatR = source.modelR.toString()
   log(`Encoded left factor: ${snap.dataset.quatL}`)
   log(`Encoded right factor: ${snap.dataset.quatR}`)
-  log(state.modelL)
-  log(state.modelR)
 
   snap.addEventListener('click', handleSnapshotClick)
 
-  // Add snapshot image, request that it later be filled by renderer
-  img.width = 48
-  img.height = 48
-  snap.append(img)
-  state.animation2.requestScreenshot = copyScreenshot
+  if (source === state) {
+    // Add snapshot image, request that it later be filled by renderer
+    img.width = 48
+    img.height = 48
+    snap.append(img)
+    // Set a screenshot request callback:
+    state.animation2.requestScreenshot = copyScreenshot
+  } else {
+    // Skip the screenshot for loaded orientations; write generic label.
+    const count =
+      document.querySelector('.position-snapshots').children.length
+    const label = document.createElement('div')
+    label.textContent = count + 1
+    label.classList.add('generic-position-numeral')
+    snap.append(label)
+  }
 
   // Add a close button.
   close.classList.add('close-button')
@@ -737,7 +747,7 @@ function takePositionSnapshot () {
   }
 }
 
-function takeVelocitySnapshot () {
+function takeVelocitySnapshot (source = state) {
   const snap = document.createElement('div')
   const close = document.createElement('button')
   const canvas = document.createElement('canvas')
@@ -748,8 +758,9 @@ function takeVelocitySnapshot () {
 
   // Create new snapshot element
   snap.classList.add('individual-snapshot')
+  snap.classList.add('velocity-snapshot')
   snap.classList.add('square-shadow')
-  snap.dataset.velocityList = state.animationSpeeds.toString()
+  snap.dataset.velocityList = source.animationSpeeds.toString()
   log('Recording velocity state: ', snap.dataset.velocityList)
 
   snap.addEventListener('click', handleSnapshotClick)
@@ -768,7 +779,7 @@ function takeVelocitySnapshot () {
     { x: 0.500, y: 0.866, color: '#0f8'},//yw
     { x: 0.707, y: 0.707, color: '#88f'},//zw
   ]
-  for (const [i, vel] of Object.entries(state.animationSpeeds)) {
+  for (const [i, vel] of Object.entries(source.animationSpeeds)) {
     ctx.beginPath()
     if (Math.abs(vel) > 0.01) {
       ctx.strokeStyle = styles[i % 6].color
@@ -794,12 +805,78 @@ function takeVelocitySnapshot () {
 
   function handleSnapshotClick () {
     log('Loading velocity state:', snap.dataset.velocityList)
-    state.animationSpeeds =
+    const velocities =
       snap.dataset.velocityList.split(',').map(e => Number(e))
+
+    for (const [i,e] of
+      document.querySelectorAll('.animation-speeds input').entries()) {
+      
+      e.value = velocities[i]
+      e.dispatchEvent(new Event('input'))
+    }
   }
 
   function releaseSnap () {
     snap.remove()
+  }
+}
+
+function clearSnapshots () {
+  let s = document.querySelector('.individual-snapshot')
+  while (s) {
+    s.remove()
+    s = document.querySelector('.individual-snapshot')
+  }
+}
+
+function clearAnimationSliders () {
+  for (const [i,e] of
+    document.querySelectorAll('.animation-speeds input').entries()) {
+    
+    e.value = 0
+    e.dispatchEvent(new Event('input'))
+  }
+}
+
+function resetState () {
+  clearAnimationSliders()
+  el('target-orientation').checked = true
+  el('target-orientation').dispatchEvent(new Event('input'))
+  state.modelL = new Quaternion
+  state.modelR = new Quaternion
+}
+
+// Output a JSON string describing the currently snapshotted states.
+function outputPalette () {
+  const palette = {}
+
+  palette.orientations = []
+  document.querySelectorAll('.position-snapshot')
+    .forEach(s => palette.orientations.push({
+      L: s.dataset.quatL, 
+      R: s.dataset.quatR }))
+
+  palette.spins = []
+  document.querySelectorAll('.velocity-snapshot')
+    .forEach(s => palette.spins.push(
+      s.dataset.velocityList.split(',').map(e => Number(e))
+    ))
+
+  el('json-textarea').value = JSON.stringify(palette)
+}
+
+// Read values from the data textarea, load them into the current state.
+function loadPalette () {
+  const palette = JSON.parse(el('json-textarea').value)
+
+  clearSnapshots()
+
+  for (const e of palette.orientations) {
+    takePositionSnapshot({ modelL: e.L, modelR: e.R })
+  }
+
+  for (const v of palette.spins) {
+    takeVelocitySnapshot({ animationSpeeds: v })
   }
 }
 
@@ -817,16 +894,33 @@ function initListeners () {
     }
   })
 
-  el('snapshot-position-button').addEventListener('click', event => {
-    takePositionSnapshot()
+  el('reset-button')
+    .addEventListener('click', () => { resetState() })
+
+  el('output-button')
+    .addEventListener('click', () => { outputPalette() })
+
+  el('load-button')
+    .addEventListener('click', () => { loadPalette() })
+
+  el('snapshot-position-button')
+    .addEventListener('click', () => { takePositionSnapshot() })
+
+  el('snapshot-velocities-button')
+    .addEventListener('click', () => { takeVelocitySnapshot() })
+
+  el('snapshot-lighting-button')
+    .addEventListener('click', () => { takeLightingSnapshot() })
+
+  el('copy-text-button')
+    .addEventListener('click', () => {
+    const text = el('json-textarea').value
+    navigator.clipboard.writeText(text)
   })
 
-  el('snapshot-velocities-button').addEventListener('click', event => {
-    takeVelocitySnapshot()
-  })
-
-  el('snapshot-lighting-button').addEventListener('click', event => {
-    takeLightingSnapshot()
+  el('json-textarea')
+    .addEventListener('focus', event => {
+    event.target.select()
   })
 
   window.addEventListener('deviceorientation', event => {
@@ -848,14 +942,6 @@ function initListeners () {
     state.averageGamma -= state.rollingGamma[state.gammaIndex % n] / n
     state.rollingGamma[state.gammaIndex] = event.gamma
     state.averageGamma += event.gamma / n
-
-    // el('angles').innerHTML =
-    // `α: ${state.alpha.toFixed(2)}<br>`
-    // +`α avg: ${state.averageAlpha.toFixed(2)}<br>`
-    // +`β: ${state.beta.toFixed(2)}<br>`
-    // +`β avg: ${state.averageBeta.toFixed(2)}<br>`
-    // +`γ: ${state.gamma.toFixed(2)}<br>`
-    // +`γ avg: ${state.averageGamma.toFixed(2)}`
   })
 
   for (const [i,e] of
@@ -898,15 +984,6 @@ function initListeners () {
     })
   }
 
-  function clearAnimationSliders () {
-    for (const [i,e] of
-      document.querySelectorAll('.animation-speeds input').entries()) {
-      
-      e.value = 0
-      e.dispatchEvent(new Event('input'))
-    }
-  }
-
   el('angle-constraint').addEventListener('input', event => {
     state.constrainAngles = parseInt(el('angle-constraint').value)
     el('input-discrete').checked = true
@@ -931,11 +1008,7 @@ function initListeners () {
           log('switching to continuous. ', state.constrainAngles)
           break;
         case 'discrete':
-          clearAnimationSliders()
-          el('target-orientation').checked = true
-          el('target-orientation').dispatchEvent(new Event('input'))
-          state.modelL = new Quaternion
-          state.modelR = new Quaternion
+          resetState()
           state.constrainAngles = parseInt(el('angle-constraint').value)
           log('switching to discrete. ', state.constrainAngles)
           break;
