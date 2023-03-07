@@ -26,10 +26,22 @@
       
     </header>
     
-    <div class="timeline">
-      <div class="snapshots"></div>
-      <button id="snapshot-position-button" class="square-shadow">
+    <div class="position-container snap-container">
+      <div class="position-snapshots snap-entry-list"></div>
+      <button id="snapshot-position-button" class="snap-button square-shadow">
         <img src="./camera-fill.svg">
+      </button>
+    </div>
+    <div class="velocity-container snap-container">
+      <div class="velocity-states snap-entry-list"></div>
+      <button id="snapshot-velocities-button" class="snap-button square-shadow">
+        <img src="./speedometer.svg">
+      </button>
+    </div>
+    <div class="light-container snap-container">
+      <div class="light-arrangements snap-entry-list"></div>
+      <button id="snapshot-lighting-button" class="snap-button square-shadow">
+        <img src="./lightbulb.svg">
       </button>
     </div>
 
@@ -47,8 +59,8 @@
         <div id="current-r" style="white-space:pre;"></div>
       </span>
         
-      <canvas width="50" height="50" id="main-canvas" class="square-shadow" style="background:#0f0;"></canvas>
-      <canvas width="50" height="50" id="second-canvas" class="square-shadow" style="background:#ff0;"></canvas>
+      <canvas width="50" height="50" id="main-canvas" class="render-canvas square-shadow" style="background:#0f0;"></canvas>
+      <canvas width="50" height="50" id="second-canvas" class="render-canvas square-shadow" style="background:#ff0;"></canvas>
 
       <div class="sliders slide1">
         <label for="z-plane">
@@ -281,28 +293,39 @@ fieldset {
   box-shadow: 8px 8px 0px #0004;
 }
 
-.timeline {
+.snap-container {
   display: flex;
   align-items: center;
   overflow: hidden;
   width: 100%;
-  max-width: 800px;
-  height: 100px;
+  height: 80px;
   background-color: #0002;
   box-shadow: 8px 8px 0px #0002 inset;
 }
 
-.snapshots {
+.snap-button {
+  flex-shrink: 0;
+  width: 70px;
+  height: 70px;
+  margin-right: 10px;
+  margin-left: 10px;
+}
+
+.snap-button img {
+  width: 70%;
+  filter: opacity(50%);
+}
+
+.snap-entry-list {
   display: flex;
   flex-grow: 1;
   max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   height: 100%;
-  border: 1px dashed limegreen;
 }
 
-.position-snapshot {
+.individual-snapshot {
   position: relative;
   display: flex;
   justify-content: center;
@@ -310,13 +333,21 @@ fieldset {
   margin-top: 8px;
   padding: 0px;
   flex-shrink: 0;
-  width: 72px;
-  height: 80px;
+  width: 52px;
+  height: 60px;
   background-color: #ddd;
 }
 
-.position-snapshot img {
-  margin-top: 3px;
+.individual-snapshot img {
+  margin-top: 2px;
+}
+
+.individual-snapshot canvas {
+  position: absolute;
+  top: 4px;
+  width: 48px;
+  height: 48px;
+  background-color: #222;
 }
 
 .close-button {
@@ -325,22 +356,10 @@ fieldset {
   right: 0px;
   width: 1.2rem;
   height: 1.2rem;
+  z-index: 2;
   color: #eee;
   background-image: url('./x.svg');
   background-size: contain;
-}
-
-#snapshot-position-button {
-  flex-shrink: 0;
-  width: 80px;
-  height: 80px;
-  margin-right: 10px;
-  margin-left: 10px;
-}
-
-#snapshot-position-button img {
-  width: 70%;
-  filter: opacity(50%);
 }
 
 .rollers {
@@ -474,7 +493,7 @@ fieldset {
   width: 1.2rem;
   font-size: 1.0rem;
   border-radius: 5px;
-  background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%23eee%22%20class%3D%22bi%20bi-play-fill%22%20viewBox%3D%220%200%2016%2016%22%3E%0A%20%20%3Cpath%20d%3D%22m11.596%208.697-6.363%203.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01%201.233-.696l6.363%203.692a.802.802%200%200%201%200%201.393z%22%2F%3E%0A%3C%2Fsvg%3E'),
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23eee' class='bi bi-speedometer2' viewBox='0 0 16 16'%3E%3Cpath d='M8 4a.5.5 0 0 1 .5.5V6a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4zM3.732 5.732a.5.5 0 0 1 .707 0l.915.914a.5.5 0 1 1-.708.708l-.914-.915a.5.5 0 0 1 0-.707zM2 10a.5.5 0 0 1 .5-.5h1.586a.5.5 0 0 1 0 1H2.5A.5.5 0 0 1 2 10zm9.5 0a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 1 0 1H12a.5.5 0 0 1-.5-.5zm.754-4.246a.389.389 0 0 0-.527-.02L7.547 9.31a.91.91 0 1 0 1.302 1.258l3.434-4.297a.389.389 0 0 0-.029-.518z'/%3E%3Cpath fill-rule='evenodd' d='M0 10a8 8 0 1 1 15.547 2.661c-.442 1.253-1.845 1.602-2.932 1.25C11.309 13.488 9.475 13 8 13c-1.474 0-3.31.488-4.615.911-1.087.352-2.49.003-2.932-1.25A7.988 7.988 0 0 1 0 10zm8-7a7 7 0 0 0-6.603 9.329c.203.575.923.876 1.68.63C4.397 12.533 6.358 12 8 12s3.604.532 4.923.96c.757.245 1.477-.056 1.68-.631A7 7 0 0 0 8 3z'/%3E%3C/svg%3E"),
     linear-gradient(rgb(195, 29, 29),rgb(195, 29, 29));
   background-size: contain;
 }
@@ -537,13 +556,13 @@ fieldset {
 }
 
 .center-content {
-  max-width: 1020px;
+  width: min(80vw, 900px);
   margin: 0px auto;
   font-size: 1.2rem;
   overflow: hidden;
 }
 
-canvas {
+.render-canvas {
   touch-action: none;
   cursor: grab;
   width: min(400px, 90vw);
@@ -560,18 +579,18 @@ canvas {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
-    'title1'
-    'first'
+    'second'
     'slide1'
     'check1'
-    'title2'
-    'second'
     'slide2'
     'check2'
     'rollers'
     'radios'
     'speeds'
-    'info';
+    'title1'
+    'title2'
+    'info'
+    'first';
   grid-gap: 1.5rem;
 }
 
@@ -579,15 +598,15 @@ canvas {
   .views {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
-      'title1 title2'
-      'rollers second'
-      'speeds radios'
-      'check1 first'
-      'slide1 first'
-      'info info';
+    'rollers second'
+    'speeds radios'
+    'check1 first'
+    'slide1 first'
+    'info info'
+    'title1 title2';
   }
 
-  canvas {
+  .render-canvas {
     width: min(300px, 42vw);
     height: min(300px, 42vw);
     /* width: min(400px, 50vh, 45vw);

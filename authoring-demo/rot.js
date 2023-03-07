@@ -658,6 +658,11 @@ const animationQuats = [
   { L: Quaternion.from([0, 0, 1, 1]), R: Quaternion.from([0, 0, 1, 1]) },
 ]
 
+const rotationLabels = [
+  'xy', 'xz', 'yz', 'xw', 'yw', 'zw',
+  'XY', 'XZ', 'YZ', 'XW', 'YW', 'ZW',
+]
+
 function applyOrientationAnimations (dt) {
   for (const [i,s] of state.animationSpeeds.entries()) {
     if (Math.abs(s) < 0.000001) { continue }
@@ -684,7 +689,7 @@ function takePositionSnapshot () {
   const tempObject = {}
 
   // Create new snapshot element
-  snap.classList.add('position-snapshot')
+  snap.classList.add('individual-snapshot')
   snap.classList.add('square-shadow')
   snap.dataset.quatL = state.modelL.toString()
   snap.dataset.quatR = state.modelR.toString()
@@ -696,8 +701,8 @@ function takePositionSnapshot () {
   snap.addEventListener('click', handleSnapshotClick)
 
   // Add snapshot image, request that it later be filled by renderer
-  img.width = 64
-  img.height = 64
+  img.width = 48
+  img.height = 48
   snap.append(img)
   state.animation2.requestScreenshot = copyScreenshot
 
@@ -707,7 +712,7 @@ function takePositionSnapshot () {
   snap.append(close)
 
   // Append the completed snap element.
-  document.querySelector('.snapshots').append(snap)
+  document.querySelector('.position-snapshots').append(snap)
 
   function handleSnapshotClick () {
     // Initiate a slerp between the current and target model orientations:
@@ -716,8 +721,6 @@ function takePositionSnapshot () {
     state.finalModelL = Quaternion.parse(this.dataset.quatL)
     state.finalModelR = Quaternion.parse(this.dataset.quatR)
     state.modelSnapT = 0
-    // state.modelL = Quaternion.parse(this.dataset.quatL)
-    // state.modelR = Quaternion.parse(this.dataset.quatR)
   }
 
   function copyScreenshot () {
@@ -730,6 +733,72 @@ function takePositionSnapshot () {
   function releaseSnap () {
     URL.revokeObjectURL(tempObject.src)
     img.src = null
+    snap.remove()
+  }
+}
+
+function takeVelocitySnapshot () {
+  const snap = document.createElement('div')
+  const close = document.createElement('button')
+  const canvas = document.createElement('canvas')
+  const dimension = 48
+  canvas.width = dimension
+  canvas.height = dimension
+  const ctx = canvas.getContext('2d')
+
+  // Create new snapshot element
+  snap.classList.add('individual-snapshot')
+  snap.classList.add('square-shadow')
+  snap.dataset.velocityList = state.animationSpeeds.toString()
+  log('Recording velocity state: ', snap.dataset.velocityList)
+
+  snap.addEventListener('click', handleSnapshotClick)
+
+  // Add a close button.
+  close.classList.add('close-button')
+  close.addEventListener('click', releaseSnap)
+  snap.append(close)
+
+  // Draw velocity tracks.
+  const styles = [
+    { x: 0.707, y: 0.707, color: '#00f'},//xy
+    { x: 1.000, y: 0.000, color: '#f00'},//xz
+    { x: 0.000, y: 1.000, color: '#0f0'},//yz
+    { x: 0.866, y: 0.500, color: '#08f'},//xw
+    { x: 0.500, y: 0.866, color: '#0f8'},//yw
+    { x: 0.707, y: 0.707, color: '#88f'},//zw
+  ]
+  for (const [i, vel] of Object.entries(state.animationSpeeds)) {
+    ctx.beginPath()
+    if (Math.abs(vel) > 0.01) {
+      ctx.strokeStyle = styles[i % 6].color
+      if (i < 6) {
+        ctx.moveTo(dimension/2, dimension/2)
+        ctx.lineTo(dimension/2 + dimension/2 * styles[i%6].x * vel/0.5,
+                    dimension/2 + dimension/2 * styles[i%6].y * vel/0.5)
+      } else {
+        const r = dimension/4 * (0.5 + i%6/6)
+        ctx.moveTo(dimension/2 + styles[i%6] * r,
+                    dimension/2 + styles[i%6] * r)
+        ctx.arc(dimension/2, dimension/2, r,
+          Math.atan2(styles[i%6].y, styles[i%6].x),
+          Math.atan2(styles[i%6].y, styles[i%6].x) + π * vel/0.5)
+      }
+    }
+    ctx.stroke()
+  }
+  snap.append(canvas)
+
+  // Append the completed snap element.
+  document.querySelector('.velocity-states').append(snap)
+
+  function handleSnapshotClick () {
+    log('Loading velocity state:', snap.dataset.velocityList)
+    state.animationSpeeds =
+      snap.dataset.velocityList.split(',').map(e => Number(e))
+  }
+
+  function releaseSnap () {
     snap.remove()
   }
 }
@@ -750,6 +819,14 @@ function initListeners () {
 
   el('snapshot-position-button').addEventListener('click', event => {
     takePositionSnapshot()
+  })
+
+  el('snapshot-velocities-button').addEventListener('click', event => {
+    takeVelocitySnapshot()
+  })
+
+  el('snapshot-lighting-button').addEventListener('click', event => {
+    takeLightingSnapshot()
   })
 
   window.addEventListener('deviceorientation', event => {
