@@ -6,6 +6,11 @@ const state = {
   sliders: [],
   checkboxes: [],
   animationSpeeds: [],
+  // Lighting object storing color and direction of all current light sources:
+  lighting: new Lighting,
+  // Compositing variables queried by opacity function:
+  diffuseOpacity: 0,
+  specularOpacity: 0,
   // The animation slider to update when a roller changes an animation speed:
   correspondingAnimationSlider: null,
   // The property to affect when receiving roller input:
@@ -40,6 +45,9 @@ const state = {
   finalModelR: new Quaternion,
   modelSnapT: 1,
 
+  // Scene lighting state
+  
+
   // device orientation angles
   alphaIndex: 0, averageAlpha: 0, rollingAlpha: Array(20).fill(0),
   betaIndex: 0, averageBeta: 0, rollingBeta: Array(20).fill(0),
@@ -68,6 +76,8 @@ try {
   // const painters = buildPainters()
 
   initListeners()
+  el('json-textarea').value = localStorage.getItem('palette')
+  loadPalette()
 
   for (const c of [
     // el('main-canvas'),
@@ -196,7 +206,7 @@ try {
     },
     { // Draw diffuse light panes (with a little glow):
       vertexShader: shaders.quatNormalsWorldVert,
-      fragmentShader: shaders.glassDiffuseFrag_withWorld,
+      fragmentShader: shaders.membraneTest,
       opacityFunction: opacityYin,
       mesh: geometry.normalTesseract,
       components: 4,
@@ -251,12 +261,14 @@ try {
   }
 
   function opacityYin () {
-    return 0
+    return state.diffuseOpacity
+    // return 0
     // return diminish((1 - Math.sin(π/2 + τ * this.dt/10000)) ** 6)
   }
 
   function opacityYang () {
-    return 1
+    return state.specularOpacity
+    // return 1
     // return diminish((1 - Math.sin(3*π/2 + τ * this.dt/10000)) ** 6)
   }
 
@@ -327,75 +339,12 @@ try {
       }
     }
     this.tLast = this.dt
-
-    // debug -- testing quaternions for 3d orientation
-    // 0.5 to take half-size angles for quaternion rotations
-    const tw = 0*0.5 * τ * Math.sin(π/7 + this.t / 6750)
-    const t = 0*0.5*this.t * τ / 20000
-    // N.B. must normalize the 3-vec separate of w-component
-
-    const qL = Quaternion.from([
-      -0.577350269*Math.sin(t),
-      -0.577350269*Math.sin(t),
-      -0.577350269*Math.sin(t),Math.cos(t)])
-    const qR = Quaternion.from([
-      0.577350269*Math.sin(t),
-      0.577350269*Math.sin(t),
-      0.577350269*Math.sin(t),Math.cos(t)])
-
-    // const pitchAngle = state.spinners[0] * π / 180
-    // const yawAngle = state.spinners[1] * π / 180
-    // const rollAngle = state.spinners[2] * π / 180
-    // const xwAngle = state.spinners[3] * π / 180
-    // const ywAngle = state.spinners[4] * π / 180
-    // const zwAngle = state.spinners[5] * π / 180
-
-    // const qPitch = Quaternion.from(
-    //   [Math.sin(pitchAngle), 0, 0, Math.cos(pitchAngle)])
-    // const qYaw = Quaternion.from(
-    //   [0, Math.sin(yawAngle), 0, Math.cos(yawAngle)])
-    // const qRoll = Quaternion.from(
-    //   [0, 0, Math.sin(rollAngle), Math.cos(rollAngle)])
-
-    // const qXW = Quaternion.from(
-    //   [Math.sin(xwAngle), 0, 0, Math.cos(xwAngle)])
-    // const qYW = Quaternion.from(
-    //   [0, Math.sin(ywAngle), 0, Math.cos(ywAngle)])
-    // const qZW = Quaternion.from(
-    //   [0, 0, Math.sin(zwAngle), Math.cos(zwAngle)])
-
-    // // Insert inside the stack to perform before:
-    // qL.postmultiply(qPitch)
-    // qR.premultiply(qPitch.conjugate())
-
-    // qL.postmultiply(qYaw)
-    // qR.premultiply(qYaw.conjugate())
-
-    // qL.postmultiply(qRoll)
-    // qR.premultiply(qRoll.conjugate())
-
-    // // Note lack of conjugation for planes including W:
-    // qModL.postmultiply(qXW)
-    // qModR.premultiply(qXW)
-    // qModL.postmultiply(qYW)
-    // qModR.premultiply(qYW)
-    // qModL.postmultiply(qZW)
-    // qModR.premultiply(qZW)
-
-    // Insert outside the stack to make it the last transform:
-    qL.premultiply(state.viewL)
-    qR.postmultiply(state.viewR)
-    this.gl.uniform4fv(this.qViewL, qL)
-    this.gl.uniform4fv(this.qViewR, qR)
+      
+    this.gl.uniform4fv(this.qViewL, state.viewL)
+    this.gl.uniform4fv(this.qViewR, state.viewR)
 
     this.gl.uniform4fv(this.qModelL, state.modelL)
     this.gl.uniform4fv(this.qModelR, state.modelR)
-  //   this.gl.uniform4fv(this.qModelL, [
-  //     0,-Math.sin(tw),0,Math.cos(tw)
-  //   ])
-  //   this.gl.uniform4fv(this.qModelR, [
-  //     0,-Math.sin(tw),0,Math.cos(tw)
-  //   ])
   }
 
   function matrixView () {
@@ -649,6 +598,15 @@ function formatShaderError (error) {
   return html
 }
 
+function floatFromHex (hex) {
+  const composite = parseInt(hex, 16)
+  return {
+    r: (composite >> 16 & 0xff) / 0xff,
+    g: (composite >> 8 & 0xff) / 0xff,
+    b: (composite & 0xff) / 0xff
+  }
+}
+
 const animationQuats = [
   { L: Quaternion.from([0, 0, 1, 1]), R: Quaternion.from([0, 0, -1, 1]) },
   { L: Quaternion.from([0, 1, 0, 1]), R: Quaternion.from([0, -1, 0, 1]) },
@@ -724,6 +682,9 @@ function takePositionSnapshot (source = state) {
   // Append the completed snap element.
   document.querySelector('.position-snapshots').append(snap)
 
+  // Update the JSON data
+  outputPalette()
+
   function handleSnapshotClick () {
     // Initiate a slerp between the current and target model orientations:
     state.initialModelL = state.modelL
@@ -731,6 +692,15 @@ function takePositionSnapshot (source = state) {
     state.finalModelL = Quaternion.parse(this.dataset.quatL)
     state.finalModelR = Quaternion.parse(this.dataset.quatR)
     state.modelSnapT = 0
+
+    // Write palette, overwriting the "current" property with the
+    // intended final orientation:
+    outputPalette({
+      current: {
+        Lstring: state.finalModelL.toString(),
+        Rstring: state.finalModelR.toString()
+      }
+    })
   }
 
   function copyScreenshot () {
@@ -803,6 +773,9 @@ function takeVelocitySnapshot (source = state) {
   // Append the completed snap element.
   document.querySelector('.velocity-states').append(snap)
 
+  // Update the JSON data
+  outputPalette()
+
   function handleSnapshotClick () {
     log('Loading velocity state:', snap.dataset.velocityList)
     const velocities =
@@ -814,6 +787,8 @@ function takeVelocitySnapshot (source = state) {
       e.value = velocities[i]
       e.dispatchEvent(new Event('input'))
     }
+
+    outputPalette()
   }
 
   function releaseSnap () {
@@ -847,7 +822,7 @@ function resetState () {
 }
 
 // Output a JSON string describing the currently snapshotted states.
-function outputPalette () {
+function outputPalette (overwrite) {
   const palette = {}
 
   palette.orientations = []
@@ -862,21 +837,50 @@ function outputPalette () {
       s.dataset.velocityList.split(',').map(e => Number(e))
     ))
 
-  el('json-textarea').value = JSON.stringify(palette)
+  palette.current = {
+    Lstring: state.modelL.toString(),
+    Rstring: state.modelR.toString(),
+    velocity: state.animationSpeeds || Array(12).fill(0)
+  }
+  
+  Object.assign(palette.current, overwrite?.current)
+
+  const json = JSON.stringify(palette)
+  el('json-textarea').value = json
+  localStorage.setItem('palette', json)
 }
 
 // Read values from the data textarea, load them into the current state.
 function loadPalette () {
-  const palette = JSON.parse(el('json-textarea').value)
+  try {
+    const palette = JSON.parse(el('json-textarea').value)
 
-  clearSnapshots()
+    clearSnapshots()
 
-  for (const e of palette.orientations) {
-    takePositionSnapshot({ modelL: e.L, modelR: e.R })
-  }
+    for (const e of palette.orientations) {
+      takePositionSnapshot({ modelL: e.L, modelR: e.R })
+    }
 
-  for (const v of palette.spins) {
-    takeVelocitySnapshot({ animationSpeeds: v })
+    for (const v of palette.spins) {
+      takeVelocitySnapshot({ animationSpeeds: v })
+    }
+
+    state.modelL = Quaternion.parse(palette.current.Lstring)
+    state.modelR = Quaternion.parse(palette.current.Rstring)
+    state.animationSpeeds = palette.current.velocity
+
+    for (const [i,e] of
+      document.querySelectorAll('.animation-speeds input').entries()) {
+      
+      e.value = state.animationSpeeds[i]
+      e.dispatchEvent(new Event('input'))
+    }
+
+    // Writing the snapshots overwrote the palette string, so regenerate it:
+    outputPalette()
+
+  } catch (e) {
+    log('No initial palette available.')
   }
 }
 
@@ -896,9 +900,6 @@ function initListeners () {
 
   el('reset-button')
     .addEventListener('click', () => { resetState() })
-
-  el('output-button')
-    .addEventListener('click', () => { outputPalette() })
 
   el('load-button')
     .addEventListener('click', () => { loadPalette() })
@@ -944,6 +945,31 @@ function initListeners () {
     state.averageGamma += event.gamma / n
   })
 
+  const negativeColors = document.querySelectorAll('.light-negative')
+  for (const [i,e] of
+    document.querySelectorAll('.light-picker').entries()) {
+    
+    const positive = floatFromHex(e.value.replace('#', ''))
+    const negative = floatFromHex(negativeColors[i].value.replace('#', ''))
+    const signedColor = {
+      r: positive.r - negative.r,
+      g: positive.g - negative.g,
+      b: positive.b - negative.b
+    }
+    log(i, ') ', signedColor)
+
+    // Put the color in the right place:
+    if (i < 4) {
+      Object.assign(state.lighting.specularLights[i], signedColor)
+    } else if (i < 7) {
+      Object.assign(state.lighting.diffuseLights[i % 4], signedColor)
+    } else if (i === 8) {
+      Object.assign(state.lighting.glow, signedColor)
+    } else if (i === 9) {
+      Object.assign(state.lighting.membrane, signedColor)
+    }
+  }
+
   for (const [i,e] of
     document.querySelectorAll('.sliders input').entries()) {
 
@@ -984,6 +1010,18 @@ function initListeners () {
     })
   }
 
+  if (el('use-diffuse').checked) { state.diffuseOpacity = 1 }
+  el('use-diffuse').addEventListener('input', event => {
+    if (event.target.checked) { state.diffuseOpacity = 1 }
+    else { state.diffuseOpacity = 0 }
+  })
+
+  if (el('use-specular').checked) { state.specularOpacity = 1 }
+  el('use-specular').addEventListener('input', event => {
+    if (event.target.checked) { state.specularOpacity = 1 }
+    else { state.specularOpacity = 0 }
+  })
+
   el('angle-constraint').addEventListener('input', event => {
     state.constrainAngles = parseInt(el('angle-constraint').value)
     el('input-discrete').checked = true
@@ -999,19 +1037,21 @@ function initListeners () {
           state.rollerTarget = 'animation'
           el('input-continuous').checked = true
           el('input-continuous').dispatchEvent(new Event('input'))
-          break;
+          break
         case 'orientation':
           state.rollerTarget = 'orientation'
-          break;
+          break
         case 'continuous':
           state.constrainAngles = 0
           log('switching to continuous. ', state.constrainAngles)
-          break;
+          break
         case 'discrete':
           resetState()
           state.constrainAngles = parseInt(el('angle-constraint').value)
           log('switching to discrete. ', state.constrainAngles)
-          break;
+          break
+        default:
+          state.rollerTarget = v
       }
       if (state.rollerTarget === 'animation') {
         for (const e of document.querySelectorAll('.roller')) {

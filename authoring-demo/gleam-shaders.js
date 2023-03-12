@@ -178,6 +178,61 @@ void main (void) {
 }
 
 `
+shaders.membraneTest =
+/* glsl */`
+precision mediump float;
+varying vec4 vNormal;
+varying vec4 vWorld4d;
+varying float w;
+uniform float opacity;
+
+uniform vec3 membraneColor;
+
+#define wMid ${(shaders.wOffset).toFixed(6)}
+#define wFar (wMid - 2.)
+#define wNear (wMid + 2.)
+
+float diminish (float x) {
+  return -1. / (x + 1.) + 1.;
+}
+
+void main (void) {
+  // Encode normalized w-component into alpha channel:
+  float a = clamp(w / wFar, 0., 1.);
+
+  // Use negatives since edge0 must be < edge1 per the spec:
+  float t = smoothstep(-wNear, -wFar, -w);
+
+  vec4 color;
+  float dp = dot(normalize(vWorld4d), normalize(vNormal));
+  dp = abs(dp);
+  dp = clamp(dp, 0.000001, 1.);
+  float thickness = 0.05 / dp;
+  color = vec4(0., 0.2, 1., 0.) * thickness;
+  color.a = a;
+  gl_FragColor = color;
+
+  // vec4 wLight = normalize(-vec4(1., 0., -1., 0.));
+  // vec4 wLight2 = normalize(-vec4(0., 1., 0., 1.));
+  // vec4 wLight3 = normalize(-vec4(0., 0., 0., 1.));
+  // float s = dot(normalize(vNormal), wLight);
+  // float s2 = dot(normalize(vNormal), wLight2);
+  // float s3 = dot(normalize(vNormal), wLight3);
+  // vec4 lightColor = vec4(0.333, 0., 0., 0.);
+  // vec4 lightColor2 = vec4(0., 0.25, 0.5, 0.);
+  // vec4 lightColor3 = vec4(0., 0.1, 0.2, 0.);
+  // s = clamp(s, 0., 1.);
+  // s2 = clamp(s2, 0., 1.);
+  // s3 = clamp(s3, 0., 1.);
+  // color = s * lightColor + s2 * lightColor2 + s3 * lightColor3;
+  // color.a = a;
+
+  // gl_FragColor = opacity * (color
+  //   + vec4(-0.5, 0.1, 0.6, 0.) * 0.5
+  //   * pow(a, 3.));
+}
+`
+
 shaders.glassDiffuseFrag_withWorld =
 /* glsl */`
 precision mediump float;

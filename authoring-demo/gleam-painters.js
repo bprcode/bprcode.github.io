@@ -609,6 +609,38 @@ function verifyFramebuffer(gl) {
   }
 }
 
+class Lighting {
+  static Light = class {
+    x = 0
+    y = 0
+    z = 0
+    w = 0
+    r = 0
+    g = 0
+    b = 0
+  }
+
+  constructor () {
+    this.specularLights = [
+      new Lighting.Light,
+      new Lighting.Light,
+      new Lighting.Light,
+      new Lighting.Light
+    ]
+    
+    this.diffuseLights = [
+      new Lighting.Light,
+      new Lighting.Light,
+      new Lighting.Light,
+    ]
+
+    this.glow = new Lighting.Light
+    this.membrane = new Lighting.Light
+  }
+
+  
+}
+
 function show (m, tag = undefined) {
   show.set ??= new Set()
   if (tag && show.set.has(tag))
