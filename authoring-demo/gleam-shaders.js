@@ -82,6 +82,11 @@ varying vec4 vWorld4d;
 varying float w;
 uniform float opacity;
 
+uniform vec3 specularColor1;
+uniform vec3 specularColor2;
+uniform vec3 specularColor3;
+uniform vec3 specularColor4;
+
 #define wMid ${(shaders.wOffset).toFixed(6)}
 #define wFar (wMid - 2.)
 #define wNear (wMid + 2.)
@@ -105,14 +110,16 @@ void main (void) {
   float s1 = dot(normal, wLight1);
   float s2 = dot(normal, wLight2);
   float s3 = dot(normal, wLight3);
-  vec4 lightColor1 = vec4(0.333, 0., 0., 0.);
-  vec4 lightColor2 = vec4(0., 0.25, 0.5, 0.);
-  vec4 lightColor3 = vec4(0., 0.1, 0.4, 0.);
-  vec4 lightColor4 = vec4(0.05, 0.0, 0.2, 0.);
+  // vec4 lightColor1 = vec4(0.333, 0., 0., 0.);
+  // vec4 lightColor2 = vec4(0., 0.25, 0.5, 0.);
+  // vec4 lightColor3 = vec4(0., 0.1, 0.4, 0.);
+  // vec4 lightColor4 = vec4(0.05, 0.0, 0.2, 0.);
   s1 = clamp(s1, 0., 1.);
   s2 = clamp(s2, 0., 1.);
   s3 = clamp(s3, 0., 1.);
-  color = s1 * lightColor1 + s2 * lightColor2 + s3 * lightColor3;
+  color = vec4(
+    s1 * specularColor1 + s2 * specularColor2 + s3 * specularColor3,
+    0.);
   color.a = a;
 
   // debug -- specular testing:
@@ -132,10 +139,10 @@ void main (void) {
     0., 1.);
 
   vec4 shine =
-    pow(specular1, 26.) * (lightColor1 * 3. + vec4(0.3))
-    + pow(specular2, 26.) * (lightColor2 * 3. + vec4(0.3))
-    + pow(specular3, 26.) * (lightColor1 * 3. + vec4(0.3)) // using 1
-    + pow(specular4, 80.) * (lightColor4 * 7. + vec4(0.3));
+    pow(specular1, 26.) * (vec4(specularColor1,0.) * 3. + vec4(0.3))
+    + pow(specular2, 26.) * (vec4(specularColor2,0.) * 3. + vec4(0.3))
+    + pow(specular3, 26.) * (vec4(specularColor1,0.) * 3. + vec4(0.3)) // using 1
+    + pow(specular4, 80.) * (vec4(specularColor4,0.) * 7. + vec4(0.3));
   gl_FragColor = (shine + vec4(1., 0.3, 0., 0.) * pow(a, 4.)/10.) * opacity;
 }
 `
@@ -186,7 +193,11 @@ varying vec4 vWorld4d;
 varying float w;
 uniform float opacity;
 
+uniform vec3 glowColor;
 uniform vec3 membraneColor;
+uniform vec3 diffuseColor1;
+uniform vec3 diffuseColor2;
+uniform vec3 diffuseColor3;
 
 #define wMid ${(shaders.wOffset).toFixed(6)}
 #define wFar (wMid - 2.)
@@ -203,33 +214,38 @@ void main (void) {
   // Use negatives since edge0 must be < edge1 per the spec:
   float t = smoothstep(-wNear, -wFar, -w);
 
-  vec4 color;
+  // Calculate a color contribution based on path length
+  // through a supposed pane of semitranslucent material
   float dp = dot(normalize(vWorld4d), normalize(vNormal));
   dp = abs(dp);
   dp = clamp(dp, 0.000001, 1.);
   float thickness = 0.05 / dp;
-  color = vec4(0., 0.2, 1., 0.) * thickness;
-  color.a = a;
-  gl_FragColor = color;
+  vec3 membranePart = membraneColor * thickness;
 
-  // vec4 wLight = normalize(-vec4(1., 0., -1., 0.));
-  // vec4 wLight2 = normalize(-vec4(0., 1., 0., 1.));
-  // vec4 wLight3 = normalize(-vec4(0., 0., 0., 1.));
-  // float s = dot(normalize(vNormal), wLight);
-  // float s2 = dot(normalize(vNormal), wLight2);
-  // float s3 = dot(normalize(vNormal), wLight3);
-  // vec4 lightColor = vec4(0.333, 0., 0., 0.);
-  // vec4 lightColor2 = vec4(0., 0.25, 0.5, 0.);
-  // vec4 lightColor3 = vec4(0., 0.1, 0.2, 0.);
-  // s = clamp(s, 0., 1.);
-  // s2 = clamp(s2, 0., 1.);
-  // s3 = clamp(s3, 0., 1.);
+  // Diffuse light pane contributions:
+  vec4 wLightDir1 = normalize(-vec4(1., 0., -1., 0.));
+  vec4 wLightDir2 = normalize(-vec4(0., 1., 0., 1.));
+  vec4 wLightDir3 = normalize(-vec4(0., 0., 0., 1.));
+  float s1 = dot(normalize(vNormal), wLightDir1);
+  float s2 = dot(normalize(vNormal), wLightDir2);
+  float s3 = dot(normalize(vNormal), wLightDir3);
+  s1 = clamp(s1, 0., 1.);
+  s2 = clamp(s2, 0., 1.);
+  s3 = clamp(s3, 0., 1.);
   // color = s * lightColor + s2 * lightColor2 + s3 * lightColor3;
   // color.a = a;
 
   // gl_FragColor = opacity * (color
   //   + vec4(-0.5, 0.1, 0.6, 0.) * 0.5
   //   * pow(a, 3.));
+  gl_FragColor = vec4( opacity * vec3(
+    // Diffuse contribution:
+    s1 * diffuseColor1 + s2 * diffuseColor2 + s3 * diffuseColor3
+    // Depth glow contribution:
+    + glowColor * pow(a, 3.)
+    // Membrane contribution:
+    + membranePart),
+    a);
 }
 `
 

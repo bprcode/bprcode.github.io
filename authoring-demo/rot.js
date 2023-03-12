@@ -221,39 +221,7 @@ try {
       components: 4,
       init: painters.initGlassTesseract,
       draw: painters.drawGlassTesseract
-    },
-
-    // ~~~
-    /*{ // Glittery version is the following sequence of phases:
-      vertexShader: shaders.projector4dVert,
-      fragmentShader: shaders.wFrag_ALTERNATE,
-      mesh: geometry.donutTesseract,
-      components: 4,
-      init: painters.initClearTesseract,
-      draw: painters.drawDonutTesseract
-    },
-    { // post-process the output with iterated Gaussian blur:
-      vertexShader: shaders.textureVert,
-      fragmentShader: shaders.blur1dFrag,
-      mesh: geometry.texSquare,
-      init: painters.initBlur,
-      draw: painters.drawBlur
-    },
-    { // compose the blur (0) and clear (1) textures using depth (2).
-      vertexShader: shaders.textureVert,
-      fragmentShader: shaders.blurCompositorFrag,
-      mesh: geometry.texSquare,
-      init: painters.initTesseractCompositor,
-      draw: painters.drawTesseractCompositor
-    },
-    { // Draw diffuse light panes:
-      vertexShader: shaders.normals4dVert_ALTERNATE,
-      fragmentShader: shaders.glassTestFrag_ALTERNATE,
-      mesh: geometry.normalTesseract,
-      components: 4,
-      init: painters.initGlassTesseract,
-      draw: painters.drawGlassTesseract
-    },*/
+    }
   ])
 
   function diminish (x) {
@@ -945,29 +913,40 @@ function initListeners () {
     state.averageGamma += event.gamma / n
   })
 
+  // Color event handlers and initialization
   const negativeColors = document.querySelectorAll('.light-negative')
+  readColors()
+  function readColors () {
+    for (const [i,e] of
+      document.querySelectorAll('.light-picker').entries()) {
+      
+      const positive = floatFromHex(e.value.replace('#', ''))
+      const negative = floatFromHex(negativeColors[i].value.replace('#', ''))
+      const signedColor = [
+        positive.r - negative.r,
+        positive.g - negative.g,
+        positive.b - negative.b
+      ]
+      log(i, ') ', signedColor)
+
+      // Put the color in the right place:
+      if (i < 4) {
+        Object.assign(state.lighting.specularLights[i].rgb, signedColor)
+      } else if (i < 7) {
+        Object.assign(state.lighting.diffuseLights[i % 4].rgb, signedColor)
+      } else if (i === 7) {
+        Object.assign(state.lighting.glow.rgb, signedColor)
+      } else if (i === 8) {
+        Object.assign(state.lighting.membrane.rgb, signedColor)
+      }
+    }
+  }
+
   for (const [i,e] of
     document.querySelectorAll('.light-picker').entries()) {
-    
-    const positive = floatFromHex(e.value.replace('#', ''))
-    const negative = floatFromHex(negativeColors[i].value.replace('#', ''))
-    const signedColor = {
-      r: positive.r - negative.r,
-      g: positive.g - negative.g,
-      b: positive.b - negative.b
-    }
-    log(i, ') ', signedColor)
 
-    // Put the color in the right place:
-    if (i < 4) {
-      Object.assign(state.lighting.specularLights[i], signedColor)
-    } else if (i < 7) {
-      Object.assign(state.lighting.diffuseLights[i % 4], signedColor)
-    } else if (i === 8) {
-      Object.assign(state.lighting.glow, signedColor)
-    } else if (i === 9) {
-      Object.assign(state.lighting.membrane, signedColor)
-    }
+    e.addEventListener('input', readColors)
+    negativeColors[i].addEventListener('input', readColors)
   }
 
   for (const [i,e] of

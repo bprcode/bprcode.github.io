@@ -378,6 +378,17 @@ painters.initGlassTesseract = function () {
   this.qViewL = gl.getUniformLocation(this.program, 'qViewL')
   this.qViewR = gl.getUniformLocation(this.program, 'qViewR')
   this.opacity = gl.getUniformLocation(this.program, 'opacity')
+  this.glowColor = gl.getUniformLocation(this.program, 'glowColor')
+  this.membraneColor = gl.getUniformLocation(this.program, 'membraneColor')
+
+  this.diffuseColor1 = gl.getUniformLocation(this.program, 'diffuseColor1')
+  this.diffuseColor2 = gl.getUniformLocation(this.program, 'diffuseColor2')
+  this.diffuseColor3 = gl.getUniformLocation(this.program, 'diffuseColor3')
+
+  this.specularColor1 = gl.getUniformLocation(this.program, 'specularColor1')
+  this.specularColor2 = gl.getUniformLocation(this.program, 'specularColor2')
+  this.specularColor3 = gl.getUniformLocation(this.program, 'specularColor3')
+  this.specularColor4 = gl.getUniformLocation(this.program, 'specularColor4')
 
   gl.enableVertexAttribArray(this.normal)
   gl.vertexAttribPointer(this.normal, this.components, gl.FLOAT, false,
@@ -407,6 +418,16 @@ painters.drawGlassTesseract = function () {
   
   gl.uniformMatrix4fv(this.uM3, false, this.M3)
   gl.uniformMatrix4fv(this.uM4, false, this.M4)
+  gl.uniform3fv(this.glowColor, state.lighting.glow.rgb)
+  gl.uniform3fv(this.membraneColor, state.lighting.membrane.rgb)
+  gl.uniform3fv(this.diffuseColor1, state.lighting.diffuseLights[0].rgb)
+  gl.uniform3fv(this.diffuseColor2, state.lighting.diffuseLights[1].rgb)
+  gl.uniform3fv(this.diffuseColor3, state.lighting.diffuseLights[2].rgb)
+
+  gl.uniform3fv(this.specularColor1, state.lighting.specularLights[0].rgb)
+  gl.uniform3fv(this.specularColor2, state.lighting.specularLights[1].rgb)
+  gl.uniform3fv(this.specularColor3, state.lighting.specularLights[2].rgb)
+  gl.uniform3fv(this.specularColor4, state.lighting.specularLights[3].rgb)
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   gl.viewport(0, 0, this.shared.res, this.shared.res)
@@ -611,13 +632,8 @@ function verifyFramebuffer(gl) {
 
 class Lighting {
   static Light = class {
-    x = 0
-    y = 0
-    z = 0
-    w = 0
-    r = 0
-    g = 0
-    b = 0
+    xyzw = [0,0,0,0]
+    rgb = [0,0,0]
   }
 
   constructor () {
