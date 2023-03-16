@@ -8,9 +8,6 @@ const state = {
   animationSpeeds: [],
   // Lighting object storing color and direction of all current light sources:
   lighting: new Lighting,
-  // Compositing variables queried by opacity function:
-  diffuseOpacity: 0,
-  specularOpacity: 0,
   // The animation slider to update when a roller changes an animation speed:
   correspondingAnimationSlider: null,
   // The property to affect when receiving roller input:
@@ -75,12 +72,15 @@ try {
   // const geometry = buildGeometry()
   // const painters = buildPainters()
 
-  initListeners()
+  el('composition-list-textarea').value =
+    localStorage.getItem('compositions') || defaultCompositions
   el('json-textarea').value = localStorage.getItem('palette')
+  initListeners()
   loadPalette()
+  loadCompositions()
 
   for (const c of [
-    // el('main-canvas'),
+    el('main-canvas'),
     el('second-canvas')
   ]) {
     if (c) {
@@ -184,7 +184,7 @@ try {
   [
     {
       vertexShader: shaders.quatProjectorVert,
-      fragmentShader: shaders.wFrag_ALTERNATE,
+      fragmentShader: shaders.variableFrameFrag,
       mesh: geometry.donutTesseract,
       components: 4,
       init: painters.initClearTesseract,
@@ -229,13 +229,13 @@ try {
   }
 
   function opacityYin () {
-    return state.diffuseOpacity
+    return state.lighting.diffuseOpacity
     // return 0
     // return diminish((1 - Math.sin(π/2 + τ * this.dt/10000)) ** 6)
   }
 
   function opacityYang () {
-    return state.specularOpacity
+    return state.lighting.specularOpacity
     // return 1
     // return diminish((1 - Math.sin(3*π/2 + τ * this.dt/10000)) ** 6)
   }
@@ -276,34 +276,38 @@ try {
 
     if (!state.pointerdown) {
       this.t += this.dt - this.tLast
-      applyOrientationAnimations(this.dt - this.tLast)
+      if (this.shared.animationState.needUpdate) {
+        applyOrientationAnimations(this.dt - this.tLast)
 
-      if (state.modelSnapT < 1) {
-        // Slerp between two model orientations:
-        state.modelSnapT += (this.dt - this.tLast) / 2000 
-        state.modelSnapT = Math.min(state.modelSnapT, 1)
-        state.modelL = Quaternion.slerpUnit(
-                        state.initialModelL,
-                        state.finalModelL,
-                        easeQuartic(state.modelSnapT))
-        state.modelR = Quaternion.slerpUnit(
-                        state.initialModelR,
-                        state.finalModelR,
-                        easeQuartic(state.modelSnapT))
-      }
+        if (state.modelSnapT < 1) {
+          // Slerp between two model orientations:
+          state.modelSnapT += (this.dt - this.tLast) / 2000 
+          state.modelSnapT = Math.min(state.modelSnapT, 1)
+          state.modelL = Quaternion.slerpUnit(
+                          state.initialModelL,
+                          state.finalModelL,
+                          easeQuartic(state.modelSnapT))
+          state.modelR = Quaternion.slerpUnit(
+                          state.initialModelR,
+                          state.finalModelR,
+                          easeQuartic(state.modelSnapT))
+        }
 
-      if (state.viewSnapT < 1) {
-        // Drift back to a centered view:
-        state.viewSnapT += (this.dt - this.tLast) / 2000
-        state.viewSnapT = Math.min(state.viewSnapT, 1)
-        state.viewL = Quaternion.slerpUnit(
-                        state.releasedViewL,
-                        Quaternion.from([0,0,0,1]),
-                        state.viewSnapT)
-        state.viewR = Quaternion.slerpUnit(
-                        state.releasedViewR,
-                        Quaternion.from([0,0,0,1]),
-                        state.viewSnapT)
+        if (state.viewSnapT < 1) {
+          // Drift back to a centered view:
+          state.viewSnapT += (this.dt - this.tLast) / 2000
+          state.viewSnapT = Math.min(state.viewSnapT, 1)
+          state.viewL = Quaternion.slerpUnit(
+                          state.releasedViewL,
+                          Quaternion.from([0,0,0,1]),
+                          state.viewSnapT)
+          state.viewR = Quaternion.slerpUnit(
+                          state.releasedViewR,
+                          Quaternion.from([0,0,0,1]),
+                          state.viewSnapT)
+        }
+        
+        this.shared.animationState.needUpdate = false
       }
     }
     this.tLast = this.dt
@@ -497,6 +501,7 @@ try {
     }
 
     if (shared.animationState.keepAnimating) {
+      shared.animationState.needUpdate = true
       requestAnimationFrame(drawFrame)
     } else {
       drawFrame.pauseTime = t
@@ -575,6 +580,27 @@ function floatFromHex (hex) {
   }
 }
 
+function hexFromFloatRGB (floatRGB) {
+  const positiveRGB = [...floatRGB]
+  const negativeRGB = [...floatRGB]
+  for (let i = 0; i < 3; i++) {
+    if (positiveRGB[i] < 0) { positiveRGB[i] = 0 }
+    if (negativeRGB[i] > 0) { negativeRGB[i] = 0 }
+    negativeRGB[i] = Math.abs(negativeRGB[i])
+  }
+
+  return {
+    positive: '#' +
+      Math.round(positiveRGB[0] * 0xff).toString(16).padStart(2,'0')
+      + Math.round(positiveRGB[1] * 0xff).toString(16).padStart(2,'0')
+      + Math.round(positiveRGB[2] * 0xff).toString(16).padStart(2,'0'),
+    negative: '#' +
+      Math.round(negativeRGB[0] * 0xff).toString(16).padStart(2,'0')
+      + Math.round(negativeRGB[1] * 0xff).toString(16).padStart(2,'0')
+      + Math.round(negativeRGB[2] * 0xff).toString(16).padStart(2,'0')
+  }
+}
+
 const animationQuats = [
   { L: Quaternion.from([0, 0, 1, 1]), R: Quaternion.from([0, 0, -1, 1]) },
   { L: Quaternion.from([0, 1, 0, 1]), R: Quaternion.from([0, -1, 0, 1]) },
@@ -592,7 +618,7 @@ const rotationLabels = [
 function applyOrientationAnimations (dt) {
   for (const [i,s] of state.animationSpeeds.entries()) {
     if (Math.abs(s) < 0.000001) { continue }
-    const dΘ = 0.5 * dt * s * π / 1000
+    const dΘ = dt * s * π / 1000
 
     // The first six sliders control local rotations, the next are global.
     if (i < 6) {
@@ -608,6 +634,96 @@ function applyOrientationAnimations (dt) {
   el('current-r').textContent = state.modelR.toFixedString()
 }
 
+function syncPickers () {
+  const positives = document.querySelectorAll('.light-picker')
+  const negatives = document.querySelectorAll('.light-negative')
+
+  for (const [i, rgb] of [
+    state.lighting.specularLights[0].rgb,
+    state.lighting.specularLights[1].rgb,
+    state.lighting.specularLights[2].rgb,
+    state.lighting.specularLights[3].rgb,
+    state.lighting.diffuseLights[0].rgb,
+    state.lighting.diffuseLights[1].rgb,
+    state.lighting.diffuseLights[2].rgb,
+    state.lighting.glow.rgb,
+    state.lighting.membrane.rgb
+  ].entries())
+  {
+    const hexes = hexFromFloatRGB(rgb)
+    positives[i].value = hexes.positive
+    negatives[i].value = hexes.negative
+  }
+
+  el('near-frame-color').value =
+    hexFromFloatRGB(state.lighting.nearFrameColor).positive
+  el('far-frame-color').value =
+    hexFromFloatRGB(state.lighting.farFrameColor).positive
+}
+
+function takeLightingSnapshot (source = state) {
+  const snap = document.createElement('div')
+  const img = document.createElement('img')
+  const close = document.createElement('button')
+  const tempObject = {}
+
+  // Create new snapshot element
+  snap.classList.add('individual-snapshot')
+  snap.classList.add('lighting-snapshot')
+  snap.classList.add('square-shadow')
+  snap.dataset.lightData = JSON.stringify(source.lighting)
+
+  snap.addEventListener('click', handleLightingClick)
+
+  if (source === state) {
+    // Add snapshot image, request that it later be filled by renderer
+    img.width = 48
+    img.height = 48
+    snap.append(img)
+    // Set a screenshot request callback:
+    state.animation2.requestScreenshot = copyScreenshot
+  } else {
+    // Skip the screenshot for loaded arrangements; write generic label.
+    const count =
+      document.querySelector('.light-arrangements').children.length
+    const label = document.createElement('div')
+    label.textContent = count + 1
+    label.classList.add('generic-position-numeral')
+    snap.append(label)
+  }
+
+  // Add a close button.
+  close.classList.add('close-button')
+  close.addEventListener('click', releaseSnap)
+  snap.append(close)
+
+  // Append the completed snap element.
+  document.querySelector('.light-arrangements').append(snap)
+
+  // Update the JSON data
+  outputPalette()
+
+  function handleLightingClick () {
+    state.lighting = JSON.parse(this.dataset.lightData)
+    syncPickers()
+    outputPalette()
+  }
+
+  function copyScreenshot () {
+    this.context.canvas.toBlob(blob => {
+      tempObject.src = URL.createObjectURL(blob)
+      img.src = tempObject.src
+    })
+  }
+
+  function releaseSnap () {
+    URL.revokeObjectURL(tempObject.src)
+    img.src = null
+    tempObject.src = null
+    snap.remove()
+  }
+}
+
 function takePositionSnapshot (source = state) {
   const snap = document.createElement('div')
   const img = document.createElement('img')
@@ -620,8 +736,6 @@ function takePositionSnapshot (source = state) {
   snap.classList.add('square-shadow')
   snap.dataset.quatL = source.modelL.toString()
   snap.dataset.quatR = source.modelR.toString()
-  log(`Encoded left factor: ${snap.dataset.quatL}`)
-  log(`Encoded right factor: ${snap.dataset.quatR}`)
 
   snap.addEventListener('click', handleSnapshotClick)
 
@@ -681,6 +795,7 @@ function takePositionSnapshot (source = state) {
   function releaseSnap () {
     URL.revokeObjectURL(tempObject.src)
     img.src = null
+    tempObject.src = null
     snap.remove()
   }
 }
@@ -699,7 +814,6 @@ function takeVelocitySnapshot (source = state) {
   snap.classList.add('velocity-snapshot')
   snap.classList.add('square-shadow')
   snap.dataset.velocityList = source.animationSpeeds.toString()
-  log('Recording velocity state: ', snap.dataset.velocityList)
 
   snap.addEventListener('click', handleSnapshotClick)
 
@@ -805,10 +919,17 @@ function outputPalette (overwrite) {
       s.dataset.velocityList.split(',').map(e => Number(e))
     ))
 
+  palette.arrangements = []
+  document.querySelectorAll('.lighting-snapshot')
+    .forEach(s => palette.arrangements.push(
+      JSON.parse(s.dataset.lightData)
+    ))
+
   palette.current = {
     Lstring: state.modelL.toString(),
     Rstring: state.modelR.toString(),
-    velocity: state.animationSpeeds || Array(12).fill(0)
+    velocity: state.animationSpeeds || Array(12).fill(0),
+    lighting: state.lighting
   }
   
   Object.assign(palette.current, overwrite?.current)
@@ -816,6 +937,23 @@ function outputPalette (overwrite) {
   const json = JSON.stringify(palette)
   el('json-textarea').value = json
   localStorage.setItem('palette', json)
+}
+
+// Read compositions from their textarea, add them to the UI.
+function loadCompositions () {
+  const list = JSON.parse(el('composition-list-textarea').value)
+  // Drop the old list:
+  el('composition-list').textContent = ''
+  for (const e of list) {
+    const composition = JSON.parse(e.string)
+    // Revive the state object:
+    addComposition({
+      modelL: Quaternion.parse(composition.Lstring),
+      modelR: Quaternion.parse(composition.Rstring),
+      animationSpeeds: composition.velocity,
+      lighting: composition.lighting
+    }, e.name)
+  }
 }
 
 // Read values from the data textarea, load them into the current state.
@@ -833,9 +971,20 @@ function loadPalette () {
       takeVelocitySnapshot({ animationSpeeds: v })
     }
 
+    for (const a of palette.arrangements) {
+      takeLightingSnapshot({ lighting: a })
+    }
+
     state.modelL = Quaternion.parse(palette.current.Lstring)
     state.modelR = Quaternion.parse(palette.current.Rstring)
     state.animationSpeeds = palette.current.velocity
+    state.lighting = palette.current.lighting
+    syncPickers()
+
+    el('diffuse-opacity').value = state.lighting.diffuseOpacity
+    el('specular-opacity').value = state.lighting.speuclarOpacity
+    el('diffuse-opacity').dispatchEvent(new Event('input'))
+    el('specular-opacity').dispatchEvent(new Event('input'))
 
     for (const [i,e] of
       document.querySelectorAll('.animation-speeds input').entries()) {
@@ -850,6 +999,112 @@ function loadPalette () {
   } catch (e) {
     log('No initial palette available.')
   }
+}
+
+function generateName () {
+  const gems = [
+    'amethyst', 'jade', 'sapphire', 'pearl', 'amber', 'emerald', 'lapis',
+    'quartz', 'turquoise', 'opal', 'topaz', 'onyx', 'carnelian', 'agate',
+    'malachite', 'tourmaline', 'ruby', 'pyrite', 'citrine', 'peridot',
+    'jasper', 'fluorite', 'aventurine', 'zircon', 'nephrite', 'spinel',
+    'sunstone', 'beryl', 'kyanite', 'rhodochrosite', 'titanite',
+    'amber', 'coral'
+  ]
+
+  const birds = [
+    'passerine', 'sandpiper', 'crow', 'mallard', 'owl', 'cuckoo', 'rail',
+    'grebe', 'kingfisher', 'cormorant', 'stork', 'pelican', 'parrot',
+    'crane', 'seagull', 'sparrow', 'hummingbird', 'dove', 'avocet',
+    'thrush', 'albatross', 'shrike', 'raven', 'starling', 'wren', 'magpie',
+    'citril', 'oriole', 'puffin', 'crake', 'ibis', 'jay', 'condor',
+    'flamingo', 'robin', 'myna', 'canary', 'lark'
+  ]
+
+  return gems[Math.floor(Math.random() * gems.length)]
+    + ' ' + birds[Math.floor(Math.random() * birds.length)]
+}
+
+function outputCompositionText () {
+  const entries = document.querySelectorAll('.composition-entry')
+  const compositions = []
+
+  for (const c of entries) {
+    const name = c.dataset.catchyName
+    const string = c.dataset.compositionString
+    compositions.push({ name, string })
+  }
+
+  const stringified = JSON.stringify(compositions)
+  el('composition-list-textarea').value = stringified
+  localStorage.setItem('compositions', stringified)
+}
+
+// Record the current state variables as a composition entry
+function addComposition (source = state, name) {
+  const li = document.createElement('li')
+  const restoreButton = document.createElement('button')
+  const closeButton = document.createElement('button')
+  const input = document.createElement('input')
+
+  const composition = {
+    Lstring: source.modelL.toString(),
+    Rstring: source.modelR.toString(),
+    velocity: source.animationSpeeds || Array(12).fill(0),
+    lighting: source.lighting
+  }
+  const compositionString = JSON.stringify(composition)
+  const generatedName = name || generateName()
+
+  li.classList.add('composition-entry')
+  restoreButton.classList.add('composition-restore-button')
+  closeButton.classList.add('composition-close-button')
+  input.setAttribute('type', 'text')
+  input.value = generatedName
+  li.append(restoreButton)
+  li.append(input)
+  li.append(closeButton)
+  li.dataset.compositionString = compositionString
+  li.dataset.catchyName = generatedName
+  li.style.backgroundColor = `hsl(${Math.round(Math.random()*360)},`
+    +`40%,${Math.round(Math.random()*10)+15}%)`
+
+  input.addEventListener('focus', () => {
+    input.select()
+  })
+
+  input.addEventListener('input', event => {
+    li.dataset.catchyName = event.target.value
+    outputCompositionText()
+  })
+
+  closeButton.addEventListener('click', () => {
+    li.remove()
+    outputCompositionText()
+  })
+
+  restoreButton.addEventListener('click', () => {
+    const restored = JSON.parse(compositionString)
+    state.modelL = Quaternion.parse(restored.Lstring)
+    state.modelR = Quaternion.parse(restored.Rstring)
+    state.animationSpeeds = restored.velocity
+    state.lighting = restored.lighting
+
+    // Update the UI to match
+    syncPickers()
+    el('diffuse-opacity').value = state.lighting.diffuseOpacity
+    el('specular-opacity').value = state.lighting.speuclarOpacity
+    el('diffuse-opacity').dispatchEvent(new Event('input'))
+    el('specular-opacity').dispatchEvent(new Event('input'))
+    for (const [i,e] of
+      document.querySelectorAll('.animation-speeds input').entries()) {
+      
+      e.value = state.animationSpeeds[i]
+      e.dispatchEvent(new Event('input'))
+    }
+  })
+
+  el('composition-list').append(li)
+  outputCompositionText()
 }
 
 function initListeners () {
@@ -868,6 +1123,9 @@ function initListeners () {
 
   el('reset-button')
     .addEventListener('click', () => { resetState() })
+
+  el('add-composition')
+    .addEventListener('click', () => { addComposition() })
 
   el('load-button')
     .addEventListener('click', () => { loadPalette() })
@@ -889,7 +1147,24 @@ function initListeners () {
 
   el('json-textarea')
     .addEventListener('focus', event => {
+    outputPalette()
     event.target.select()
+  })
+
+  el('composition-list-textarea')
+    .addEventListener('focus', event => {
+    event.target.select()
+  })
+
+  el('composition-copy-text-button')
+    .addEventListener('click', () => {
+    const text = el('composition-list-textarea').value
+    navigator.clipboard.writeText(text)
+  })
+
+  el('composition-load-button')
+    .addEventListener('click', () => {
+    loadCompositions()
   })
 
   window.addEventListener('deviceorientation', event => {
@@ -927,7 +1202,6 @@ function initListeners () {
         positive.g - negative.g,
         positive.b - negative.b
       ]
-      log(i, ') ', signedColor)
 
       // Put the color in the right place:
       if (i < 4) {
@@ -940,6 +1214,13 @@ function initListeners () {
         Object.assign(state.lighting.membrane.rgb, signedColor)
       }
     }
+
+    let rgb = floatFromHex(el('near-frame-color').value.replace('#', ''))
+    Object.assign(state.lighting.nearFrameColor,
+      [rgb.r, rgb.g, rgb.b])
+    rgb = floatFromHex(el('far-frame-color').value.replace('#', ''))
+    Object.assign(state.lighting.farFrameColor,
+      [rgb.r, rgb.g, rgb.b])
   }
 
   for (const [i,e] of
@@ -948,6 +1229,9 @@ function initListeners () {
     e.addEventListener('input', readColors)
     negativeColors[i].addEventListener('input', readColors)
   }
+
+  el('near-frame-color').addEventListener('input', readColors)
+  el('far-frame-color').addEventListener('input', readColors)
 
   for (const [i,e] of
     document.querySelectorAll('.sliders input').entries()) {
@@ -989,23 +1273,25 @@ function initListeners () {
     })
   }
 
-  if (el('use-diffuse').checked) { state.diffuseOpacity = 1 }
-  el('use-diffuse').addEventListener('input', event => {
-    if (event.target.checked) { state.diffuseOpacity = 1 }
-    else { state.diffuseOpacity = 0 }
-  })
-
-  if (el('use-specular').checked) { state.specularOpacity = 1 }
-  el('use-specular').addEventListener('input', event => {
-    if (event.target.checked) { state.specularOpacity = 1 }
-    else { state.specularOpacity = 0 }
-  })
-
   el('angle-constraint').addEventListener('input', event => {
     state.constrainAngles = parseInt(el('angle-constraint').value)
     el('input-discrete').checked = true
     el('input-discrete').dispatchEvent(new Event('input'))
   })
+
+  // Register display events for composition opacity sliders
+  const opacityValues =
+    document.querySelectorAll('.opacity-container .value-display')
+  for (const [i,e] of
+    document.querySelectorAll('.opacity-container input[type="range"]')
+    .entries()) {
+    e.addEventListener('input', event => {
+      opacityValues[i].textContent = e.value
+      if (i === 0) { state.lighting.diffuseOpacity = parseFloat(e.value) }
+      if (i === 1) { state.lighting.specularOpacity = parseFloat(e.value) }
+    })
+    e.dispatchEvent(new Event('input'))
+  }
 
   for (const [i,e] of
     document.querySelectorAll('input[type="radio"]').entries()) {
@@ -1378,3 +1664,5 @@ function initListeners () {
   // Initialize animation speeds to zero
   clearAnimationSliders()
 }
+
+const defaultCompositions = '[{"name":"diamond light","string":"{\\"Lstring\\":\\"-0.3131402677372033i + -0.6640532542139448j + -0.5375850672399217k + -0.4147031996166503\\",\\"Rstring\\":\\"0.8585978717974221i + 0.4014240064175323j + -0.2816808469769332k + 0.1494133931934474\\",\\"velocity\\":[0,0.05,0.05,0,0,0,0,0,0,0,0.025,-0.1],\\"lighting\\":{\\"specularLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.3333333333333333,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.25098039215686274,0.5019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.10196078431372549,0.4]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.050980392156862744,0,0.2]}],\\"diffuseLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.07450980392156863,0.12941176470588237]}],\\"glow\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},\\"membrane\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.45098039215686275,0.5764705882352941,1]},\\"nearFrameColor\\":[0.7333333333333333,0.9411764705882353,0.9137254901960784],\\"farFrameColor\\":[0.01568627450980392,0.24313725490196078,0.9176470588235294],\\"diffuseOpacity\\":1,\\"specularOpacity\\":1}}"},{"name":"vaporwave","string":"{\\"Lstring\\":\\"0.1394071025225485i + -0.4481163340118159j + -0.0709746547627450k + 0.8801818047081984\\",\\"Rstring\\":\\"-0.1394071025225485i + 0.4481163340118159j + 0.0709746547627450k + 0.8801818047081984\\",\\"velocity\\":[0,0.175,0,0,0,0,0,0,0,0,0,0],\\"lighting\\":{\\"specularLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.3333333333333333,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.25098039215686274,0.5019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.10196078431372549,0.4]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.050980392156862744,0,0.2]}],\\"diffuseLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.3333333333333333,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.25098039215686274,0.5019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.07450980392156863,0.12941176470588237]}],\\"glow\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[-0.4980392156862745,0.09803921568627451,0.6]},\\"membrane\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.396078431372549,0.3568627450980392,0.8745098039215686]},\\"nearFrameColor\\":[0.8901960784313725,0.3411764705882353,0.7411764705882353],\\"farFrameColor\\":[1,0.30980392156862746,0.3254901960784314],\\"diffuseOpacity\\":0.5,\\"specularOpacity\\":1}}"},{"name":"faraway blue","string":"{\\"Lstring\\":\\"0.0605275572953415i + -0.9548858532785907j + -0.1156438570064427k + -0.2667506707673511\\",\\"Rstring\\":\\"0.0351183920396373i + 0.8784023024689672j + 0.1257131074949993k + 0.4597524422598619\\",\\"velocity\\":[0,0.05,0,0,0,0,0,0,0,0,0.025,0],\\"lighting\\":{\\"specularLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.3333333333333333,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.25098039215686274,0.5019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.10196078431372549,0.4]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.050980392156862744,0,0.2]}],\\"diffuseLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.07450980392156863,0.12941176470588237]}],\\"glow\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.39215686274509803,0.8235294117647058]},\\"membrane\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.45098039215686275,0.5764705882352941,1]},\\"nearFrameColor\\":[0.7333333333333333,0.9411764705882353,0.9137254901960784],\\"farFrameColor\\":[0.01568627450980392,0.24313725490196078,0.9176470588235294],\\"diffuseOpacity\\":1,\\"specularOpacity\\":1}}"},{"name":"alien","string":"{\\"Lstring\\":\\"0.2719416974696960i + 0.5572645835393245j + -0.1997443759137715k + -0.7586870773915904\\",\\"Rstring\\":\\"0.6799567378424413i + 0.2931561264137852j + 0.3459172895544312k + -0.5762460837143951\\",\\"velocity\\":[0,0.1,0,0,0.1,0,0,0,0,0.05,0,0],\\"lighting\\":{\\"specularLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.7176470588235294,0.21568627450980393,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.7411764705882353,0.9019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.10196078431372549,0.4]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.050980392156862744,0,0.2]}],\\"diffuseLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.07450980392156863,0.12941176470588237]}],\\"glow\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.5137254901960784,0,0.6431372549019608]},\\"membrane\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.4745098039215686,0.23921568627450981]},\\"nearFrameColor\\":[0.403921568627451,0.996078431372549,0.9215686274509803],\\"farFrameColor\\":[0.45098039215686275,0.06666666666666667,0.42745098039215684],\\"diffuseOpacity\\":1,\\"specularOpacity\\":0.25}}"}]'

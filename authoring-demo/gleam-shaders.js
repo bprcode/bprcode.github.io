@@ -50,6 +50,32 @@ void main (void) {
 }
 `
 
+shaders.variableFrameFrag =
+/* glsl */`
+precision mediump float;
+varying float w;
+uniform vec3 nearFrameColor;
+uniform vec3 farFrameColor;
+
+#define wMid ${(shaders.wOffset).toFixed(6)}
+#define wFar (wMid - 2.)
+#define wNear (wMid + 2.)
+
+void main (void) {
+  // Encode normalized w-component into alpha channel:
+  float a = clamp(w / wFar, 0., 1.);
+
+  // Use negatives since edge0 must be < edge1 per the spec:
+  float t = smoothstep(-wNear, -wFar, -w);
+
+  vec4 color =  mix(  vec4(nearFrameColor, a),
+                      vec4(farFrameColor, a),
+                      clamp(t, 0., 1.));
+
+  gl_FragColor = color;
+}
+`
+
 shaders.wFrag_ALTERNATE =
 /* glsl */`
 precision mediump float;
@@ -219,7 +245,13 @@ void main (void) {
   float dp = dot(normalize(vWorld4d), normalize(vNormal));
   dp = abs(dp);
   dp = clamp(dp, 0.000001, 1.);
-  float thickness = 0.05 / dp;
+  // This is asymptotic, but the effect is nice:
+  // float thickness = 0.05 / dp;
+  // These are more numerically sensible:
+  float thickness = pow((diminish(0.8 / dp) - 0.444)*1.79856, 2.);
+  // float thickness = smoothstep(0., 2., 0.05 / dp);
+  // float thickness = diminish(pow(0.05 / dp, 2.));
+
   vec3 membranePart = membraneColor * thickness;
 
   // Diffuse light pane contributions:

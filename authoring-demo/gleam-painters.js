@@ -307,6 +307,8 @@ painters.initClearTesseract = function () {
   this.qModelR = gl.getUniformLocation(this.program, 'qModelR')
   this.qViewL = gl.getUniformLocation(this.program, 'qViewL')
   this.qViewR = gl.getUniformLocation(this.program, 'qViewR')
+  this.nearFrameColor = gl.getUniformLocation(this.program, 'nearFrameColor')
+  this.farFrameColor = gl.getUniformLocation(this.program, 'farFrameColor')
 
   const clearTexture =
     blankTexture(gl, () => gl.canvas.clientWidth,
@@ -451,6 +453,8 @@ painters.drawDonutTesseract = function () {
   
   gl.uniformMatrix4fv(this.uM3, false, this.M3)
   gl.uniformMatrix4fv(this.uM4, false, this.M4)
+  gl.uniform3fv(this.nearFrameColor, state.lighting.nearFrameColor)
+  gl.uniform3fv(this.farFrameColor, state.lighting.farFrameColor)
 
   // If using MSAA, render and resolve,
   // otherwise render directly to texture.
@@ -652,6 +656,12 @@ class Lighting {
 
     this.glow = new Lighting.Light
     this.membrane = new Lighting.Light
+
+    this.nearFrameColor = [0,0,0]
+    this.farFrameColor = [0,0,0]
+
+    this.diffuseOpacity = 1
+    this.specularOpacity = 0
   }
 
   

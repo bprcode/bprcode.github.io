@@ -23,26 +23,27 @@
     <header>
       <h1>Quaternion-based animations</h1>
       <hr>
-      
     </header>
-    
-    <div class="position-container snap-container">
-      <div class="position-snapshots snap-entry-list"></div>
-      <button id="snapshot-position-button" class="snap-button square-shadow">
-        <img src="./camera-fill.svg">
-      </button>
-    </div>
-    <div class="velocity-container snap-container">
-      <div class="velocity-states snap-entry-list"></div>
-      <button id="snapshot-velocities-button" class="snap-button square-shadow">
-        <img src="./speedometer.svg">
-      </button>
-    </div>
-    <div class="light-container snap-container">
-      <div class="light-arrangements snap-entry-list"></div>
-      <button id="snapshot-lighting-button" class="snap-button square-shadow">
-        <img src="./lightbulb.svg">
-      </button>
+
+    <div class="palette">
+      <div class="position-container snap-container">
+        <div class="position-snapshots snap-entry-list"></div>
+        <button id="snapshot-position-button" class="snap-button square-shadow">
+          <img src="./box.svg">
+        </button>
+      </div>
+      <div class="velocity-container snap-container">
+        <div class="velocity-states snap-entry-list"></div>
+        <button id="snapshot-velocities-button" class="snap-button square-shadow">
+          <img src="./speedometer.svg">
+        </button>
+      </div>
+      <div class="light-container snap-container">
+        <div class="light-arrangements snap-entry-list"></div>
+        <button id="snapshot-lighting-button" class="snap-button square-shadow">
+          <img src="./lightbulb.svg">
+        </button>
+      </div>
     </div>
 
     <div class="views">
@@ -88,78 +89,105 @@
           <label for="xy-speed-local">
             <span>local xy: </span><span class="value-display"></span>
           </label>
-          <input type="range" id="xy-speed-local" min="-0.5" max="0.5" value="0.0" step="0.025">
+          <input type="range" id="xy-speed-local" min="-0.25" max="0.25" value="0.0" step="0.025">
         </span>
         <span>
           <label for="xz-speed-local">
             <span>local xz: </span><span class="value-display"></span>
           </label>
-          <input type="range" id="xz-speed-local" min="-0.5" max="0.5" value="0.0" step="0.025">
+          <input type="range" id="xz-speed-local" min="-0.25" max="0.25" value="0.0" step="0.025">
         </span>
         <span>
           <label for="yz-speed-local">
             <span>local yz: </span><span class="value-display"></span>
           </label>
-          <input type="range" id="yz-speed-local" min="-0.5" max="0.5" value="0.0" step="0.025">
+          <input type="range" id="yz-speed-local" min="-0.25" max="0.25" value="0.0" step="0.025">
         </span>
 
         <span>
           <label for="xw-speed-local">
             <span>local xw: </span><span class="value-display"></span>
           </label>
-          <input type="range" id="xw-speed-local" min="-0.5" max="0.5" value="0.0" step="0.025">
+          <input type="range" id="xw-speed-local" min="-0.25" max="0.25" value="0.0" step="0.025">
         </span>
         <span>
           <label for="yw-speed-local">
             <span>local yw: </span><span class="value-display"></span>
           </label>
-          <input type="range" id="yw-speed-local" min="-0.5" max="0.5" value="0.0" step="0.025">
+          <input type="range" id="yw-speed-local" min="-0.25" max="0.25" value="0.0" step="0.025">
         </span>
         <span>
           <label for="zw-speed-local">
             <span>local zw: </span><span class="value-display"></span>
           </label>
-          <input type="range" id="zw-speed-local" min="-0.5" max="0.5" value="0.0" step="0.025">
+          <input type="range" id="zw-speed-local" min="-0.25" max="0.25" value="0.0" step="0.025">
         </span>
 
         <span>
           <label for="xy-speed-global">
             <span>global xy: </span><span class="value-display"></span>
           </label>
-          <input type="range" id="xy-speed-global" min="-0.5" max="0.5" value="0.0" step="0.025">
+          <input type="range" id="xy-speed-global" min="-0.25" max="0.25" value="0.0" step="0.025">
         </span>
         <span>
           <label for="xz-speed-global">
             <span>global xz: </span><span class="value-display"></span>
           </label>
-          <input type="range" id="xz-speed-global" min="-0.5" max="0.5" value="0.0" step="0.025">
+          <input type="range" id="xz-speed-global" min="-0.25" max="0.25" value="0.0" step="0.025">
         </span>
         <span>
           <label for="yz-speed-global">
             <span>global yz: </span><span class="value-display"></span>
           </label>
-          <input type="range" id="yz-speed-global" min="-0.5" max="0.5" value="0.0" step="0.025">
+          <input type="range" id="yz-speed-global" min="-0.25" max="0.25" value="0.0" step="0.025">
         </span>
 
         <span>
           <label for="xw-speed-global">
             <span>global xw: </span><span class="value-display"></span>
           </label>
-          <input type="range" id="xw-speed-global" min="-0.5" max="0.5" value="0.0" step="0.025">
+          <input type="range" id="xw-speed-global" min="-0.25" max="0.25" value="0.0" step="0.025">
         </span>
         <span>
           <label for="yw-speed-global">
             <span>global yw: </span><span class="value-display"></span>
           </label>
-          <input type="range" id="yw-speed-global" min="-0.5" max="0.5" value="0.0" step="0.025">
+          <input type="range" id="yw-speed-global" min="-0.25" max="0.25" value="0.0" step="0.025">
         </span>
         <span>
           <label for="zw-speed-global">
             <span>global zw: </span><span class="value-display"></span>
           </label>
-          <input type="range" id="zw-speed-global" min="-0.5" max="0.5" value="0.0" step="0.025">
+          <input type="range" id="zw-speed-global" min="-0.25" max="0.25" value="0.0" step="0.025">
         </span>
 
+        </fieldset>
+
+        <fieldset class="compositions">
+          <legend>Compositions</legend>
+          <button id="add-composition" class="small-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-camera-fill" viewBox="0 0 16 16">
+              <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+              <path d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2zm.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z"/>
+            </svg>
+          </button>
+          <label for="add-composition">&nbsp;Add composition</label>
+          <ul class="composition-list" id="composition-list">
+          </ul>
+
+          <textarea id="composition-list-textarea" cols="30" rows="10"></textarea>
+          <button class="small-button" id="composition-copy-text-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+              <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+              <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+            </svg>
+          </button>
+          <button class="small-button" id="composition-load-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up" viewBox="0 0 16 16">
+              <path d="M8.5 11.5a.5.5 0 0 1-1 0V7.707L6.354 8.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 7.707V11.5z"/>
+              <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+            </svg>
+          </button>
         </fieldset>
       </div>
 
@@ -215,7 +243,7 @@
           <div class="light-container">
             <span>light</span>
             <span>positive</span>
-            <span>negative</span>
+            <span class="negative-legend">negative</span>
           </div>
 
           <div class="light-container">
@@ -341,8 +369,15 @@
                 &nbsp;membrane
               </label>
             </span>
-            <input type="color" class="light-picker" id="diffuse-glow-color" value="#001999">
-            <input type="color" class="light-negative" id="diffuse-glow-negative" value="#7f0000">
+            <input type="color" class="light-picker" id="membrane-color" value="#3c67ff">
+            <input type="color" class="light-negative" id="membrane-negative" value="#000000">
+          </div>
+
+          <div>
+            <label for="near-frame-color">Near frame</label>
+            <input type="color" id="near-frame-color" value="#3c67ff">
+            <label for="far-frame-color">Far frame</label>
+            <input type="color" id="far-frame-color" value="#000000">
           </div>
 
           <span class="reset-button-container">
@@ -355,19 +390,25 @@
           <label for="reset-button">&nbsp;reset geometry</label>
           </span>
 
-          <div>
-            <input type="checkbox" id="use-diffuse" checked>
-            <label for="use-diffuse">apply diffuse <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud-sun-fill" viewBox="0 0 16 16">
+          <div class="opacity-container">
+            <label for="diffuse-opacity">diffuse pass <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud-sun-fill" viewBox="0 0 16 16">
               <path d="M11.473 11a4.5 4.5 0 0 0-8.72-.99A3 3 0 0 0 3 16h8.5a2.5 2.5 0 0 0 0-5h-.027z"/>
               <path d="M10.5 1.5a.5.5 0 0 0-1 0v1a.5.5 0 0 0 1 0v-1zm3.743 1.964a.5.5 0 1 0-.707-.707l-.708.707a.5.5 0 0 0 .708.708l.707-.708zm-7.779-.707a.5.5 0 0 0-.707.707l.707.708a.5.5 0 1 0 .708-.708l-.708-.707zm1.734 3.374a2 2 0 1 1 3.296 2.198c.199.281.372.582.516.898a3 3 0 1 0-4.84-3.225c.352.011.696.055 1.028.129zm4.484 4.074c.6.215 1.125.59 1.522 1.072a.5.5 0 0 0 .039-.742l-.707-.707a.5.5 0 0 0-.854.377zM14.5 6.5a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1z"/>
             </svg></label>
+            <span>
+              <input type="range" id="diffuse-opacity" min="0.0" max="2.0" step="0.25" value="1.0">
+            </span>
+            <span class="value-display"></span>
           </div>
 
-          <div>
-            <input type="checkbox" id="use-specular">
-            <label for="use-specular">apply specular <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sunrise" viewBox="0 0 16 16">
+          <div class="opacity-container">
+            <label for="specular-opacity">specular pass <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sunrise" viewBox="0 0 16 16">
               <path d="M7.646 1.146a.5.5 0 0 1 .708 0l1.5 1.5a.5.5 0 0 1-.708.708L8.5 2.707V4.5a.5.5 0 0 1-1 0V2.707l-.646.647a.5.5 0 1 1-.708-.708l1.5-1.5zM2.343 4.343a.5.5 0 0 1 .707 0l1.414 1.414a.5.5 0 0 1-.707.707L2.343 5.05a.5.5 0 0 1 0-.707zm11.314 0a.5.5 0 0 1 0 .707l-1.414 1.414a.5.5 0 1 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zM8 7a3 3 0 0 1 2.599 4.5H5.4A3 3 0 0 1 8 7zm3.71 4.5a4 4 0 1 0-7.418 0H.499a.5.5 0 0 0 0 1h15a.5.5 0 0 0 0-1h-3.79zM0 10a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2A.5.5 0 0 1 0 10zm13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
             </svg></label>
+            <span>
+              <input type="range" id="specular-opacity" min="0.0" max="2.0" step="0.25" value="1.0">
+            </span>
+            <span class="value-display"></span>
           </div>
 
         </fieldset>
@@ -391,7 +432,7 @@
 
         <div class="json-text">
           <fieldset>
-            <legend>Snapshot data</legend>
+            <legend>Current palette</legend>
             <textarea id="json-textarea" cols="30" rows="10"></textarea>
             <button class="small-button" id="copy-text-button">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
@@ -489,6 +530,63 @@ fieldset {
   box-shadow: 8px 8px 0px #0004;
 }
 
+.palette {
+  background-image: url(./palette-fill.svg);
+  background-size: 20%;
+  background-repeat: no-repeat;
+  background-position: center;
+  box-shadow: 8px 8px 0px #0002 inset;
+}
+
+.composition-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.composition-list li {
+  display: flex;
+  justify-content: space-between;
+}
+
+.composition-entry input[type="text"] {
+  background-color: transparent;
+  border: none;
+  color: var(--text-light);
+  font-size: 1rem;
+  font-family: voltaire;
+}
+
+.opacity-container {
+  display: flex;
+}
+
+.opacity-container *:first-child {
+  flex-basis: 100px;
+}
+
+.negative-legend {
+  text-shadow:  -2px -2px 2px rgb(191, 183, 228),
+                2px -2px 2px rgb(191, 183, 228),
+                2px 2px 2px rgb(191, 183, 228),
+                -2px 2px 2px rgb(191, 183, 228);
+  color: rgb(8, 8, 10);
+}
+
+.composition-restore-button {
+  width: 30px;
+  height: 30px;
+  background-image: url(./eye.svg);
+  background-size: contain;
+}
+
+.composition-close-button {
+  width: 30px;
+  height: 30px;
+  background-image: url(./x.svg);
+  background-size: contain;
+}
+
 .light-container {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
@@ -527,6 +625,11 @@ fieldset {
   background-color: #555;
 }
 
+#composition-list-textarea {
+  color: #ddd;
+  background-color: #555;
+}
+
 .snap-container {
   display: flex;
   align-items: center;
@@ -534,7 +637,6 @@ fieldset {
   width: 100%;
   height: 80px;
   background-color: #0002;
-  box-shadow: 8px 8px 0px #0002 inset;
 }
 
 .snap-button {
@@ -834,6 +936,7 @@ fieldset {
     'rollers'
     'speeds'
     'title1'
+    'compositions'
     'info';
   grid-gap: 1.5rem;
 }
