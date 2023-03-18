@@ -120,6 +120,7 @@ try {
     }
   }
 
+  // Experimental canvas
   state.animation1.context = gl
   state.animation1.showFPS = () => {
     el('fps-1').textContent = state.animation1.lastFPS.toFixed(1)
@@ -128,49 +129,60 @@ try {
     { animationState: state.animation1,
       nearPlane: 1,
       farPlane: 100,
-      applyView: matrixView
+      applyView: quatViewReadOnly
     },
-  [
-    {
-      vertexShader: shaders.projector4dVert,
-      fragmentShader: shaders.greenFromWFrag,
-      mesh: geometry.donutTesseract,
-      components: 4,
-      init: painters.initClearTesseract,
-      draw: painters.drawDonutTesseract
-    },
-    { // post-process the output with iterated Gaussian blur:
-      vertexShader: shaders.textureVert,
-      fragmentShader: shaders.blur1dFrag,
-      mesh: geometry.texSquare,
-      init: painters.initBlur,
-      draw: painters.drawBlur
-    },
-    { // compose the blur (0) and clear (1) textures using depth (2).
-      vertexShader: shaders.textureVert,
-      fragmentShader: shaders.blurCompositorFrag,
-      mesh: geometry.texSquare,
-      init: painters.initTesseractCompositor,
-      draw: painters.drawTesseractCompositor
-    },
-    // { // Draw diffuse light panes:
-    //   vertexShader: shaders.normals4dVert,
-    //   fragmentShader: shaders.glassDiffuseFrag,
-    //   mesh: geometry.normalTesseract,
-    //   components: 4,
-    //   init: painters.initGlassTesseract,
-    //   draw: painters.drawGlassTesseract
-    // },
-    { // Draw glittery faces
-      vertexShader: shaders.normals4dVert_ALTERNATE,
-      fragmentShader: shaders.glassGlitterFrag,
-      mesh: geometry.normalTesseract,
-      components: 4,
-      init: painters.initGlassTesseract,
-      draw: painters.drawGlassTesseract
-    },
-  ])
+    [
+      // {
+      //   vertexShader: shaders.quatProjectorVert,
+      //   fragmentShader: shaders.variableFrameFrag,
+      //   mesh: geometry.donutTesseract,
+      //   components: 4,
+      //   init: painters.initEdgeTesseract,
+      //   draw: painters.drawDonutTesseract
+      // },
+      {
+        vertexShader: shaders.quatNormalsWorldVert,
+        fragmentShader: shaders.glitterFrameFrag,
+        mesh: geometry.normalDonutTesseract,
+        components: 4,
+        init: painters.initEdgeTesseract,
+        draw: painters.drawDonutTesseract
+      },
+      { // post-process the output with iterated Gaussian blur:
+        vertexShader: shaders.textureVert,
+        fragmentShader: shaders.blur1dFrag,
+        mesh: geometry.texSquare,
+        init: painters.initBlur,
+        draw: painters.drawBlur
+      },
+      { // compose the blur (0) and clear (1) textures using depth (2).
+        vertexShader: shaders.textureVert,
+        fragmentShader: shaders.blurCompositorFrag,
+        mesh: geometry.texSquare,
+        init: painters.initTesseractCompositor,
+        draw: painters.drawTesseractCompositor
+      },
+      { // Draw diffuse light panes (with a little glow):
+        vertexShader: shaders.quatNormalsWorldVert,
+        fragmentShader: shaders.membraneTest,
+        opacityFunction: opacityYin,
+        mesh: geometry.normalTesseract,
+        components: 4,
+        init: painters.initGlassTesseract,
+        draw: painters.drawGlassTesseract
+      },
+      { // Draw glittery faces
+        vertexShader: shaders.quatNormalsWorldVert,
+        fragmentShader: shaders.glassGlitterFrag,
+        opacityFunction: opacityYang,
+        mesh: geometry.normalTesseract,
+        components: 4,
+        init: painters.initGlassTesseract,
+        draw: painters.drawGlassTesseract
+      }
+    ])
 
+  // Currently primary, reference canvas
   state.animation2.context = gl2
   state.animation2.showFPS = () => {
     el('fps-2').textContent = state.animation2.lastFPS.toFixed(1)
@@ -187,7 +199,7 @@ try {
       fragmentShader: shaders.variableFrameFrag,
       mesh: geometry.donutTesseract,
       components: 4,
-      init: painters.initClearTesseract,
+      init: painters.initEdgeTesseract,
       draw: painters.drawDonutTesseract
     },
     { // post-process the output with iterated Gaussian blur:
@@ -268,6 +280,14 @@ try {
   function easeQuartic(t) {
     return t < 0.5  ? 8 * t**4
                     : 1 - Math.pow(-2 * t + 2, 4) / 2
+  }
+
+  function quatViewReadOnly () {
+    this.gl.uniform4fv(this.qViewL, state.viewL)
+    this.gl.uniform4fv(this.qViewR, state.viewR)
+
+    this.gl.uniform4fv(this.qModelL, state.modelL)
+    this.gl.uniform4fv(this.qModelR, state.modelR)
   }
 
   function quatView () {
@@ -1092,7 +1112,7 @@ function addComposition (source = state, name) {
     // Update the UI to match
     syncPickers()
     el('diffuse-opacity').value = state.lighting.diffuseOpacity
-    el('specular-opacity').value = state.lighting.speuclarOpacity
+    el('specular-opacity').value = state.lighting.specularOpacity
     el('diffuse-opacity').dispatchEvent(new Event('input'))
     el('specular-opacity').dispatchEvent(new Event('input'))
     for (const [i,e] of
@@ -1665,4 +1685,4 @@ function initListeners () {
   clearAnimationSliders()
 }
 
-const defaultCompositions = '[{"name":"diamond light","string":"{\\"Lstring\\":\\"-0.3131402677372033i + -0.6640532542139448j + -0.5375850672399217k + -0.4147031996166503\\",\\"Rstring\\":\\"0.8585978717974221i + 0.4014240064175323j + -0.2816808469769332k + 0.1494133931934474\\",\\"velocity\\":[0,0.05,0.05,0,0,0,0,0,0,0,0.025,-0.1],\\"lighting\\":{\\"specularLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.3333333333333333,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.25098039215686274,0.5019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.10196078431372549,0.4]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.050980392156862744,0,0.2]}],\\"diffuseLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.07450980392156863,0.12941176470588237]}],\\"glow\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},\\"membrane\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.45098039215686275,0.5764705882352941,1]},\\"nearFrameColor\\":[0.7333333333333333,0.9411764705882353,0.9137254901960784],\\"farFrameColor\\":[0.01568627450980392,0.24313725490196078,0.9176470588235294],\\"diffuseOpacity\\":1,\\"specularOpacity\\":1}}"},{"name":"vaporwave","string":"{\\"Lstring\\":\\"0.1394071025225485i + -0.4481163340118159j + -0.0709746547627450k + 0.8801818047081984\\",\\"Rstring\\":\\"-0.1394071025225485i + 0.4481163340118159j + 0.0709746547627450k + 0.8801818047081984\\",\\"velocity\\":[0,0.175,0,0,0,0,0,0,0,0,0,0],\\"lighting\\":{\\"specularLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.3333333333333333,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.25098039215686274,0.5019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.10196078431372549,0.4]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.050980392156862744,0,0.2]}],\\"diffuseLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.3333333333333333,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.25098039215686274,0.5019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.07450980392156863,0.12941176470588237]}],\\"glow\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[-0.4980392156862745,0.09803921568627451,0.6]},\\"membrane\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.396078431372549,0.3568627450980392,0.8745098039215686]},\\"nearFrameColor\\":[0.8901960784313725,0.3411764705882353,0.7411764705882353],\\"farFrameColor\\":[1,0.30980392156862746,0.3254901960784314],\\"diffuseOpacity\\":0.5,\\"specularOpacity\\":1}}"},{"name":"faraway blue","string":"{\\"Lstring\\":\\"0.0605275572953415i + -0.9548858532785907j + -0.1156438570064427k + -0.2667506707673511\\",\\"Rstring\\":\\"0.0351183920396373i + 0.8784023024689672j + 0.1257131074949993k + 0.4597524422598619\\",\\"velocity\\":[0,0.05,0,0,0,0,0,0,0,0,0.025,0],\\"lighting\\":{\\"specularLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.3333333333333333,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.25098039215686274,0.5019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.10196078431372549,0.4]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.050980392156862744,0,0.2]}],\\"diffuseLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.07450980392156863,0.12941176470588237]}],\\"glow\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.39215686274509803,0.8235294117647058]},\\"membrane\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.45098039215686275,0.5764705882352941,1]},\\"nearFrameColor\\":[0.7333333333333333,0.9411764705882353,0.9137254901960784],\\"farFrameColor\\":[0.01568627450980392,0.24313725490196078,0.9176470588235294],\\"diffuseOpacity\\":1,\\"specularOpacity\\":1}}"},{"name":"alien","string":"{\\"Lstring\\":\\"0.2719416974696960i + 0.5572645835393245j + -0.1997443759137715k + -0.7586870773915904\\",\\"Rstring\\":\\"0.6799567378424413i + 0.2931561264137852j + 0.3459172895544312k + -0.5762460837143951\\",\\"velocity\\":[0,0.1,0,0,0.1,0,0,0,0,0.05,0,0],\\"lighting\\":{\\"specularLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.7176470588235294,0.21568627450980393,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.7411764705882353,0.9019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.10196078431372549,0.4]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.050980392156862744,0,0.2]}],\\"diffuseLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.07450980392156863,0.12941176470588237]}],\\"glow\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.5137254901960784,0,0.6431372549019608]},\\"membrane\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.4745098039215686,0.23921568627450981]},\\"nearFrameColor\\":[0.403921568627451,0.996078431372549,0.9215686274509803],\\"farFrameColor\\":[0.45098039215686275,0.06666666666666667,0.42745098039215684],\\"diffuseOpacity\\":1,\\"specularOpacity\\":0.25}}"}]'
+const defaultCompositions = '[{"name":"vaporwave","string":"{\\"Lstring\\":\\"0.1394071025225485i + -0.4481163340118159j + -0.0709746547627450k + 0.8801818047081984\\",\\"Rstring\\":\\"-0.1394071025225485i + 0.4481163340118159j + 0.0709746547627450k + 0.8801818047081984\\",\\"velocity\\":[0,0.175,0,0,0,0,0,0,0,0,0,0],\\"lighting\\":{\\"specularLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.3333333333333333,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.25098039215686274,0.5019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.10196078431372549,0.4]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.050980392156862744,0,0.2]}],\\"diffuseLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.3333333333333333,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.25098039215686274,0.5019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.07450980392156863,0.12941176470588237]}],\\"glow\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[-0.4980392156862745,0.09803921568627451,0.6]},\\"membrane\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.396078431372549,0.3568627450980392,0.8745098039215686]},\\"nearFrameColor\\":[0.8901960784313725,0.3411764705882353,0.7411764705882353],\\"farFrameColor\\":[1,0.30980392156862746,0.3254901960784314],\\"diffuseOpacity\\":0.5,\\"specularOpacity\\":1}}"},{"name":"alien","string":"{\\"Lstring\\":\\"0.2719416974696960i + 0.5572645835393245j + -0.1997443759137715k + -0.7586870773915904\\",\\"Rstring\\":\\"0.6799567378424413i + 0.2931561264137852j + 0.3459172895544312k + -0.5762460837143951\\",\\"velocity\\":[0,0.1,0,0,0.1,0,0,0,0,0.05,0,0],\\"lighting\\":{\\"specularLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.7176470588235294,0.21568627450980393,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.7411764705882353,0.9019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.10196078431372549,0.4]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.050980392156862744,0,0.2]}],\\"diffuseLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.07450980392156863,0.12941176470588237]}],\\"glow\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.5137254901960784,0,0.6431372549019608]},\\"membrane\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.4745098039215686,0.23921568627450981]},\\"nearFrameColor\\":[0.403921568627451,0.996078431372549,0.9215686274509803],\\"farFrameColor\\":[0.45098039215686275,0.06666666666666667,0.42745098039215684],\\"diffuseOpacity\\":1,\\"specularOpacity\\":0.25}}"},{"name":"skylight","string":"{\\"Lstring\\":\\"0.0026920214152690i + 0.9901741973018827j + 0.1384821587477816k + 0.0192484733635510\\",\\"Rstring\\":\\"-0.0429669273783743i + -0.9415042162744791j + -0.1316753523724455k + 0.3072218342934461\\",\\"velocity\\":[0,0.025,0,0,-0.125,0,0,0,0,0,0,0],\\"lighting\\":{\\"specularLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[-1,-1,-1]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.5372549019607843,0.11372549019607843,-0.9019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.12156862745098039,0.00392156862745098,-0.38823529411764707]}],\\"diffuseLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[-0.12549019607843137,-0.12549019607843137,-0.12549019607843137]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[-0.15294117647058825,-0.15294117647058825,-0.15294117647058825]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.07450980392156863,0.12941176470588237]}],\\"glow\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.4117647058823529,0.596078431372549,0.8941176470588236]},\\"membrane\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.12156862745098039,0.6823529411764706]},\\"nearFrameColor\\":[0.6392156862745098,0.6627450980392157,0.6627450980392157],\\"farFrameColor\\":[0,0.403921568627451,0.7019607843137254],\\"diffuseOpacity\\":1,\\"specularOpacity\\":0.5}}"},{"name":"ephemeral iris","string":"{\\"Lstring\\":\\"-0.1305251492245948i + -0.6239336438401919j + 0.0005218001212325k + -0.7704996568661264\\",\\"Rstring\\":\\"-0.1069619281177039i + 0.1785450141910593j + 0.0748079727625646k + 0.9752356592405387\\",\\"velocity\\":[0,0.025,0,0,-0.125,0,0,-0.1,0,0,0,0],\\"lighting\\":{\\"specularLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.3333333333333333,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.25098039215686274,0.5019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.10196078431372549,0.4]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.050980392156862744,0,0.2]}],\\"diffuseLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[-0.12549019607843137,-0.12549019607843137,-0.12549019607843137]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.07450980392156863,0.12941176470588237]}],\\"glow\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.5843137254901961,0.12156862745098039,0.6627450980392157]},\\"membrane\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.00784313725490196,0.00392156862745098,0.24705882352941178]},\\"nearFrameColor\\":[0.13333333333333333,0.21176470588235294,0.5333333333333333],\\"farFrameColor\\":[0.9607843137254902,0.2196078431372549,0.9098039215686274],\\"diffuseOpacity\\":1.25,\\"specularOpacity\\":1}}"},{"name":"milky diamond","string":"{\\"Lstring\\":\\"0.3049586536276163i + 0.4522929508398618j + 0.7582066854734353k + 0.3571469281703535\\",\\"Rstring\\":\\"-0.7517714208008481i + 0.0672783978325389j + 0.3204947568776308k + 0.5723604274109411\\",\\"velocity\\":[0,0,0,0,0,0,0,0,0,0,-0.075,0.125],\\"lighting\\":{\\"specularLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.3333333333333333,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.25098039215686274,0.5019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.10196078431372549,0.4]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.050980392156862744,0,0.2]}],\\"diffuseLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.07450980392156863,0.12941176470588237]}],\\"glow\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},\\"membrane\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.45098039215686275,0.5764705882352941,1]},\\"nearFrameColor\\":[0.7333333333333333,0.9411764705882353,0.9137254901960784],\\"farFrameColor\\":[0.01568627450980392,0.24313725490196078,0.9176470588235294],\\"diffuseOpacity\\":1,\\"specularOpacity\\":1}}"},{"name":"daybreak","string":"{\\"Lstring\\":\\"0.1194663625564398i + 0.3268393904212887j + 0.0416907027174342k + 0.9365712393585242\\",\\"Rstring\\":\\"-0.0544620332468526i + 0.8953732681368002j + 0.1142112665640297k + 0.4269618065243483\\",\\"velocity\\":[0,0.05,0,0,-0.075,0,0,0,0,0,0,0],\\"lighting\\":{\\"specularLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.2235294117647059,0.058823529411764705,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[-1,-1,-1]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.1411764705882353,0.07058823529411765,-0.9019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.03529411764705882,0,-0.38823529411764707]}],\\"diffuseLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.17647058823529413,-0.023529411764705882,-0.16862745098039217]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.21568627450980393,0.043137254901960784,-0.3568627450980392]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.07450980392156863,0.12941176470588237]}],\\"glow\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.7098039215686275,0.3176470588235294,0.12549019607843137]},\\"membrane\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[-0.24705882352941178,0.25098039215686274,0.803921568627451]},\\"nearFrameColor\\":[0.3411764705882353,0.10196078431372549,0.9764705882352941],\\"farFrameColor\\":[0.9921568627450981,0.7450980392156863,0.40784313725490196],\\"diffuseOpacity\\":1,\\"specularOpacity\\":1}}"},{"name":"quasar","string":"{\\"Lstring\\":\\"0.8186985789239143i + 0.4996904619892063j + -0.2602659777386256k + -0.1109220442338651\\",\\"Rstring\\":\\"-0.6866957174391608i + 0.4219718172414718j + -0.0137999185683895k + 0.5917755819163590\\",\\"velocity\\":[0,0.075,0,0,0,0,0,0,0,0,0,-0.15],\\"lighting\\":{\\"specularLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.3333333333333333,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.25098039215686274,0.5019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.10196078431372549,0.4]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.050980392156862744,0,0.2]}],\\"diffuseLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[-1,-0.1607843137254902,0.2]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.011764705882352941,0.00392156862745098,0.2549019607843137]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[-0.9921568627450981,-0.9921568627450981,-0.9921568627450981]}],\\"glow\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.8235294117647058,0.41568627450980394,0.5372549019607843]},\\"membrane\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.5215686274509804,0.2627450980392157,0.15294117647058825]},\\"nearFrameColor\\":[0.17647058823529413,0.16862745098039217,0.16862745098039217],\\"farFrameColor\\":[0.615686274509804,0.00784313725490196,0.5098039215686274],\\"diffuseOpacity\\":2,\\"specularOpacity\\":0}}"},{"name":"tester","string":"{\\"Lstring\\":\\"0.1286070131184406i + -0.7336324231121916j + -0.0514275358878691k + -0.6652810778067803\\",\\"Rstring\\":\\"-0.0380846774602028i + -0.0767959965614790j + 0.1331694882978012k + -0.9873792683874483\\",\\"velocity\\":[0,0.025,0,0,-0.125,0,0,0.05,0,0,0,0],\\"lighting\\":{\\"specularLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[-1,-1,-1]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.5372549019607843,0.11372549019607843,-0.9019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.12156862745098039,0.00392156862745098,-0.38823529411764707]}],\\"diffuseLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[-0.12549019607843137,-0.12549019607843137,-0.12549019607843137]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[-0.15294117647058825,-0.15294117647058825,-0.15294117647058825]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.07450980392156863,0.12941176470588237]}],\\"glow\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.4117647058823529,0.596078431372549,0.8941176470588236]},\\"membrane\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.12156862745098039,0.6823529411764706]},\\"nearFrameColor\\":[1,0.03529411764705882,0.03529411764705882],\\"farFrameColor\\":[0,0.984313725490196,0.12549019607843137],\\"diffuseOpacity\\":0.5,\\"specularOpacity\\":1}}"},{"name":"ghostlight","string":"{\\"Lstring\\":\\"0.0105758596176247i + 0.3965336530749914j + 0.1381039697622710k + 0.9075111606522942\\",\\"Rstring\\":\\"-0.1248578375796719i + 0.9895419884485974j + 0.0599589498380236k + 0.0402752756250940\\",\\"velocity\\":[0,0.025,0,0,-0.125,0,0,0.05,0,0,0,0],\\"lighting\\":{\\"specularLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0,0]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[-1,-1,-1]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.5372549019607843,0.11372549019607843,-0.9019607843137255]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.12156862745098039,0.00392156862745098,-0.38823529411764707]}],\\"diffuseLights\\":[{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[-0.12549019607843137,-0.12549019607843137,-0.12549019607843137]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[-0.15294117647058825,-0.15294117647058825,-0.15294117647058825]},{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.07450980392156863,0.12941176470588237]}],\\"glow\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0.4117647058823529,0.596078431372549,0.8941176470588236]},\\"membrane\\":{\\"xyzw\\":[0,0,0,0],\\"rgb\\":[0,0.12156862745098039,0.6823529411764706]},\\"nearFrameColor\\":[0.2,0.09019607843137255,0.9411764705882353],\\"farFrameColor\\":[0,0.984313725490196,0.12549019607843137],\\"diffuseOpacity\\":0.75,\\"specularOpacity\\":0}}"}]'

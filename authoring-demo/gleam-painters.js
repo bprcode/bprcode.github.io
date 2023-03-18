@@ -249,7 +249,7 @@ painters.drawTexturedQuad = function () {
   gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
 }
 
-painters.initClearTesseract = function () {
+painters.initEdgeTesseract = function () {
   /** @type {WebGL2RenderingContext} */
   const gl = this.gl
   const res = gl.canvas.clientWidth
@@ -346,6 +346,23 @@ painters.initClearTesseract = function () {
     this.shared.res = gl.canvas.clientWidth
     this.shared.blurRes = gl.canvas.clientWidth
   })
+
+  // If the mesh appears to contain normals, prepare to use them
+  // and provide specular colors.
+  if(this.mesh.stride === 8) {
+    this.normal = gl.getAttribLocation(this.program, 'normal')
+    gl.enableVertexAttribArray(this.normal)
+    gl.vertexAttribPointer(this.normal, this.components, gl.FLOAT, false,
+      this.mesh.byteStride, Float32Array.BYTES_PER_ELEMENT * 4)
+
+    this.specularColor1 = gl.getUniformLocation(this.program, 'specularColor1')
+    this.specularColor2 = gl.getUniformLocation(this.program, 'specularColor2')
+    this.specularColor3 = gl.getUniformLocation(this.program, 'specularColor3')
+    this.specularColor4 = gl.getUniformLocation(this.program, 'specularColor4')
+    this.frameSpecularWeight =
+      gl.getUniformLocation(this.program, 'frameSpecularWeight')
+    gl.uniform1f(this.frameSpecularWeight, 2)
+  }
 }
 
 painters.drawClearTesseract = function () {
@@ -455,6 +472,14 @@ painters.drawDonutTesseract = function () {
   gl.uniformMatrix4fv(this.uM4, false, this.M4)
   gl.uniform3fv(this.nearFrameColor, state.lighting.nearFrameColor)
   gl.uniform3fv(this.farFrameColor, state.lighting.farFrameColor)
+
+  // If the mesh has normals, provide colors for specularity:
+  if (this.mesh.stride === 8) {
+    gl.uniform3fv(this.specularColor1, state.lighting.specularLights[0].rgb)
+    gl.uniform3fv(this.specularColor2, state.lighting.specularLights[1].rgb)
+    gl.uniform3fv(this.specularColor3, state.lighting.specularLights[2].rgb)
+    gl.uniform3fv(this.specularColor4, state.lighting.specularLights[3].rgb)
+  }
 
   // If using MSAA, render and resolve,
   // otherwise render directly to texture.

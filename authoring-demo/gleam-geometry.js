@@ -143,9 +143,10 @@ geometry.quadLoop.stride = 3
 
 geometry.triCube = extrudeLineStrip(geometry.quadLoop, 0, 0, 2.0)
 
-geometry.tesseract = wireframeTesseract()
-geometry.donutTesseract = openTesseract()
-geometry.normalTesseract = normalTesseract()
+geometry.donutTesseract = buildTesseract(squareDonut, 4)
+geometry.normalDonutTesseract = buildTesseract(edgeNormalFace, 8)
+geometry.normalTesseract = buildTesseract(normalSquare, 8)
+geometry.normalDonutTesseract.log('normal test')
 
 geometry.triCube.replace(breakQuad, 12)
 geometry.triCube.push(
@@ -276,13 +277,16 @@ function fanClose (strip) {
 
 /**
  * Generate a mesh for a tesseract spanning (-1,-,1,-1,-1) to (1,1,1,1).
- * This version produces a thin frame with a central gap in every face.
- * @returns {Mesh} An array of numbers describing vertices for a tesseract
- * to be drawn using triangles.
+ * For each face, the provided callback will be invoked, with the vertices
+ * provided as four separate arguments (each a 4D point), and access to the
+ * mesh provided through the "this" reference.
+ * The stride argument specifies the number of elements to read at a time
+ * (4 for 4D vertex-only, 8 for 4D vertex-with-4D normal.)
  */
-function openTesseract () {
-  const face = squareDonut
+function buildTesseract (faceCallback, stride) {
   const tesseract = new Mesh
+  const face = faceCallback.bind(tesseract)
+
   //          x  y  z  w
   const a = [-1, 1, 1, 1]
   const b = [-1,-1, 1, 1]
@@ -336,210 +340,98 @@ function openTesseract () {
   face(e,p,s,h)
   face(d,o,p,e)
 
-  function squareDonut (v0, v1, v2, v3) {
-    const t = 0.04
-    const center = []
-
-    for (let i = 0; i < 4; i++) {
-      center[i] = (v0[i] + v1[i] + v2[i] + v3[i]) / 4
-    }
-
-    for (const [a,b] of [[v0, v1], [v1, v2], [v2, v3], [v3, v0] ]) {
-      const aInner = []
-      const bInner = []
-
-      for (let j = 0; j < 4; j++) {
-        aInner[j] = a[j]*(1-t) + center[j]*t
-      }
-      for (let j = 0; j < 4; j++) {
-        bInner[j] = b[j]*(1-t) + center[j]*t
-      }
-
-      tesseract.push(...[
-        a, b, aInner,
-        aInner, b, bInner,
-      ].flat())
-
-    }
-  }
-
-  tesseract.stride = 4
+  tesseract.stride = stride
   return tesseract
 }
+
 /**
- * Generate a mesh for a tesseract spanning (-1,-,1,-1,-1) to (1,1,1,1).
- * This version produces a square for every face,
- * along with an interleaved normal for each vertex.
- * @returns {Mesh} An array of numbers describing vertices for a tesseract
- * to be drawn using triangles.
+ * Generates a square face of two-triangle trapezoids, with normals tilted
+ * at 45 degrees,pointing through the center of each edge.
  */
-function normalTesseract () {
-  const face = makeSquare
-  const tesseract = new Mesh
-  //          x  y  z  w
-  const a = [-1, 1, 1, 1]
-  const b = [-1,-1, 1, 1]
-  const c = [ 1,-1, 1, 1]
-  const d = [ 1, 1, 1, 1]
-  const e = [ 1, 1,-1, 1]
-  const f = [ 1,-1,-1, 1]
-  const g = [-1,-1,-1, 1]
-  const h = [-1, 1,-1, 1]
+function edgeNormalFace (v0, v1, v2, v3) {
+  const t = 0.04
+  const center = []
+  const [n01, n12, n23, n30] = [[], [], [], []]
 
-  const l = [-1, 1, 1,-1]
-  const m = [-1,-1, 1,-1]
-  const n = [ 1,-1, 1,-1]
-  const o = [ 1, 1, 1,-1]
-  const p = [ 1, 1,-1,-1]
-  const q = [ 1,-1,-1,-1]
-  const r = [-1,-1,-1,-1]
-  const s = [-1, 1,-1,-1]
+  // Find normal through each edge:
+  for (let i = 0; i < 4; i++) {
+    n01[i] = (v0[i] + v1[i]) / 2
+    n12[i] = (v1[i] + v2[i]) / 2
+    n23[i] = (v2[i] + v3[i]) / 2
+    n30[i] = (v3[i] + v0[i]) / 2
+  }
 
-  // w+ surface cube
-  face(a,b,c,d)
-  face(a,h,g,b)
-  face(h,e,f,g)
-  face(e,d,c,f)
-  face(a,d,e,h)
-  face(c,b,g,f)
+  // Find center of square face:
+  for (let i = 0; i < 4; i++) {
+    center[i] = (v0[i] + v1[i] + v2[i] + v3[i]) / 4
+  }
 
-  // w- surface cube
-  face(l,m,n,o)
-  face(s,r,m,l)
-  face(s,p,q,r)
-  face(o,n,q,p)
-  face(s,l,o,p)
-  face(m,r,q,n)
-  
-  // cell boundaries around y-axis
-  face(a,l,m,b)
-  face(d,o,n,c)
-  face(e,p,q,f)
-  face(h,s,r,g)
+  // Create a trapezoid for each edge, with a 45-degree-angled normal:
+  for (const [a, b, n] of [
+    [v0, v1, n01],
+    [v1, v2, n12],
+    [v2, v3, n23],
+    [v3, v0, n30]
+  ]) {
+    const aInner = []
+    const bInner = []
 
-  // xz-parallel cell boundaries on y = -1
-  face(b,m,n,c)
-  face(g,r,m,b)
-  face(f,q,r,g)
-  face(c,n,q,f)
-
-  // xz-parallel cell boundaries on y = +1
-  face(a,l,o,d)
-  face(h,s,l,a)
-  face(e,p,s,h)
-  face(d,o,p,e)
-
-  function makeSquare (v0, v1, v2, v3) {
-    // debug -- initially just generate squares, no normals.
-    const n = []
-
-    for (let i = 0; i < 4; i++) {
-      n[i] = (v0[i] + v1[i] + v2[i] + v3[i]) / 4
+    for (let j = 0; j < 4; j++) {
+      aInner[j] = a[j]*(1-t) + center[j]*t
+    }
+    for (let j = 0; j < 4; j++) {
+      bInner[j] = b[j]*(1-t) + center[j]*t
     }
 
-    tesseract.push(...[
-      v0, n, v1, n, v2, n,
-      v0, n, v2, n, v3, n
+    this.push(...[
+      a, n, b, n, aInner, n,
+      aInner, n, b, n, bInner, n
     ].flat())
+  }
+}
 
-    //
-    // for (const [a,b] of [[v0, v1], [v1, v2], [v2, v3], [v3, v0] ]) {
-    //   const aInner = []
-    //   const bInner = []
+// Face-constructing function for a narrow frame enclosing each face.
+function squareDonut (v0, v1, v2, v3) {
+  const t = 0.04
+  const center = []
 
-    //   for (let j = 0; j < 4; j++) {
-    //     aInner[j] = a[j]*(1-t) + center[j]*t
-    //   }
-    //   for (let j = 0; j < 4; j++) {
-    //     bInner[j] = b[j]*(1-t) + center[j]*t
-    //   }
-
-    //   tesseract.push(...[
-    //     a, b, aInner,
-    //     aInner, b, bInner,
-    //   ].flat())
-
-    // }
+  for (let i = 0; i < 4; i++) {
+    center[i] = (v0[i] + v1[i] + v2[i] + v3[i]) / 4
   }
 
-  tesseract.stride = 8
-  return tesseract
+  for (const [a,b] of [[v0, v1], [v1, v2], [v2, v3], [v3, v0] ]) {
+    const aInner = []
+    const bInner = []
+
+    for (let j = 0; j < 4; j++) {
+      aInner[j] = a[j]*(1-t) + center[j]*t
+    }
+    for (let j = 0; j < 4; j++) {
+      bInner[j] = b[j]*(1-t) + center[j]*t
+    }
+
+    this.push(...[
+      a, b, aInner,
+      aInner, b, bInner,
+    ].flat())
+  }
 }
 
 /**
- * Generate a mesh for a tesseract spanning (-1,-,1,-1,-1) to (1,1,1,1).
- * This version produces closed loops for the edges of each square surface.
- * @returns {Mesh} An array of numbers describing vertices for a tesseract
- * wireframe. (note: current implementation redundantly draws the same edge
- * multiple times.)
+ * Generates a square composed of triangles,
+ * with normals pointing through the center of each face.
  */
-function wireframeTesseract () {
-  const face = plotEdges
-  const tesseract = new Mesh
-  //          x  y  z  w
-  const a = [-1, 1, 1, 1]
-  const b = [-1,-1, 1, 1]
-  const c = [ 1,-1, 1, 1]
-  const d = [ 1, 1, 1, 1]
-  const e = [ 1, 1,-1, 1]
-  const f = [ 1,-1,-1, 1]
-  const g = [-1,-1,-1, 1]
-  const h = [-1, 1,-1, 1]
+function normalSquare (v0, v1, v2, v3) {
+  const n = []
 
-  const l = [-1, 1, 1,-1]
-  const m = [-1,-1, 1,-1]
-  const n = [ 1,-1, 1,-1]
-  const o = [ 1, 1, 1,-1]
-  const p = [ 1, 1,-1,-1]
-  const q = [ 1,-1,-1,-1]
-  const r = [-1,-1,-1,-1]
-  const s = [-1, 1,-1,-1]
-
-  // w+ surface cube
-  face(a,b,c,d)
-  face(a,h,g,b)
-  face(h,e,f,g)
-  face(e,d,c,f)
-  face(a,d,e,h)
-  face(c,b,g,f)
-
-  // w- surface cube
-  face(l,m,n,o)
-  face(s,r,m,l)
-  face(s,p,q,r)
-  face(o,n,q,p)
-  face(s,l,o,p)
-  face(m,r,q,n)
-  
-  // cell boundaries around y-axis
-  face(a,l,m,b)
-  face(d,o,n,c)
-  face(e,p,q,f)
-  face(h,s,r,g)
-
-  // xz-parallel cell boundaries on y = -1
-  face(b,m,n,c)
-  face(g,r,m,b)
-  face(f,q,r,g)
-  face(c,n,q,f)
-
-  // xz-parallel cell boundaries on y = +1
-  face(a,l,o,d)
-  face(h,s,l,a)
-  face(e,p,s,h)
-  face(d,o,p,e)
-
-  function plotEdges (v0, v1, v2, v3) {
-    tesseract.push( ...[
-      v0, v1,
-      v1, v2,
-      v2, v3,
-      v3, v0
-    ].flat() )
+  for (let i = 0; i < 4; i++) {
+    n[i] = (v0[i] + v1[i] + v2[i] + v3[i]) / 4
   }
 
-  tesseract.stride = 4
-  return tesseract
+  this.push(...[
+    v0, n, v1, n, v2, n,
+    v0, n, v2, n, v3, n
+  ].flat())
 }
 
 /**

@@ -100,6 +100,88 @@ void main (void) {
 }
 `
 
+// Combines specular and base frame color:
+shaders.glitterFrameFrag =
+/* glsl */`
+precision mediump float;
+varying vec4 vNormal;
+varying vec4 vWorld4d;
+varying float w;
+uniform float frameSpecularWeight;
+
+uniform vec3 specularColor1;
+uniform vec3 specularColor2;
+uniform vec3 specularColor3;
+uniform vec3 specularColor4;
+
+#define wMid ${(shaders.wOffset).toFixed(6)}
+#define wFar (wMid - 2.)
+#define wNear (wMid + 2.)
+
+uniform vec3 nearFrameColor;
+uniform vec3 farFrameColor;
+
+void main (void) {
+  // Encode normalized w-component into alpha channel:
+  float a = clamp(w / wFar, 0., 1.);
+
+  // Use negatives since edge0 must be < edge1 per the spec:
+  float t = smoothstep(-wNear, -wFar, -w);
+
+  vec4 color =  mix(  vec4(0.9, 0.0, 0.4, a),
+                      vec4(0.0, 1.0, 0.7, a),
+                      clamp(t, 0., 1.));
+
+  vec4 wLight1 = normalize(-vec4(1., 0., -1., 0.));
+  vec4 wLight2 = normalize(-vec4(0., 1., 0., 1.));
+  vec4 wLight3 = normalize(-vec4(-1., -1., 1., 0.));
+  vec4 wLight4 = normalize(-vec4(0., 0., 1., 0.));
+  vec4 normal = normalize(vNormal);
+  float s1 = dot(normal, wLight1);
+  float s2 = dot(normal, wLight2);
+  float s3 = dot(normal, wLight3);
+  s1 = clamp(s1, 0., 1.);
+  s2 = clamp(s2, 0., 1.);
+  s3 = clamp(s3, 0., 1.);
+  color = vec4(
+    s1 * specularColor1 + s2 * specularColor2 + s3 * specularColor3,
+    0.);
+  color.a = a;
+
+  // debug -- specular testing:
+  vec4 viewDirection = normalize(vWorld4d);
+  vec4 reflected = reflect(viewDirection, normal);
+  float specular1 = clamp(
+    abs(dot(reflected, wLight1)),
+    0., 1.);
+  float specular2 = clamp(
+    abs(dot(reflected, wLight2)),
+    0., 1.);
+  float specular3 = clamp(
+    abs(dot(reflected, wLight3)),
+    0., 1.);
+  float specular4 = clamp(
+    abs(dot(reflected, wLight4)),
+    0., 1.);
+
+  // This part is specific to the border rendering:
+  // (need to set a to zero to avoid disrupting the depth value)
+  vec4 frameColor =  mix( vec4(nearFrameColor, 0.),
+    vec4(farFrameColor, 0.),
+    clamp(t, 0., 1.));
+
+  vec4 shine =
+    pow(specular1, 26.) * (vec4(specularColor1,0.) * 3. + vec4(0.3))
+    + pow(specular2, 26.) * (vec4(specularColor2,0.) * 3. + vec4(0.3))
+    + pow(specular3, 26.) * (vec4(specularColor3,0.) * 3. + vec4(0.3))
+    + pow(specular4, 80.) * (vec4(specularColor4,0.) * 7. + vec4(0.3));
+  gl_FragColor = 
+    (shine + vec4(1., 0.3, 0., 0.) * pow(a, 4.)/10.)
+      * frameSpecularWeight
+      + frameColor*0.;
+}
+`
+
 shaders.glassGlitterFrag =
 /* glsl */`
 precision mediump float;
@@ -130,16 +212,12 @@ void main (void) {
 
   vec4 wLight1 = normalize(-vec4(1., 0., -1., 0.));
   vec4 wLight2 = normalize(-vec4(0., 1., 0., 1.));
-  vec4 wLight3 = normalize(-vec4(0., 0., 0., 1.));
+  vec4 wLight3 = normalize(-vec4(-1., -1., 1., 0.));
   vec4 wLight4 = normalize(-vec4(0., 0., 1., 0.));
   vec4 normal = normalize(vNormal);
   float s1 = dot(normal, wLight1);
   float s2 = dot(normal, wLight2);
   float s3 = dot(normal, wLight3);
-  // vec4 lightColor1 = vec4(0.333, 0., 0., 0.);
-  // vec4 lightColor2 = vec4(0., 0.25, 0.5, 0.);
-  // vec4 lightColor3 = vec4(0., 0.1, 0.4, 0.);
-  // vec4 lightColor4 = vec4(0.05, 0.0, 0.2, 0.);
   s1 = clamp(s1, 0., 1.);
   s2 = clamp(s2, 0., 1.);
   s3 = clamp(s3, 0., 1.);
@@ -167,7 +245,7 @@ void main (void) {
   vec4 shine =
     pow(specular1, 26.) * (vec4(specularColor1,0.) * 3. + vec4(0.3))
     + pow(specular2, 26.) * (vec4(specularColor2,0.) * 3. + vec4(0.3))
-    + pow(specular3, 26.) * (vec4(specularColor1,0.) * 3. + vec4(0.3)) // using 1
+    + pow(specular3, 26.) * (vec4(specularColor3,0.) * 3. + vec4(0.3))
     + pow(specular4, 80.) * (vec4(specularColor4,0.) * 7. + vec4(0.3));
   gl_FragColor = (shine + vec4(1., 0.3, 0., 0.) * pow(a, 4.)/10.) * opacity;
 }
@@ -210,6 +288,7 @@ void main (void) {
   gl_FragColor = color;
 }
 
+// debug: pre-normalize all this data later.
 `
 shaders.membraneTest =
 /* glsl */`
