@@ -67,7 +67,6 @@ painters.initBlurCompositor = function () {
   this.uBlurTex = gl.getUniformLocation(this.program, 'blurTex')
   this.uClearTex = gl.getUniformLocation(this.program, 'clearTex')
   this.uDepthTex = gl.getUniformLocation(this.program, 'depthTex')
-  this.uFocalDistance = gl.getUniformLocation(this.program, 'focalDistance')
 
   gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo)
   gl.enableVertexAttribArray(this.aTexel)
@@ -86,8 +85,6 @@ painters.compositeBlur = function () {
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
-
-  gl.uniform1f(this.uFocalDistance, state.sliders[1])
 
   // blurTexture should already be bound
   gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
@@ -437,22 +434,19 @@ painters.drawGlassTesseract = function () {
   
   gl.uniformMatrix4fv(this.uM3, false, this.M3)
   gl.uniformMatrix4fv(this.uM4, false, this.M4)
-  gl.uniform3fv(this.glowColor, state.lighting.glow.rgb)
-  gl.uniform3fv(this.membraneColor, state.lighting.membrane.rgb)
-  gl.uniform3fv(this.diffuseColor1, state.lighting.diffuseLights[0].rgb)
-  gl.uniform3fv(this.diffuseColor2, state.lighting.diffuseLights[1].rgb)
-  gl.uniform3fv(this.diffuseColor3, state.lighting.diffuseLights[2].rgb)
+  gl.uniform4fv(this.glowColor, state.lighting.glow.rgba)
+  gl.uniform4fv(this.membraneColor, state.lighting.membrane.rgba)
+  gl.uniform4fv(this.diffuseColor1, state.lighting.diffuseLights[0].rgba)
+  gl.uniform4fv(this.diffuseColor2, state.lighting.diffuseLights[1].rgba)
+  gl.uniform4fv(this.diffuseColor3, state.lighting.diffuseLights[2].rgba)
 
-  gl.uniform3fv(this.specularColor1, state.lighting.specularLights[0].rgb)
-  gl.uniform3fv(this.specularColor2, state.lighting.specularLights[1].rgb)
-  gl.uniform3fv(this.specularColor3, state.lighting.specularLights[2].rgb)
-  gl.uniform3fv(this.specularColor4, state.lighting.specularLights[3].rgb)
+  gl.uniform4fv(this.specularColor1, state.lighting.specularLights[0].rgba)
+  gl.uniform4fv(this.specularColor2, state.lighting.specularLights[1].rgba)
+  gl.uniform4fv(this.specularColor3, state.lighting.specularLights[2].rgba)
+  gl.uniform4fv(this.specularColor4, state.lighting.specularLights[3].rgba)
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   gl.viewport(0, 0, this.shared.res, this.shared.res)
-  // gl.clearColor(0, 0, 0, 1)
-  // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
+  
   gl.disable(gl.CULL_FACE)
   gl.disable(gl.DEPTH_TEST)
   gl.enable(gl.BLEND)
@@ -467,18 +461,18 @@ painters.drawDonutTesseract = function () {
   const gl = this.gl
 
   painters.commonTesseractAnimation.call(this)
-  
+
   gl.uniformMatrix4fv(this.uM3, false, this.M3)
   gl.uniformMatrix4fv(this.uM4, false, this.M4)
-  gl.uniform3fv(this.nearFrameColor, state.lighting.nearFrameColor)
-  gl.uniform3fv(this.farFrameColor, state.lighting.farFrameColor)
+  gl.uniform4fv(this.nearFrameColor, state.lighting.nearFrameColor)
+  gl.uniform4fv(this.farFrameColor, state.lighting.farFrameColor)
 
   // If the mesh has normals, provide colors for specularity:
   if (this.mesh.stride === 8) {
-    gl.uniform3fv(this.specularColor1, state.lighting.specularLights[0].rgb)
-    gl.uniform3fv(this.specularColor2, state.lighting.specularLights[1].rgb)
-    gl.uniform3fv(this.specularColor3, state.lighting.specularLights[2].rgb)
-    gl.uniform3fv(this.specularColor4, state.lighting.specularLights[3].rgb)
+    gl.uniform4fv(this.specularColor1, state.lighting.specularLights[0].rgba)
+    gl.uniform4fv(this.specularColor2, state.lighting.specularLights[1].rgba)
+    gl.uniform4fv(this.specularColor3, state.lighting.specularLights[2].rgba)
+    gl.uniform4fv(this.specularColor4, state.lighting.specularLights[3].rgba)
   }
 
   // If using MSAA, render and resolve,
@@ -486,7 +480,7 @@ painters.drawDonutTesseract = function () {
   if (this.shared.fboAA) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.shared.fboAA)
     gl.viewport(0, 0, this.shared.res, this.shared.res)
-    gl.clearColor(0, 0, 0, 1)
+    gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
     gl.disable(gl.CULL_FACE)
@@ -505,7 +499,7 @@ painters.drawDonutTesseract = function () {
   } else {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.shared.fboClear)
     gl.viewport(0, 0, this.shared.res, this.shared.res)
-    gl.clearColor(0, 0, 0, 1)
+    gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
     gl.disable(gl.CULL_FACE)
@@ -521,14 +515,6 @@ painters.initTesseractCompositor = function () {
   this.uBlurTex = gl.getUniformLocation(this.program, 'blurTex')
   this.uClearTex = gl.getUniformLocation(this.program, 'clearTex')
   this.uDepthTex = gl.getUniformLocation(this.program, 'depthTex')
-  this.uZFocalDistance =
-    gl.getUniformLocation(this.program, 'zFocalDistance')
-  this.uWFocalDistance =
-    gl.getUniformLocation(this.program, 'wFocalDistance')
-  this.uZFieldWidth =
-    gl.getUniformLocation(this.program, 'zFieldWidth')
-  this.uWFieldWidth =
-    gl.getUniformLocation(this.program, 'wFieldWidth')
 
   this.uZNear = gl.getUniformLocation(this.program, 'zNear')
   this.uZFar = gl.getUniformLocation(this.program, 'zFar')
@@ -552,17 +538,6 @@ painters.drawTesseractCompositor = function () {
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   gl.viewport(0, 0, this.shared.res, this.shared.res)
-
-  let wd = state.sliders[2]
-
-  if (state.checkboxes[2]) {
-    wd = (Math.sin(τ * (this.dt / 9000)) ** 3) * 0.85 + 0.95
-  }
-
-  gl.uniform1f(this.uZFocalDistance, state.sliders[0])
-  gl.uniform1f(this.uZFieldWidth, state.sliders[1])
-  gl.uniform1f(this.uWFocalDistance, wd)
-  gl.uniform1f(this.uWFieldWidth, state.sliders[3])
 
   gl.bindTexture(gl.TEXTURE_2D, this.shared.blurTexture)
   gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
@@ -659,10 +634,40 @@ function verifyFramebuffer(gl) {
   }
 }
 
+// Utility function for converting lighting data from prior RGB format
+function convertLightingToAlpha (original) {
+  for (const ref of [
+    original.specularLights[0],
+    original.specularLights[1],
+    original.specularLights[2],
+    original.specularLights[3],
+    original.diffuseLights[0],
+    original.diffuseLights[1],
+    original.diffuseLights[2],
+    original.glow,
+    original.membrane
+  ]) {
+    if (ref.rgb) {
+      const prev = ref.rgb
+      ref.rgba = [...ref.rgb, 0]
+      delete ref.rgb
+      log('converted ' + prev + ' to ' + ref.rgba)
+    }
+  }
+  if (original.nearFrameColor.length === 3) {
+    original.nearFrameColor.push(0)
+  }
+  if (original.farFrameColor.length === 3) {
+    original.farFrameColor.push(1)
+  }
+
+  return original
+}
+
 class Lighting {
   static Light = class {
     xyzw = [0,0,0,0]
-    rgb = [0,0,0]
+    rgba = [0,0,0,0]
   }
 
   constructor () {
@@ -682,8 +687,8 @@ class Lighting {
     this.glow = new Lighting.Light
     this.membrane = new Lighting.Light
 
-    this.nearFrameColor = [0,0,0]
-    this.farFrameColor = [0,0,0]
+    this.nearFrameColor = [0,0,0,0]
+    this.farFrameColor = [0,0,0,1]
 
     this.diffuseOpacity = 1
     this.specularOpacity = 0

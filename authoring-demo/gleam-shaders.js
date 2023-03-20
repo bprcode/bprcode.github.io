@@ -50,6 +50,29 @@ void main (void) {
 }
 `
 
+shaders.variableFrameAlphaFrag =
+/* glsl */`
+precision mediump float;
+varying float w;
+uniform vec4 nearFrameColor;
+uniform vec4 farFrameColor;
+
+#define wMid ${(shaders.wOffset).toFixed(6)}
+#define wFar (wMid - 2.)
+#define wNear (wMid + 2.)
+
+void main (void) {
+  // Use negatives since edge0 must be < edge1 per the spec:
+  float t = smoothstep(-wNear, -wFar, -w);
+
+  vec4 color =  mix(  vec4(nearFrameColor),
+                      vec4(farFrameColor),
+                      clamp(t, 0., 1.));
+
+  gl_FragColor = color;
+}
+`
+
 shaders.variableFrameFrag =
 /* glsl */`
 precision mediump float;
@@ -182,7 +205,7 @@ void main (void) {
 }
 `
 
-shaders.glassGlitterFrag =
+shaders.glassGlitterAlphaFrag =
 /* glsl */`
 precision mediump float;
 varying vec4 vNormal;
@@ -190,25 +213,18 @@ varying vec4 vWorld4d;
 varying float w;
 uniform float opacity;
 
-uniform vec3 specularColor1;
-uniform vec3 specularColor2;
-uniform vec3 specularColor3;
-uniform vec3 specularColor4;
+uniform vec4 specularColor1;
+uniform vec4 specularColor2;
+uniform vec4 specularColor3;
+uniform vec4 specularColor4;
 
 #define wMid ${(shaders.wOffset).toFixed(6)}
 #define wFar (wMid - 2.)
 #define wNear (wMid + 2.)
 
 void main (void) {
-  // Encode normalized w-component into alpha channel:
-  float a = clamp(w / wFar, 0., 1.);
-
   // Use negatives since edge0 must be < edge1 per the spec:
   float t = smoothstep(-wNear, -wFar, -w);
-
-  vec4 color =  mix(  vec4(0.9, 0.0, 0.4, a),
-                      vec4(0.0, 1.0, 0.7, a),
-                      clamp(t, 0., 1.));
 
   vec4 wLight1 = normalize(-vec4(1., 0., -1., 0.));
   vec4 wLight2 = normalize(-vec4(0., 1., 0., 1.));
@@ -221,10 +237,9 @@ void main (void) {
   s1 = clamp(s1, 0., 1.);
   s2 = clamp(s2, 0., 1.);
   s3 = clamp(s3, 0., 1.);
-  color = vec4(
-    s1 * specularColor1 + s2 * specularColor2 + s3 * specularColor3,
-    0.);
-  color.a = a;
+  vec4 color = vec4(
+    s1 * specularColor1 + s2 * specularColor2 + s3 * specularColor3
+  );
 
   // debug -- specular testing:
   vec4 viewDirection = normalize(vWorld4d);
@@ -243,11 +258,11 @@ void main (void) {
     0., 1.);
 
   vec4 shine =
-    pow(specular1, 26.) * (vec4(specularColor1,0.) * 3. + vec4(0.3))
-    + pow(specular2, 26.) * (vec4(specularColor2,0.) * 3. + vec4(0.3))
-    + pow(specular3, 26.) * (vec4(specularColor3,0.) * 3. + vec4(0.3))
-    + pow(specular4, 80.) * (vec4(specularColor4,0.) * 7. + vec4(0.3));
-  gl_FragColor = (shine + vec4(1., 0.3, 0., 0.) * pow(a, 4.)/10.) * opacity;
+      pow(specular1, 26.) * (specularColor1 * 3.)
+    + pow(specular2, 26.) * (specularColor2 * 3.)
+    + pow(specular3, 26.) * (specularColor3 * 3.)
+    + pow(specular4, 80.) * (specularColor4 * 7.);
+  gl_FragColor = shine * opacity;
 }
 `
 
@@ -357,6 +372,81 @@ void main (void) {
     // Membrane contribution:
     + membranePart),
     a);
+}
+`
+
+shaders.membraneAlphaDebug =
+/* glsl */`
+precision mediump float;
+varying vec4 vNormal;
+varying vec4 vWorld4d;
+varying float w;
+uniform float opacity;
+
+uniform vec4 glowColor;
+uniform vec4 membraneColor;
+uniform vec4 diffuseColor1;
+uniform vec4 diffuseColor2;
+uniform vec4 diffuseColor3;
+
+#define wMid ${(shaders.wOffset).toFixed(6)}
+#define wFar (wMid - 2.)
+#define wNear (wMid + 2.)
+
+float diminish (float x) {
+  return -1. / (x + 1.) + 1.;
+}
+
+void main (void) {
+  // Encode normalized w-component into alpha channel:
+  float a = clamp(w / wFar, 0., 1.);
+
+  // Use negatives since edge0 must be < edge1 per the spec:
+  float t = smoothstep(-wNear, -wFar, -w);
+
+  // Calculate a color contribution based on path length
+  // through a supposed pane of semitranslucent material
+  float dp = dot(normalize(vWorld4d), normalize(vNormal));
+  dp = abs(dp);
+  dp = clamp(dp, 0.000001, 1.);
+  // This is asymptotic, but the effect is nice:
+  // float thickness = 0.05 / dp;
+  // These are more numerically sensible:
+  float thickness = pow((diminish(0.8 / dp) - 0.444)*1.79856, 2.);
+  // float thickness = smoothstep(0., 2., 0.05 / dp);
+  // float thickness = diminish(pow(0.05 / dp, 2.));
+
+  vec4 membranePart = membraneColor * thickness;
+
+  // Diffuse light pane contributions:
+  vec4 wLightDir1 = normalize(-vec4(1., 0., -1., 0.));
+  vec4 wLightDir2 = normalize(-vec4(0., 1., 0., 1.));
+  vec4 wLightDir3 = normalize(-vec4(0., 0., 0., 1.));
+  float s1 = dot(normalize(vNormal), wLightDir1);
+  float s2 = dot(normalize(vNormal), wLightDir2);
+  float s3 = dot(normalize(vNormal), wLightDir3);
+  s1 = clamp(s1, 0., 1.);
+  s2 = clamp(s2, 0., 1.);
+  s3 = clamp(s3, 0., 1.);
+
+  gl_FragColor = opacity * (
+    s1 * diffuseColor1 + s2 * diffuseColor2 + s3 * diffuseColor3
+    + glowColor * pow(a, 3.)
+    + membranePart
+  );
+  /*// debug alpha write test with just glow contribution:
+  // gl_FragColor = vec4(0., 0., 0., pow(a, 3.));
+  gl_FragColor = vec4( opacity * vec3(
+    // Diffuse contribution:
+    s1 * diffuseColor1 + s2 * diffuseColor2 + s3 * diffuseColor3
+    // Depth glow contribution:
+    + glowColor * pow(a, 3.)
+    // Membrane contribution:
+    + membranePart),
+    // manually test added alpha
+    s2 +
+    0.*pow(a, 3.));
+    // a);*/
 }
 `
 
@@ -486,43 +576,20 @@ void main (void) {
 }
 `
 
-shaders.debugSpecularFrag =
+shaders.blurCompositorFrag_justAlpha =
 /* glsl */`
 precision mediump float;
-varying vec3 vWorld;
-varying vec3 vNormal;
-
-#define pi 3.14159265358979
+uniform sampler2D blurTex;
+uniform sampler2D clearTex;
+uniform sampler2D depthTex;
+varying vec2 vTexel;
 
 void main (void) {
-  vec4 ambient = vec4(0.12, 0.12, 0.25, 1.);
-  vec4 diffuse = vec4(1., 0., 0., 1.);
-  vec4 specular = vec4(0., 0.7, 0.8, 1.);
-  vec4 specular2 = vec4(0.5, 0., 0.9, 1.);
+  vec4 clear = texture2D(clearTex, vTexel);
+  vec4 blurry = texture2D(blurTex, vTexel);
 
-  vec3 lightDirection = normalize(-vec3(0.1, -0.5, -1.));
-  vec3 lightDirection2 = normalize(-vec3(0.0, 0.0, 1.0));
-  vec3 viewDirection = normalize(vWorld);
-  vec3 normal = normalize(vNormal);
-
-  float d = clamp(dot(normal, lightDirection), 0., 1.);
-  float s = clamp(
-      dot(
-        reflect(viewDirection, normal),
-        lightDirection
-      ),
-    0., 1.);
-  float s2 = clamp(
-      dot(
-        reflect(viewDirection, normal),
-        lightDirection2
-      ),
-    0., 1.);
-
-  gl_FragColor =
-    ambient
-    + pow(s, 10.) * specular
-    + pow(s2, 10.) * specular2;
+  gl_FragColor = mix(blurry, clear, clear.a);
+  // gl_FragColor = vec4(clear.a, 0., 0., 1.);
 }
 `
 

@@ -146,7 +146,6 @@ geometry.triCube = extrudeLineStrip(geometry.quadLoop, 0, 0, 2.0)
 geometry.donutTesseract = buildTesseract(squareDonut, 4)
 geometry.normalDonutTesseract = buildTesseract(edgeNormalFace, 8)
 geometry.normalTesseract = buildTesseract(normalSquare, 8)
-geometry.normalDonutTesseract.log('normal test')
 
 geometry.triCube.replace(breakQuad, 12)
 geometry.triCube.push(
