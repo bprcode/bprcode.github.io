@@ -358,7 +358,6 @@ painters.initEdgeTesseract = function () {
     this.specularColor4 = gl.getUniformLocation(this.program, 'specularColor4')
     this.frameSpecularWeight =
       gl.getUniformLocation(this.program, 'frameSpecularWeight')
-    gl.uniform1f(this.frameSpecularWeight, 2)
   }
 }
 
@@ -456,6 +455,11 @@ painters.drawGlassTesseract = function () {
   gl.enable(gl.DEPTH_TEST)
 }
 
+painters.useClearTarget = function () {
+  /** @type {WebGL2RenderingContext} */
+  const gl = this.gl
+}
+
 painters.drawDonutTesseract = function () {
   /** @type {WebGL2RenderingContext} */
   const gl = this.gl
@@ -466,6 +470,9 @@ painters.drawDonutTesseract = function () {
   gl.uniformMatrix4fv(this.uM4, false, this.M4)
   gl.uniform4fv(this.nearFrameColor, state.lighting.nearFrameColor)
   gl.uniform4fv(this.farFrameColor, state.lighting.farFrameColor)
+  if (this.frameSpecularWeight) {
+    gl.uniform1f(this.frameSpecularWeight, state.lighting.borderSpecularity)
+  }
 
   // If the mesh has normals, provide colors for specularity:
   if (this.mesh.stride === 8) {
@@ -661,6 +668,8 @@ function convertLightingToAlpha (original) {
     original.farFrameColor.push(1)
   }
 
+  original.borderSpecularity ??= 0
+
   return original
 }
 
@@ -692,6 +701,7 @@ class Lighting {
 
     this.diffuseOpacity = 1
     this.specularOpacity = 0
+    this.borderSpecularity = 0
   }
 
   

@@ -63,25 +63,6 @@
       <canvas width="50" height="50" id="main-canvas" class="render-canvas square-shadow" style="background:#0f0;"></canvas>
       <canvas width="50" height="50" id="second-canvas" class="render-canvas square-shadow" style="background:#ff0;"></canvas>
 
-      <div class="sliders slide1">
-        <label for="z-plane">
-          <span>z- focal distance: </span><span class="value-display"></span>
-        </label>
-        <input type="range" id="z-plane" min="0.5" max="50.0" value="19.2" step="0.1">
-        <label for="z-field">
-          <span>z- field width: </span><span class="value-display"></span>
-        </label>
-        <input type="range" id="z-field" min="0.0" max="30.0" value="1.5" step="0.1">
-        <label for="w-plane">
-          <span>w- focal distance: </span><span class="value-display"></span>
-        </label>
-        <input type="range" id="w-plane" min="0.0" max="2.0" value="0.835" step="0.001">
-        <label for="w-field">
-          <span>w- field width: </span><span class="value-display"></span>
-        </label>
-        <input type="range" id="w-field" min="0.0" max="5.0" value="0.35" step="0.001">
-      </div>
-
       <div class="animation-speeds-container">
         <fieldset class="animation-speeds">
         <legend>Animation speeds (rev/s)</legend>
@@ -422,9 +403,9 @@
               <path d="M10.5 1.5a.5.5 0 0 0-1 0v1a.5.5 0 0 0 1 0v-1zm3.743 1.964a.5.5 0 1 0-.707-.707l-.708.707a.5.5 0 0 0 .708.708l.707-.708zm-7.779-.707a.5.5 0 0 0-.707.707l.707.708a.5.5 0 1 0 .708-.708l-.708-.707zm1.734 3.374a2 2 0 1 1 3.296 2.198c.199.281.372.582.516.898a3 3 0 1 0-4.84-3.225c.352.011.696.055 1.028.129zm4.484 4.074c.6.215 1.125.59 1.522 1.072a.5.5 0 0 0 .039-.742l-.707-.707a.5.5 0 0 0-.854.377zM14.5 6.5a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1z"/>
             </svg></label>
             <span>
-              <input type="range" id="diffuse-opacity" min="0.0" max="2.0" step="0.25" value="1.0">
+              <input type="range" id="diffuse-opacity" min="0.0" max="2.0" step="0.05" value="1.0">
             </span>
-            <span class="value-display"></span>
+            <span class="value-display" id="diffuse-opacity-display"></span>
           </div>
 
           <div class="opacity-container">
@@ -432,9 +413,19 @@
               <path d="M7.646 1.146a.5.5 0 0 1 .708 0l1.5 1.5a.5.5 0 0 1-.708.708L8.5 2.707V4.5a.5.5 0 0 1-1 0V2.707l-.646.647a.5.5 0 1 1-.708-.708l1.5-1.5zM2.343 4.343a.5.5 0 0 1 .707 0l1.414 1.414a.5.5 0 0 1-.707.707L2.343 5.05a.5.5 0 0 1 0-.707zm11.314 0a.5.5 0 0 1 0 .707l-1.414 1.414a.5.5 0 1 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zM8 7a3 3 0 0 1 2.599 4.5H5.4A3 3 0 0 1 8 7zm3.71 4.5a4 4 0 1 0-7.418 0H.499a.5.5 0 0 0 0 1h15a.5.5 0 0 0 0-1h-3.79zM0 10a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2A.5.5 0 0 1 0 10zm13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
             </svg></label>
             <span>
-              <input type="range" id="specular-opacity" min="0.0" max="2.0" step="0.25" value="1.0">
+              <input type="range" id="specular-opacity" min="0.0" max="2.0" step="0.05" value="1.0">
             </span>
-            <span class="value-display"></span>
+            <span class="value-display" id="specular-opacity-display"></span>
+          </div>
+
+          <div class="opacity-container">
+            <label for="border-specularity">border specularity <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box" viewBox="0 0 16 16">
+              <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5 8 5.961 14.154 3.5 8.186 1.113zM15 4.239l-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/>
+            </svg></label>
+            <span>
+              <input type="range" id="border-specularity" min="0.0" max="2.0" step="0.05" value="1.0">
+            </span>
+            <span class="value-display" id="border-specularity-display"></span>
           </div>
 
         </fieldset>
@@ -895,18 +886,6 @@ fieldset {
   justify-content: space-evenly;
 }
 
-.sliders {
-  display: flex;
-  flex-direction: column;
-}
-
-.sliders * {
-  flex-grow: 1;
-}
-
-.slide1 {
-  grid-area: slide1;
-}
 
 .animation-speeds-container {
   grid-area: speeds;
@@ -955,9 +934,7 @@ fieldset {
     'title2'
     'radios'
     'first'
-    'slide1'
     'check1'
-    'slide2'
     'check2'
     'rollers'
     'speeds'
@@ -971,10 +948,10 @@ fieldset {
   .views {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
-    'rollers second'
+    'first second'
     'speeds radios'
     'check1 radios'
-    'slide1 first'
+    'rollers rollers'
     'info info'
     'title1 title2';
   }
