@@ -5,92 +5,15 @@
 const painters = {}
 // const shaders = buildShaders()
 
-painters.commonCubeAnimation = function () {
-  ident(this.M)
-  mult4(this.M, scaleMatrix(0.15), this.M)
-  mult4(this.M,
-    rotateXY(τ * Math.sin(π/4 + this.dt / 5000.0)), this.M)
-    mult4(this.M,
-    rotateXZ(τ * Math.sin(π/4 + this.dt / 4000.0)), this.M)
-  mult4(this.M, translateMatrix(
-                  0.1*Math.cos(this.dt/1000),
-                  0.1*Math.sin(this.dt/2000),
-                  -3 + 0.5*Math.sin(this.dt/1000)),
-    this.M)
-}
-
 painters.commonTesseractAnimation = function () {
   ident(this.M3)
   ident(this.M4)
-
-  // Before 4d projection
-  if (state.checkboxes[0]) {
-  mult4(this.M4,
-        rotateXY(τ * Math.sin(π/4 + this.dt / 11250)),
-        this.M4)
-  mult4(this.M4,
-        rotateYW(τ * Math.sin(π/4 + this.dt / 6750)),
-        this.M4)
-  mult4(this.M4,
-          rotateZW(τ * Math.sin(π/4 + this.dt / 9000.0)),
-          this.M4)
-  mult4(this.M4,
-          rotateYW(τ * Math.sin(π/4 + this.dt / 18000.0)),
-          this.M4)
-  }
-  
-  let beta = state.averageBeta
-  let gamma = state.averageGamma
-  if (state.checkboxes[1]) {
-    beta = this.dt / 170
-    gamma = this.dt / 110
-  }
 
   // After 4d projection
   if (this.shared.applyView) { this.shared.applyView.call(this) }
 
   mult4(this.M3, scaleMatrix(2.0), this.M3)
-  // mult4(this.M3,
-  //       rotateYZ((90 + beta) * τ / 360),
-  //       this.M3)
-  // mult4(this.M3,
-  //       rotateXZ((180 - gamma) * τ / 360),
-  //       this.M3)
   mult4(this.M3, translateMatrix(0, 0, -20), this.M3)
-}
-
-painters.initBlurCompositor = function () {
-  /** @type {WebGLRenderingContext} */
-  const gl = this.gl
-
-  this.aTexel = gl.getAttribLocation(this.program, 'aTexel')
-  this.uBlurTex = gl.getUniformLocation(this.program, 'blurTex')
-  this.uClearTex = gl.getUniformLocation(this.program, 'clearTex')
-  this.uDepthTex = gl.getUniformLocation(this.program, 'depthTex')
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo)
-  gl.enableVertexAttribArray(this.aTexel)
-  gl.vertexAttribPointer(this.aTexel, 2, gl.FLOAT, false,
-    this.mesh.byteStride, 2 * Float32Array.BYTES_PER_ELEMENT)
-  gl.bindBuffer(gl.ARRAY_BUFFER, null)
-
-  gl.uniform1i(this.uBlurTex, 0)
-  gl.uniform1i(this.uClearTex, 1)
-  gl.uniform1i(this.uDepthTex, 2)
-}
-
-painters.compositeBlur = function () {
-  /** @type {WebGLRenderingContext} */
-  const gl = this.gl
-
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
-
-  // blurTexture should already be bound
-  gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
-
-  // // Clean up:
-  gl.enable(gl.DEPTH_TEST)
 }
 
 painters.initBlur = function () {
@@ -144,17 +67,15 @@ painters.initBlur = function () {
 painters.drawBlur = function () {
   /** @type {WebGLRenderingContext} */
   const gl = this.gl
-
-  let bx = 1/this.shared.blurRes * Math.cos(π * this.dt/1000)
   
-  bx = 1/this.shared.blurRes
+  let bx = 1/this.shared.blurRes
   let by = 0
 
   gl.disable(gl.DEPTH_TEST)
   gl.viewport(0, 0, this.shared.blurRes, this.shared.blurRes)
 
   const needErase = [true, true]
-  const iterations = 6
+  const iterations = 10
 
   let readSource = this.shared.clearTexture
   for (let i = 0; i < iterations; i++) {
@@ -182,71 +103,7 @@ painters.drawBlur = function () {
   this.shared.blurTexture = readSource
 }
 
-painters.initPlainCube = function () {
-  /** @type {WebGLRenderingContext} */
-  const gl = this.gl
-
-  this.M = []
-  this.normal = gl.getAttribLocation(this.program, 'normal')
-  gl.enableVertexAttribArray(this.normal)
-  gl.vertexAttribPointer(this.normal,
-    3, gl.FLOAT, false, this.mesh.byteStride,
-    3 * Float32Array.BYTES_PER_ELEMENT)
-
-  const res = gl.canvas.clientWidth
-  // const clearTexture = blankTexture(gl, res)
-  
-  // const depthBuffer = gl.createRenderbuffer()
-  // gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer)
-  // gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16,
-  //   res, res)
-
-  // const fboClear = gl.createFramebuffer()
-  // gl.bindFramebuffer(gl.FRAMEBUFFER, fboClear)
-  // gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-  //   gl.TEXTURE_2D, clearTexture, 0)
-  // gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,
-  //   gl.RENDERBUFFER, depthBuffer)
-
-  // verifyFramebuffer(gl)
-
-  // gl.activeTexture(gl.TEXTURE0 + 1)
-  // gl.bindTexture(gl.TEXTURE_2D, clearTexture)
-
-  // gl.activeTexture(gl.TEXTURE0)
-
-  // this.shared.clearTexture = clearTexture
-  // this.fboClear = fboClear
-  this.shared.res = res
-
-  window.addEventListener('resize', event => {
-    this.shared.res = gl.canvas.clientWidth
-  })
-}
-
-painters.drawPlainCube = function () {
-  /** @type {WebGLRenderingContext} */
-  const gl = this.gl
-
-  // gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-  gl.viewport(0, 0, this.shared.res, this.shared.res)
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
-  painters.commonCubeAnimation.call(this)
-
-  gl.uniformMatrix4fv(this.model, false, this.M)
-
-  gl.drawArrays(gl.TRIANGLES, 0, this.mesh.blocks)
-}
-
-painters.drawTexturedQuad = function () {
-  /** @type {WebGLRenderingContext} */
-  const gl = this.gl
-
-  gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
-}
-
-painters.initEdgeTesseract = function () {
+painters.prepareBlurSurfaces = function () {
   /** @type {WebGL2RenderingContext} */
   const gl = this.gl
   const res = gl.canvas.clientWidth
@@ -294,18 +151,6 @@ painters.initEdgeTesseract = function () {
   } else {
     logError('✔ Bypassing MSAA.')
   }
-  
-  this.M3 = []
-  this.M4 = []
-
-  this.uM3 = gl.getUniformLocation(this.program, 'M3')
-  this.uM4 = gl.getUniformLocation(this.program, 'M4')
-  this.qModelL = gl.getUniformLocation(this.program, 'qModelL')
-  this.qModelR = gl.getUniformLocation(this.program, 'qModelR')
-  this.qViewL = gl.getUniformLocation(this.program, 'qViewL')
-  this.qViewR = gl.getUniformLocation(this.program, 'qViewR')
-  this.nearFrameColor = gl.getUniformLocation(this.program, 'nearFrameColor')
-  this.farFrameColor = gl.getUniformLocation(this.program, 'farFrameColor')
 
   const clearTexture =
     blankTexture(gl, () => gl.canvas.clientWidth,
@@ -343,6 +188,23 @@ painters.initEdgeTesseract = function () {
     this.shared.res = gl.canvas.clientWidth
     this.shared.blurRes = gl.canvas.clientWidth
   })
+}
+
+painters.initTesseractBorder = function () {
+  /** @type {WebGL2RenderingContext} */
+  const gl = this.gl
+  
+  this.M3 = []
+  this.M4 = []
+
+  this.uM3 = gl.getUniformLocation(this.program, 'M3')
+  this.uM4 = gl.getUniformLocation(this.program, 'M4')
+  this.qModelL = gl.getUniformLocation(this.program, 'qModelL')
+  this.qModelR = gl.getUniformLocation(this.program, 'qModelR')
+  this.qViewL = gl.getUniformLocation(this.program, 'qViewL')
+  this.qViewR = gl.getUniformLocation(this.program, 'qViewR')
+  this.nearFrameColor = gl.getUniformLocation(this.program, 'nearFrameColor')
+  this.farFrameColor = gl.getUniformLocation(this.program, 'farFrameColor')
 
   // If the mesh appears to contain normals, prepare to use them
   // and provide specular colors.
@@ -361,20 +223,29 @@ painters.initEdgeTesseract = function () {
   }
 }
 
-painters.drawClearTesseract = function () {
-  /** @type {WebGLRenderingContext} */
+painters.drawTesseractBorder = function () {
+  /** @type {WebGL2RenderingContext} */
   const gl = this.gl
 
   painters.commonTesseractAnimation.call(this)
-  
+
   gl.uniformMatrix4fv(this.uM3, false, this.M3)
   gl.uniformMatrix4fv(this.uM4, false, this.M4)
+  gl.uniform4fv(this.nearFrameColor, state.lighting.nearFrameColor)
+  gl.uniform4fv(this.farFrameColor, state.lighting.farFrameColor)
+  if (this.frameSpecularWeight) {
+    gl.uniform1f(this.frameSpecularWeight, state.lighting.borderSpecularity)
+  }
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER, this.shared.fboClear)
-  gl.viewport(0, 0, this.shared.res, this.shared.res)
-  gl.clearColor(0, 0, 0, 1)
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-  gl.drawArrays(gl.LINES, 0, this.mesh.blocks)
+  // If the mesh has normals, provide colors for specularity:
+  if (this.mesh.stride === 8) {
+    gl.uniform4fv(this.specularColor1, state.lighting.specularLights[0].rgba)
+    gl.uniform4fv(this.specularColor2, state.lighting.specularLights[1].rgba)
+    gl.uniform4fv(this.specularColor3, state.lighting.specularLights[2].rgba)
+    gl.uniform4fv(this.specularColor4, state.lighting.specularLights[3].rgba)
+  }
+
+  gl.drawArrays(gl.TRIANGLES, 0, this.mesh.blocks)
 }
 
 painters.initGlassTesseract = function () {
@@ -424,7 +295,6 @@ painters.drawGlassTesseract = function () {
 
   if (this.opacityFunction) {
     const t = this.opacityFunction.call(this)
-
     if (t <= 0.001) { return }
     gl.uniform1f(this.opacity, t)
   }
@@ -455,32 +325,15 @@ painters.drawGlassTesseract = function () {
   gl.enable(gl.DEPTH_TEST)
 }
 
+/**
+ * Target the shared "clear" framebuffer (for the unblurred image) if
+ * MSAA is disabled, or instead target the shared framebuffer with MSAA
+ * enabled, expecting to resolve the result with a future call to
+ * resolveClearTarget().
+ */
 painters.useClearTarget = function () {
   /** @type {WebGL2RenderingContext} */
   const gl = this.gl
-}
-
-painters.drawDonutTesseract = function () {
-  /** @type {WebGL2RenderingContext} */
-  const gl = this.gl
-
-  painters.commonTesseractAnimation.call(this)
-
-  gl.uniformMatrix4fv(this.uM3, false, this.M3)
-  gl.uniformMatrix4fv(this.uM4, false, this.M4)
-  gl.uniform4fv(this.nearFrameColor, state.lighting.nearFrameColor)
-  gl.uniform4fv(this.farFrameColor, state.lighting.farFrameColor)
-  if (this.frameSpecularWeight) {
-    gl.uniform1f(this.frameSpecularWeight, state.lighting.borderSpecularity)
-  }
-
-  // If the mesh has normals, provide colors for specularity:
-  if (this.mesh.stride === 8) {
-    gl.uniform4fv(this.specularColor1, state.lighting.specularLights[0].rgba)
-    gl.uniform4fv(this.specularColor2, state.lighting.specularLights[1].rgba)
-    gl.uniform4fv(this.specularColor3, state.lighting.specularLights[2].rgba)
-    gl.uniform4fv(this.specularColor4, state.lighting.specularLights[3].rgba)
-  }
 
   // If using MSAA, render and resolve,
   // otherwise render directly to texture.
@@ -490,31 +343,35 @@ painters.drawDonutTesseract = function () {
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-    gl.disable(gl.CULL_FACE)
-    gl.drawArrays(gl.TRIANGLES, 0, this.mesh.blocks)
-
-    // Resolve MSAA:
-    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.shared.fboAA)
-    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, this.shared.fboClear)
-    gl.clearBufferfv(gl.COLOR, 0, [1, 0, 1, 1])
-    gl.blitFramebuffer(
-      0, 0, this.shared.res, this.shared.res,
-      0, 0, this.shared.res, this.shared.res,
-      gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT, gl.NEAREST
-    )
-
   } else {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.shared.fboClear)
     gl.viewport(0, 0, this.shared.res, this.shared.res)
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
-    gl.disable(gl.CULL_FACE)
-    gl.drawArrays(gl.TRIANGLES, 0, this.mesh.blocks)
   }
 }
 
-painters.initTesseractCompositor = function () {
+/**
+ * If the MSAA framebuffer is in use, resolve it.
+ * Otherwise, do nothing.
+ */
+painters.resolveClearTarget = function() {
+  /** @type {WebGL2RenderingContext} */
+  const gl = this.gl
+
+  if (this.shared.fboAA) {
+    // Resolve MSAA:
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.shared.fboAA)
+    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, this.shared.fboClear)
+    gl.blitFramebuffer(
+      0, 0, this.shared.res, this.shared.res,
+      0, 0, this.shared.res, this.shared.res,
+      gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT, gl.NEAREST
+    )
+  }
+}
+
+painters.initCompositor = function () {
   /** @type {WebGLRenderingContext} */
   const gl = this.gl
 
@@ -539,7 +396,7 @@ painters.initTesseractCompositor = function () {
   gl.uniform1i(this.uDepthTex, 2)
 }
 
-painters.drawTesseractCompositor = function () {
+painters.drawCompositor = function () {
   /** @type {WebGLRenderingContext} */
   const gl = this.gl
 
@@ -702,9 +559,7 @@ class Lighting {
     this.diffuseOpacity = 1
     this.specularOpacity = 0
     this.borderSpecularity = 0
-  }
-
-  
+  }  
 }
 
 function show (m, tag = undefined) {

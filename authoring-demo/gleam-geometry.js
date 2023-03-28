@@ -102,16 +102,6 @@ class Mesh extends Array {
 //   if (buildGeometry.geometry) { return buildGeometry.geometry }
 const geometry = {}
 
-// Build geometry
-geometry.hexagon = [
-  -1,    0,
-  -0.5, -0.8660254,
-    0.5, -0.8660254,
-    1,    0,
-    0.5,  0.8660254,
-  -0.5,  0.8660254,
-]
-
 geometry.square2d = [
   -1, -1,
   1,  -1,
@@ -143,8 +133,7 @@ geometry.quadLoop.stride = 3
 
 geometry.triCube = extrudeLineStrip(geometry.quadLoop, 0, 0, 2.0)
 
-geometry.donutTesseract = buildTesseract(squareDonut, 4)
-geometry.normalDonutTesseract = buildTesseract(edgeNormalFace, 8)
+geometry.tesseractOutline = buildTesseract(edgeNormalFace, 8)
 geometry.normalTesseract = buildTesseract(normalSquare, 8)
 
 geometry.triCube.replace(breakQuad, 12)
@@ -385,33 +374,6 @@ function edgeNormalFace (v0, v1, v2, v3) {
     this.push(...[
       a, n, b, n, aInner, n,
       aInner, n, b, n, bInner, n
-    ].flat())
-  }
-}
-
-// Face-constructing function for a narrow frame enclosing each face.
-function squareDonut (v0, v1, v2, v3) {
-  const t = 0.04
-  const center = []
-
-  for (let i = 0; i < 4; i++) {
-    center[i] = (v0[i] + v1[i] + v2[i] + v3[i]) / 4
-  }
-
-  for (const [a,b] of [[v0, v1], [v1, v2], [v2, v3], [v3, v0] ]) {
-    const aInner = []
-    const bInner = []
-
-    for (let j = 0; j < 4; j++) {
-      aInner[j] = a[j]*(1-t) + center[j]*t
-    }
-    for (let j = 0; j < 4; j++) {
-      bInner[j] = b[j]*(1-t) + center[j]*t
-    }
-
-    this.push(...[
-      a, b, aInner,
-      aInner, b, bInner,
     ].flat())
   }
 }
