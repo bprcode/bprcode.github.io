@@ -75,7 +75,7 @@ painters.drawBlur = function () {
   gl.viewport(0, 0, this.shared.blurRes, this.shared.blurRes)
 
   const needErase = [true, true]
-  const iterations = 10
+  const iterations = state.blurPassCount
 
   let readSource = this.shared.clearTexture
   for (let i = 0; i < iterations; i++) {

@@ -44,6 +44,10 @@ const state = {
   finalModelR: new Quaternion,
   modelSnapT: 1,
 
+  // Number of times to run the blur filter; controlled by slider
+  blurPassCount: 10,
+
+  // State objects for each animation
   animation1: { keepAnimating: true },
   animation2: { keepAnimating: true }
 }
@@ -1284,10 +1288,15 @@ function initListeners () {
     state.lighting.borderSpecularity = parseFloat(event.target.value)
     el('border-specularity-display').textContent = event.target.value
   })
+  el('blur-pass-count').addEventListener('input', event => {
+    state.blurPassCount = parseInt(event.target.value)
+    el('blur-pass-count-display').textContent = event.target.value
+  })
 
   el('diffuse-opacity').dispatchEvent(new Event('input'))
   el('specular-opacity').dispatchEvent(new Event('input'))
   el('border-specularity').dispatchEvent(new Event('input'))
+  el('blur-pass-count').dispatchEvent(new Event('input'))
 
   for (const [i,e] of
     document.querySelectorAll('input[type="radio"]').entries()) {
