@@ -112,12 +112,14 @@ painters.prepareBlurSurfaces = function () {
   // incur a steep performance penalty using it, so we only run
   // antialiasing on more performant platforms.
   if (!(gl instanceof WebGLRenderingContext)
-      && gl.getParameter(gl.MAX_SAMPLES) > 8) {
+  ) {
+      // && gl.getParameter(gl.MAX_SAMPLES) > 8) {
         
       const rb = gl.createRenderbuffer()
       const db = gl.createRenderbuffer()
       const samples = Math.min(16, gl.getParameter(gl.MAX_SAMPLES))
-      log('Applying ' + samples + ' xMSAA')
+      log('Applying ' + samples + 'x MSAA')
+      logError('Applying ' + samples + 'x MSAA\n')
 
       function fitRenderbuffer (buffer, format) {
         const restore = gl.getParameter(gl.RENDERBUFFER_BINDING)
