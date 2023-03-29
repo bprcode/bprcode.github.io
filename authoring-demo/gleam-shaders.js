@@ -238,6 +238,31 @@ void main (void) {
 }
 `
 
+shaders.debugBlurTestFrag =
+/* glsl */`
+precision mediump float;
+varying vec2 vTexel;
+
+uniform sampler2D uTex;
+#define kernelSize ${shaders.blurKernelSize}
+uniform float kernel[kernelSize];
+uniform vec2 blurStep;
+
+void main (void) {
+  vec2 dv = blurStep;
+
+  vec4 color = texture2D(uTex, vTexel);
+  // double-weight on 0 element:
+  // vec4 color = texture2D(uTex, vTexel) * kernel[0];
+  // for (int i = 1; i < kernelSize; i++) {
+  //   color += texture2D(uTex, vTexel - float(i)*dv) * kernel[i]
+  //           +texture2D(uTex, vTexel + float(i)*dv) * kernel[i];
+  // }
+
+  gl_FragColor = color;
+}
+`
+
 shaders.blur1dFrag =
 /* glsl */`
 precision mediump float;

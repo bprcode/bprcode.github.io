@@ -166,7 +166,8 @@ try {
       },
       { // post-process the output with iterated Gaussian blur:
         vertexShader: shaders.textureVert,
-        fragmentShader: shaders.blur1dFrag,
+        // fragmentShader: shaders.blur1dFrag,
+        fragmentShader: shaders.debugBlurTestFrag,
         mesh: geometry.texSquare,
         init: painters.initBlur,
         draw: painters.drawBlur
@@ -227,7 +228,8 @@ try {
       },
       { // post-process the output with iterated Gaussian blur:
         vertexShader: shaders.textureVert,
-        fragmentShader: shaders.blur1dFrag,
+        // fragmentShader: shaders.blur1dFrag,
+        fragmentShader: shaders.debugBlurTestFrag,
         mesh: geometry.texSquare,
         init: painters.initBlur,
         draw: painters.drawBlur
