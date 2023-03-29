@@ -455,6 +455,8 @@ function blankTexture (context, resolution, format) {
   setTexture()
 
   function setTexture () {
+    // debug performance check
+    logError('texture set at ' + new Date().toString() +'\n')
     if (format === gl.RGBA) {
       gl.texImage2D(gl.TEXTURE_2D, 0, format,
         res, res, 0, gl.RGBA,
