@@ -3,7 +3,7 @@
 // function buildShaders () {
 //   if (buildShaders.shaders) { return buildShaders.shaders }
 const shaders = {}
-shaders.blurKernelSize = 8
+shaders.blurKernelSize = 16
 
 // The desired projection ratio for a cube with side length 2 is used
 // to determine where to center an object, by default, in w-space:
