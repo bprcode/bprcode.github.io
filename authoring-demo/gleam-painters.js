@@ -434,17 +434,7 @@ function blankTexture (context, resolution, format) {
     window.addEventListener('resize', _ => {
       const restore = gl.getParameter(gl.TEXTURE_BINDING_2D)
       res = resolution()
-      // debug need to cache previous size and only re-allocate on change
-      if (lastRes === res) {
-        logError('redundant resize '
-          + `(${res})`
-          + 'skipped at ' + new Date().toUTCString() +'\n')
-        return
-      }
-      // debug performance check
-      logError('texture set '
-        + `to (${res})`
-        + 'at ' + new Date().toUTCString() +'\n')
+      if (lastRes === res) { return }
       
       gl.bindTexture(gl.TEXTURE_2D, tex)
       setTexture()

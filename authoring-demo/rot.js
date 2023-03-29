@@ -45,7 +45,7 @@ const state = {
   modelSnapT: 1,
 
   // Number of times to run the blur filter; controlled by slider
-  blurPassCount: 10,
+  blurPassCount: 2,
 
   // State objects for each animation
   animation1: { keepAnimating: true },
