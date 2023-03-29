@@ -426,16 +426,30 @@ function blankTexture (context, resolution, format) {
   const gl = context
   const tex = gl.createTexture()
   let res
+  let lastRes
   format ??= gl.RGBA
 
   if (typeof resolution === 'function') {
     res = resolution()
-    window.addEventListener('resize', event => {
+    window.addEventListener('resize', _ => {
       const restore = gl.getParameter(gl.TEXTURE_BINDING_2D)
       res = resolution()
+      // debug need to cache previous size and only re-allocate on change
+      if (lastRes === res) {
+        logError('redundant resize '
+          + `(${res})`
+          + 'skipped at ' + new Date().toUTCString() +'\n')
+        return
+      }
+      // debug performance check
+      logError('texture set '
+        + `to (${res})`
+        + 'at ' + new Date().toUTCString() +'\n')
+      
       gl.bindTexture(gl.TEXTURE_2D, tex)
       setTexture()
       gl.bindTexture(gl.TEXTURE_2D, restore)
+      lastRes = res
     })
   } else {
     res = resolution
@@ -455,8 +469,6 @@ function blankTexture (context, resolution, format) {
   setTexture()
 
   function setTexture () {
-    // debug performance check
-    logError('texture set at ' + new Date().toString() +'\n')
     if (format === gl.RGBA) {
       gl.texImage2D(gl.TEXTURE_2D, 0, format,
         res, res, 0, gl.RGBA,
