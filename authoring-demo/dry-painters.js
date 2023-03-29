@@ -87,6 +87,7 @@ painters.drawBlur = function () {
       needErase[i % 2] = false
     }
 
+    /* debug -- commented out to test dry-firing the blur
     // Set read source
     gl.bindTexture(gl.TEXTURE_2D, readSource)
     
@@ -97,6 +98,7 @@ painters.drawBlur = function () {
 
     // Next iteration, read from the texture we just drew:
     readSource = this.texAlternates[i % 2]
+    */
   }
 
   // Make the results available to the compositor:
