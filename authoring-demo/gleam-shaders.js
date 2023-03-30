@@ -38,27 +38,23 @@ uniform vec4 nearFrameColor;
 uniform vec4 farFrameColor;
 
 void main (void) {
-  // Encode normalized w-component into alpha channel:
-  float a = clamp(w / wFar, 0., 1.);
-
   // Use negatives since edge0 must be < edge1 per the spec:
   float t = smoothstep(-wNear, -wFar, -w);
 
-  vec4 wLight1 = normalize(-vec4(1., 0., -1., 0.));
-  vec4 wLight2 = normalize(-vec4(0., 1., 0., 1.));
-  vec4 wLight3 = normalize(-vec4(-1., -1., 1., 0.));
-  vec4 wLight4 = normalize(-vec4(0., 0., 1., 0.));
-  vec4 normal = normalize(vNormal);
-  float s1 = dot(normal, wLight1);
-  float s2 = dot(normal, wLight2);
-  float s3 = dot(normal, wLight3);
+  vec4 wLight1 = vec4(-0.707106781, 0., 0.707106781, 0.);
+  vec4 wLight2 = vec4(0., -0.707106781, 0., -0.707106781);
+  vec4 wLight3 = vec4(0.577350269, 0.577350269, -0.577350269, 0.);
+  vec4 wLight4 = vec4(0., 0., -1., 0.);
+  float s1 = dot(vNormal, wLight1);
+  float s2 = dot(vNormal, wLight2);
+  float s3 = dot(vNormal, wLight3);
   s1 = clamp(s1, 0., 1.);
   s2 = clamp(s2, 0., 1.);
   s3 = clamp(s3, 0., 1.);
 
   // debug -- specular testing:
-  vec4 viewDirection = normalize(vWorld4d);
-  vec4 reflected = reflect(viewDirection, normal);
+  vec4 viewDirection = vWorld4d;
+  vec4 reflected = reflect(viewDirection, vNormal);
   float specular1 = clamp(
     abs(dot(reflected, wLight1)),
     0., 1.);
@@ -74,7 +70,7 @@ void main (void) {
 
   // This part is specific to the border rendering:
   // (need to set a to zero to avoid disrupting the depth value)
-  vec4 frameColor =  mix( nearFrameColor, farFrameColor,
+  vec4 frameColor =  mix(nearFrameColor, farFrameColor,
     clamp(t, 0., 1.));
 
   vec4 shine =
@@ -104,27 +100,20 @@ uniform vec4 specularColor4;
 #define wNear (wMid + 2.)
 
 void main (void) {
-  // Use negatives since edge0 must be < edge1 per the spec:
-  float t = smoothstep(-wNear, -wFar, -w);
-
-  vec4 wLight1 = normalize(-vec4(1., 0., -1., 0.));
-  vec4 wLight2 = normalize(-vec4(0., 1., 0., 1.));
-  vec4 wLight3 = normalize(-vec4(-1., -1., 1., 0.));
-  vec4 wLight4 = normalize(-vec4(0., 0., 1., 0.));
-  vec4 normal = normalize(vNormal);
-  float s1 = dot(normal, wLight1);
-  float s2 = dot(normal, wLight2);
-  float s3 = dot(normal, wLight3);
+  vec4 wLight1 = vec4(-0.707106781, 0., 0.707106781, 0.);
+  vec4 wLight2 = vec4(0., -0.707106781, 0., -0.707106781);
+  vec4 wLight3 = vec4(0.577350269, 0.577350269, -0.577350269, 0.);
+  vec4 wLight4 = vec4(0., 0., -1., 0.);
+  float s1 = dot(vNormal, wLight1);
+  float s2 = dot(vNormal, wLight2);
+  float s3 = dot(vNormal, wLight3);
   s1 = clamp(s1, 0., 1.);
   s2 = clamp(s2, 0., 1.);
   s3 = clamp(s3, 0., 1.);
-  vec4 color = vec4(
-    s1 * specularColor1 + s2 * specularColor2 + s3 * specularColor3
-  );
 
   // debug -- specular testing:
-  vec4 viewDirection = normalize(vWorld4d);
-  vec4 reflected = reflect(viewDirection, normal);
+  vec4 viewDirection = vWorld4d;
+  vec4 reflected = reflect(viewDirection, vNormal);
   float specular1 = clamp(
     abs(dot(reflected, wLight1)),
     0., 1.);
@@ -170,33 +159,26 @@ float diminish (float x) {
 }
 
 void main (void) {
-  // Encode normalized w-component into alpha channel:
+  // Use w-depth to compute a "glow fog" effect:
   float a = clamp(w / wFar, 0., 1.);
-
-  // Use negatives since edge0 must be < edge1 per the spec:
-  float t = smoothstep(-wNear, -wFar, -w);
 
   // Calculate a color contribution based on path length
   // through a supposed pane of semitranslucent material
-  float dp = dot(normalize(vWorld4d), normalize(vNormal));
+  float dp = dot(vWorld4d, vNormal);
   dp = abs(dp);
   dp = clamp(dp, 0.000001, 1.);
-  // This is asymptotic, but the effect is nice:
-  // float thickness = 0.05 / dp;
-  // These are more numerically sensible:
+
   float thickness = pow((diminish(0.8 / dp) - 0.444)*1.79856, 2.);
-  // float thickness = smoothstep(0., 2., 0.05 / dp);
-  // float thickness = diminish(pow(0.05 / dp, 2.));
 
   vec4 membranePart = membraneColor * thickness;
 
   // Diffuse light pane contributions:
-  vec4 wLightDir1 = normalize(-vec4(1., 0., -1., 0.));
-  vec4 wLightDir2 = normalize(-vec4(0., 1., 0., 1.));
-  vec4 wLightDir3 = normalize(-vec4(0., 0., 0., 1.));
-  float s1 = dot(normalize(vNormal), wLightDir1);
-  float s2 = dot(normalize(vNormal), wLightDir2);
-  float s3 = dot(normalize(vNormal), wLightDir3);
+  vec4 wLightDir1 = vec4(-0.707106781, 0., 0.707106781, 0.);
+  vec4 wLightDir2 = vec4(0., -0.707106781, 0., -0.707106781);
+  vec4 wLightDir3 = vec4(0., 0., 0., -1.);
+  float s1 = dot(vNormal, wLightDir1);
+  float s2 = dot(vNormal, wLightDir2);
+  float s3 = dot(vNormal, wLightDir3);
   s1 = clamp(s1, 0., 1.);
   s2 = clamp(s2, 0., 1.);
   s3 = clamp(s3, 0., 1.);
@@ -303,10 +285,10 @@ void main (void) {
   // Apply qvp (view)
   // Apply just the non-translational part of M3
   // Restore the w-component
-  vec4  n = qvp(qModelL, normal, qModelR);
+  vec4 n = qvp(qModelL, normal, qModelR);
   n = qvp(qViewL, n, qViewR);
   vec3 n3 = mat3(M3) * vec3(n);
-  vNormal = vec4(n3, n.w);
+  vNormal = normalize(vec4(n3, n.w));
 
   v = qvp(qModelL, v, qModelR);
   v.w += wOffset;
@@ -326,10 +308,13 @@ void main (void) {
   v = P4to3 * v;
   v.w = 1.;
 
-  // debug -- not sure if this is right. It's probably either 1 or 0.
-  vWorld4d = vec4(vec3(M3 *
+  // Normalizing vWorld4d in the vertex shader rather than fragment shader
+  // is slightly inaccurate, but unnoticeably so.
+  vWorld4d = normalize(
+    vec4(vec3(M3 *
     qvp(qViewL, vec4(unprojected, 1.), qViewR)),
-    w);
+    w)
+  );
 
   v = qvp(qViewL, v, qViewR);
   gl_Position = projection * M3 * v;
