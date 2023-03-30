@@ -90,17 +90,17 @@ try {
   }
 
   let gl = el('main-canvas').getContext(
-    'webgl2', { alpha: false, premultipliedAlpha: false, antialias: false })
+    'webgl2', { premultipliedAlpha: false, antialias: false })
   if (!gl) {
     gl = el('main-canvas').getContext(
-      'webgl', { alpha: false, premultipliedAlpha: false, antialias: false })
+      'webgl', { premultipliedAlpha: false, antialias: false })
   }
 
   let gl2 = el('second-canvas').getContext(
-      'webgl2', { alpha: false, premultipliedAlpha: false, antialias: false  })
+      'webgl2', { premultipliedAlpha: false, antialias: false })
   if (!gl2) {
     gl2 = el('second-canvas').getContext(
-      'webgl', { alpha: false, premultipliedAlpha: false, antialias: false })
+      'webgl', { premultipliedAlpha: false, antialias: false })
   }
 
   for (const [ctx, label] of [
@@ -449,7 +449,7 @@ try {
 
   // Commonly shared GL state
   gl.enable(gl.CULL_FACE)
-  gl.enable(gl.DEPTH_TEST)
+  gl.disable(gl.DEPTH_TEST)
 
   // Drawing function returned by glPipeline.
   // Draws each phase.
