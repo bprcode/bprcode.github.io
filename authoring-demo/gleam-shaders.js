@@ -227,7 +227,6 @@ shaders.alphaCompositorFrag =
 precision mediump float;
 uniform sampler2D blurTex;
 uniform sampler2D clearTex;
-uniform sampler2D depthTex;
 varying vec2 vTexel;
 
 void main (void) {

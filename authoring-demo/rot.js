@@ -449,8 +449,10 @@ try {
   }
 
   // Commonly shared GL state
-  gl.enable(gl.CULL_FACE)
+  gl.disable(gl.CULL_FACE)
   gl.disable(gl.DEPTH_TEST)
+  gl.enable(gl.BLEND)
+  gl.blendFunc(gl.ONE, gl.ONE)
 
   // Drawing function returned by glPipeline.
   // Draws each phase.

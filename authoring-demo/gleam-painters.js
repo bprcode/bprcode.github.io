@@ -71,8 +71,8 @@ painters.drawBlur = function () {
   let bx = 1/this.shared.blurRes
   let by = 0
 
-  gl.disable(gl.DEPTH_TEST)
   gl.viewport(0, 0, this.shared.blurRes, this.shared.blurRes)
+  gl.disable(gl.BLEND)
 
   const needErase = [true, true]
   const iterations = state.blurPassCount
@@ -101,6 +101,8 @@ painters.drawBlur = function () {
 
   // Make the results available to the compositor:
   this.shared.blurTexture = readSource
+
+  gl.enable(gl.BLEND)
 }
 
 painters.prepareBlurSurfaces = function () {
@@ -115,7 +117,6 @@ painters.prepareBlurSurfaces = function () {
       && gl.getParameter(gl.MAX_SAMPLES) > 8) {
         
       const rb = gl.createRenderbuffer()
-      const db = gl.createRenderbuffer()
       const samples = Math.min(16, gl.getParameter(gl.MAX_SAMPLES))
       log('Applying ' + samples + 'x MSAA')
       logError('Applying ' + samples + 'x MSAA\n')
@@ -132,19 +133,15 @@ painters.prepareBlurSurfaces = function () {
       }
 
       fitRenderbuffer(rb, gl.RGBA8)
-      fitRenderbuffer(db, gl.DEPTH_COMPONENT16)
 
       window.addEventListener('resize', event => {
         fitRenderbuffer(rb, gl.RGBA8)
-        fitRenderbuffer(db, gl.DEPTH_COMPONENT16)
       })
 
       const fboAA = gl.createFramebuffer()
       gl.bindFramebuffer(gl.FRAMEBUFFER, fboAA)
       gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
         gl.RENDERBUFFER, rb)
-      gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,
-        gl.RENDERBUFFER, db)
 
       verifyFramebuffer(gl)
       this.shared.fboAA = fboAA
@@ -156,22 +153,13 @@ painters.prepareBlurSurfaces = function () {
   const clearTexture =
     blankTexture(gl, () => gl.canvas.clientWidth,
       gl.RGBA)
-  const depthTexture =
-    blankTexture(gl, () => gl.canvas.clientWidth,
-      gl.appropriateDepthFormat)
 
   const fboClear = gl.createFramebuffer()
   gl.bindFramebuffer(gl.FRAMEBUFFER, fboClear)
   gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
     gl.TEXTURE_2D, clearTexture, 0)
-  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,
-    gl.TEXTURE_2D, depthTexture, 0)
 
   verifyFramebuffer(gl)
-
-  // depth channel on texture unit 2
-  gl.activeTexture(gl.TEXTURE0 + 2)
-  gl.bindTexture(gl.TEXTURE_2D, depthTexture)
   
   // clear color channel on texture unit 1
   gl.activeTexture(gl.TEXTURE0 + 1)
@@ -183,7 +171,6 @@ painters.prepareBlurSurfaces = function () {
   this.shared.blurRes = res
   this.shared.fboClear = fboClear
   this.shared.clearTexture = clearTexture
-  this.shared.depthTexture = depthTexture
 
   window.addEventListener('resize', event => {
     this.shared.res = gl.canvas.clientWidth
@@ -316,14 +303,8 @@ painters.drawGlassTesseract = function () {
   gl.uniform4fv(this.specularColor4, state.lighting.specularLights[3].rgba)
 
   gl.viewport(0, 0, this.shared.res, this.shared.res)
-  
-  gl.disable(gl.CULL_FACE)
-  gl.disable(gl.DEPTH_TEST)
-  gl.enable(gl.BLEND)
-  gl.blendFunc(gl.ONE, gl.ONE)
+
   gl.drawArrays(gl.TRIANGLES, 0, this.mesh.blocks)
-  gl.disable(gl.BLEND)
-  gl.enable(gl.DEPTH_TEST)
 }
 
 /**
@@ -342,13 +323,13 @@ painters.useClearTarget = function () {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.shared.fboAA)
     gl.viewport(0, 0, this.shared.res, this.shared.res)
     gl.clearColor(0, 0, 0, 0)
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    gl.clear(gl.COLOR_BUFFER_BIT)
 
   } else {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.shared.fboClear)
     gl.viewport(0, 0, this.shared.res, this.shared.res)
     gl.clearColor(0, 0, 0, 0)
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    gl.clear(gl.COLOR_BUFFER_BIT)
   }
 }
 
@@ -367,7 +348,7 @@ painters.resolveClearTarget = function() {
     gl.blitFramebuffer(
       0, 0, this.shared.res, this.shared.res,
       0, 0, this.shared.res, this.shared.res,
-      gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT, gl.NEAREST
+      gl.COLOR_BUFFER_BIT, gl.NEAREST
     )
   }
 }
@@ -379,7 +360,6 @@ painters.initCompositor = function () {
   this.aTexel = gl.getAttribLocation(this.program, 'aTexel')
   this.uBlurTex = gl.getUniformLocation(this.program, 'blurTex')
   this.uClearTex = gl.getUniformLocation(this.program, 'clearTex')
-  this.uDepthTex = gl.getUniformLocation(this.program, 'depthTex')
 
   this.uZNear = gl.getUniformLocation(this.program, 'zNear')
   this.uZFar = gl.getUniformLocation(this.program, 'zFar')
@@ -394,7 +374,6 @@ painters.initCompositor = function () {
 
   gl.uniform1i(this.uBlurTex, 0)
   gl.uniform1i(this.uClearTex, 1)
-  gl.uniform1i(this.uDepthTex, 2)
 }
 
 painters.drawCompositor = function () {
@@ -406,9 +385,6 @@ painters.drawCompositor = function () {
 
   gl.bindTexture(gl.TEXTURE_2D, this.shared.blurTexture)
   gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
-
-  // // Clean up:
-  gl.enable(gl.DEPTH_TEST)
 }
 
 //   return buildPainters.painters = painters
