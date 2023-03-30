@@ -89,18 +89,19 @@ try {
     }
   }
 
+  // n.b. alpha: false significantly improves performance on test platform.
   let gl = el('main-canvas').getContext(
-    'webgl2', { premultipliedAlpha: false, antialias: false })
+    'webgl2', { alpha: false, premultipliedAlpha: false, antialias: false })
   if (!gl) {
     gl = el('main-canvas').getContext(
-      'webgl', { premultipliedAlpha: false, antialias: false })
+      'webgl', { alpha: false, premultipliedAlpha: false, antialias: false })
   }
 
   let gl2 = el('second-canvas').getContext(
-      'webgl2', { premultipliedAlpha: false, antialias: false })
+      'webgl2', { alpha: false, premultipliedAlpha: false, antialias: false })
   if (!gl2) {
     gl2 = el('second-canvas').getContext(
-      'webgl', { premultipliedAlpha: false, antialias: false })
+      'webgl', { alpha: false, premultipliedAlpha: false, antialias: false })
   }
 
   for (const [ctx, label] of [

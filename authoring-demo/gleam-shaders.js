@@ -234,7 +234,7 @@ void main (void) {
   vec4 clear = texture2D(clearTex, vTexel);
   vec4 blurry = texture2D(blurTex, vTexel);
 
-  gl_FragColor = vec4(vec3(mix(blurry, clear, clear.a)), 1.);
+  gl_FragColor = mix(blurry, clear, clear.a);
 }
 `
 
