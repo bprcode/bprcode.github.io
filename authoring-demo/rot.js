@@ -304,36 +304,6 @@ try {
     this.gl.uniform4fv(this.qModelR, state.modelR)
   }
 
-  function matrixView () {
-    this.t ??= 0
-    this.tLast ??= this.dt
-
-    if (!state.pointerdown) {
-      this.t += this.dt - this.tLast
-    }
-    this.tLast = this.dt
-
-    ident3(arbitrary)
-    // E Rz Einv
-    mult3(arbitrary, Einv, arbitrary)
-    mult3(arbitrary, Rz3(this.t * τ / 20000), arbitrary)
-    mult3(arbitrary, E, arbitrary)
-    arb4[0] = arbitrary[0]; arb4[1] = arbitrary[1]; arb4[2] = arbitrary[2];
-    arb4[4] = arbitrary[3]; arb4[5] = arbitrary[4]; arb4[6] = arbitrary[5];
-    arb4[8] = arbitrary[6]; arb4[9] = arbitrary[7]; arb4[10] = arbitrary[8];
-    mult4(this.M3, arb4, this.M3)
-    // mult4(this.M3, rotateYZ(Math.sin(this.t /12000) * τ), this.M3)
-
-    // Single 4D rotation for comparison
-    mult4(this.M4,
-        rotateYW(τ * Math.sin(π/4 + this.t / 6750)),
-        this.M4)
-
-    // Apply user input rotations
-    // mult4(this.M3, rotateXZ(state.yaw), this.M3)
-    // mult4(this.M3, rotateYZ(state.pitch), this.M3)
-  }
-
 } catch (e) {
   logError('\n🚩 Initialization error: ' + e.message
         + '\n' + e.stack)

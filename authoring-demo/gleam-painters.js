@@ -88,7 +88,7 @@ painters.drawBlur = function () {
     }
 
     // Set read source
-    gl.bindTexture(gl.TEXTURE_2D, readSource)
+    //gl.bindTexture(gl.TEXTURE_2D, readSource)
     
     gl.uniform2fv(this.blurStep, [bx, by])
     ;[bx, by] = [by, bx]
