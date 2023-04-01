@@ -2,8 +2,6 @@
 const log = console.log.bind(console)
 const el = document.getElementById.bind(document)
 
-console.warn('reminder: pre-normalize lights and normals later')
-
 const state = {
   sliders: [],
   checkboxes: [],
@@ -169,16 +167,23 @@ try {
         vertexShader: shaders.textureVert,
         fragmentShader: shaders.blur1dFrag,
         mesh: geometry.texSquare,
-        init: painters.initBlur,
-        draw: painters.drawBlur
+        init: painters.initBlur_ALTERNATE,
+        draw: painters.drawBlur_ALTERNATE
       },
       { // compose the blur (0) and clear (1) textures using depth (2).
         vertexShader: shaders.textureVert,
         fragmentShader: shaders.alphaCompositorFrag,
         mesh: geometry.texSquare,
         init: painters.initCompositor,
-        draw: painters.drawCompositor
+        draw: painters.drawCompositor_ALTERNATE
       },
+      /*{ // debug -- for testing purposes, show contents of a texture.
+        vertexShader: shaders.textureVert,
+        fragmentShader: shaders.textureCheckFrag,
+        mesh: geometry.texSquare,
+        init: painters.initTexTest,
+        draw: painters.drawTexTest
+      }*/
     ])
 
   // Currently primary, reference canvas
@@ -230,6 +235,53 @@ try {
         vertexShader: shaders.textureVert,
         fragmentShader: shaders.blur1dFrag,
         mesh: geometry.texSquare,
+        init: painters.initBlur_ALTERNATE,
+        draw: painters.drawBlur_ALTERNATE
+      },
+      { // compose the blur (0) and clear (1) textures using depth (2).
+        vertexShader: shaders.textureVert,
+        fragmentShader: shaders.alphaCompositorFrag,
+        mesh: geometry.texSquare,
+        init: painters.initCompositor,
+        draw: painters.drawCompositor_ALTERNATE
+      },
+      /*{
+        init: painters.prepareBlurSurfaces,
+        draw: painters.useClearTarget
+      },
+      { // draw border with optional specularity
+        vertexShader: shaders.projectorVert,
+        fragmentShader: shaders.borderFrag,
+        mesh: geometry.tesseractOutline,
+        components: 4,
+        init: painters.initTesseractBorder,
+        draw: painters.drawTesseractBorder
+      },
+      { // Draw diffuse light panes (with a little glow):
+        vertexShader: shaders.projectorVert,
+        fragmentShader: shaders.diffuseFrag,
+        opacityFunction: () => state.lighting.diffuseOpacity,
+        mesh: geometry.normalTesseract,
+        components: 4,
+        init: painters.initGlassTesseract,
+        draw: painters.drawGlassTesseract
+      },
+      { // Draw glittery specular faces
+        vertexShader: shaders.projectorVert,
+        fragmentShader: shaders.glitterFrag,
+        opacityFunction: () => state.lighting.specularOpacity,
+        mesh: geometry.normalTesseract,
+        components: 4,
+        init: painters.initGlassTesseract,
+        draw: painters.drawGlassTesseract
+      },
+      {
+        draw: painters.resolveClearTarget
+      },
+      { // post-process the output with iterated Gaussian blur:
+        vertexShader: shaders.textureVert,
+        fragmentShader: shaders.blur1dFrag,
+        mesh: geometry.texSquare,
         init: painters.initBlur,
         draw: painters.drawBlur
       },
@@ -239,7 +291,7 @@ try {
         mesh: geometry.texSquare,
         init: painters.initCompositor,
         draw: painters.drawCompositor
-      },
+      },*/
     ])
 
   function easeQuartic(t) {
@@ -371,7 +423,6 @@ try {
 
     // Skip VAO/VBO/shader initialization if data wasn't provided:
     if (!p.vertexShader || !p.fragmentShader || !p.mesh) { 
-      log('skipping VAO/shader initialization')
       if (p.init) { p.init() }
       continue
     }
@@ -437,7 +488,7 @@ try {
     const dt = t - drawFrame.t0
 
     gl.clearColor(0, 0, 0, 0)
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    gl.clear(gl.COLOR_BUFFER_BIT)
 
     for (const p of phases) {
       p.dt = dt

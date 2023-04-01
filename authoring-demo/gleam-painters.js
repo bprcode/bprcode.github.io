@@ -64,6 +64,116 @@ painters.initBlur = function () {
   this.texAlternates = texAlternates
 }
 
+painters.initBlur_ALTERNATE = function () {
+  /** @type {WebGLRenderingContext} */
+  const gl = this.gl
+  
+  this.uTex = gl.getUniformLocation(this.program, 'uTex')
+  this.aTexel = gl.getAttribLocation(this.program, 'aTexel')
+  this.kernel = gl.getUniformLocation(this.program, 'kernel')
+  this.blurStep = gl.getUniformLocation(this.program, 'blurStep')
+
+  // Provide texture coordinates as an attribute
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo)
+  gl.enableVertexAttribArray(this.aTexel)
+  gl.vertexAttribPointer(this.aTexel, 2, gl.FLOAT, false,
+    this.mesh.byteStride, 2 * Float32Array.BYTES_PER_ELEMENT)
+  gl.bindBuffer(gl.ARRAY_BUFFER, null)
+
+  // Provide normalized Gaussian weights
+  gl.uniform1fv(this.kernel,
+    normalizedGaussianKernel(0.1, shaders.blurKernelSize))
+
+  // Initialize two framebuffers, each with a color texture,
+  // to alternate between when blur rendering
+  const fboAlternates = [gl.createFramebuffer(), gl.createFramebuffer()]
+  const texAlternates = []
+
+  gl.activeTexture(gl.TEXTURE0 + 3)
+  texAlternates[0] = blankTexture(gl, () => gl.canvas.clientWidth)
+  gl.activeTexture(gl.TEXTURE0 + 4)
+  texAlternates[1] = blankTexture(gl, () => gl.canvas.clientWidth)
+  gl.activeTexture(gl.TEXTURE0)
+  // const texAlternates = [
+  //   blankTexture(gl, () => gl.canvas.clientWidth),
+  //   blankTexture(gl, () => gl.canvas.clientWidth)
+  // ]
+
+  for (let i = 0; i < fboAlternates.length; i++) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fboAlternates[i])
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D, texAlternates[i], 0)
+
+    verifyFramebuffer(gl)
+  }
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+  
+  if (!this.shared.blurRes) {
+    console.warn('Warning: initial blurRes unavailable.')
+  }
+  if (!this.shared.clearTexture) {
+    console.warn('Warning: initial clearTexture unavailable.')
+  }
+  this.fboAlternates = fboAlternates
+  this.texAlternates = texAlternates
+}
+
+painters.drawBlur_ALTERNATE = function () {
+  /** @type {WebGLRenderingContext} */
+  const gl = this.gl
+  
+  let bx = 1/this.shared.blurRes
+  let by = 0
+
+  gl.viewport(0, 0, this.shared.blurRes, this.shared.blurRes)
+  gl.disable(gl.BLEND)
+
+  const needErase = [true, true]
+  const iterations = state.blurPassCount
+
+  this.shared.readTexture = 1
+
+  // debug -- for now, just try drawing flat color onto the textures,
+  // to sort out which bindings are necessary.
+  /*
+  // this works; it really does draw red onto TU 3 and blue onto TU 4.
+  gl.bindFramebuffer(gl.FRAMEBUFFER, this.fboAlternates[0])
+  gl.clearColor(1, 0, 0.25, 0)
+  gl.clear(gl.COLOR_BUFFER_BIT)
+  gl.bindFramebuffer(gl.FRAMEBUFFER, this.fboAlternates[1])
+  gl.clearColor(0, 0.8, 0.75, 0)
+  gl.clear(gl.COLOR_BUFFER_BIT)
+
+  gl.clearColor(1, 1, 0, 0)
+  gl.enable(gl.BLEND)
+  */
+
+  gl.uniform1i(this.uTex, this.shared.readTexture)
+
+  // debug drafting alternative ping-pong behavior, not calling bindTexture.
+  for (let i = 0; i < iterations; i++) {
+    // Set write destination
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fboAlternates[i % 2])
+    if(needErase[i % 2]) {
+      gl.clear(gl.COLOR_BUFFER_BIT)
+      needErase[i % 2] = false
+    }
+
+    gl.uniform2fv(this.blurStep, [bx, by])
+    ;[bx, by] = [by, bx]
+
+    // Set read source
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
+    
+    this.shared.readTexture = 3 + i % 2
+    gl.uniform1i(this.uTex, this.shared.readTexture)
+  }
+
+  gl.enable(gl.BLEND)
+  return
+}
+
 painters.drawBlur = function () {
   /** @type {WebGLRenderingContext} */
   const gl = this.gl
@@ -88,7 +198,7 @@ painters.drawBlur = function () {
     }
 
     // Set read source
-    //gl.bindTexture(gl.TEXTURE_2D, readSource)
+    gl.bindTexture(gl.TEXTURE_2D, readSource)
     
     gl.uniform2fv(this.blurStep, [bx, by])
     ;[bx, by] = [by, bx]
@@ -113,7 +223,8 @@ painters.prepareBlurSurfaces = function () {
   // From experience, devices only supporting 4x MSAA also tend to
   // incur a steep performance penalty using it, so we only run
   // antialiasing on more performant platforms.
-  if (!(gl instanceof WebGLRenderingContext)
+  // debug -- turning off MSAA to simplify testing
+  if (false && !(gl instanceof WebGLRenderingContext)
       && gl.getParameter(gl.MAX_SAMPLES) > 8) {
         
       const rb = gl.createRenderbuffer()
@@ -150,6 +261,7 @@ painters.prepareBlurSurfaces = function () {
     logError('✔ Bypassing MSAA.')
   }
 
+  gl.activeTexture(gl.TEXTURE0 + 1)
   const clearTexture =
     blankTexture(gl, () => gl.canvas.clientWidth,
       gl.RGBA)
@@ -353,6 +465,36 @@ painters.resolveClearTarget = function() {
   }
 }
 
+// debug utility phase preparing to check texture contents
+painters.initTexTest = function () {
+  /** @type {WebGLRenderingContext} */
+  const gl = this.gl
+
+  this.aTexel = gl.getAttribLocation(this.program, 'aTexel')
+  this.uTex = gl.getUniformLocation(this.program, 'uTex')
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo)
+  gl.enableVertexAttribArray(this.aTexel)
+  gl.vertexAttribPointer(this.aTexel, 2, gl.FLOAT, false,
+    this.mesh.byteStride, 2 * Float32Array.BYTES_PER_ELEMENT)
+  gl.bindBuffer(gl.ARRAY_BUFFER, null)
+
+  gl.uniform1i(this.uTex, 4)
+}
+
+// debug utility phase drawing texture contents
+painters.drawTexTest = function () {
+  /** @type {WebGLRenderingContext} */
+  const gl = this.gl
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+  gl.viewport(0, 0, this.shared.res, this.shared.res)
+
+  // gl.bindTexture(gl.TEXTURE_2D, this.shared.blurTexture)
+  gl.uniform1i(this.uTex, this.shared.readTexture)
+  gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
+}
+
 painters.initCompositor = function () {
   /** @type {WebGLRenderingContext} */
   const gl = this.gl
@@ -360,11 +502,6 @@ painters.initCompositor = function () {
   this.aTexel = gl.getAttribLocation(this.program, 'aTexel')
   this.uBlurTex = gl.getUniformLocation(this.program, 'blurTex')
   this.uClearTex = gl.getUniformLocation(this.program, 'clearTex')
-
-  this.uZNear = gl.getUniformLocation(this.program, 'zNear')
-  this.uZFar = gl.getUniformLocation(this.program, 'zFar')
-  gl.uniform1f(this.uZNear, this.shared.nearPlane)
-  gl.uniform1f(this.uZFar, this.shared.farPlane)
 
   gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo)
   gl.enableVertexAttribArray(this.aTexel)
@@ -384,6 +521,19 @@ painters.drawCompositor = function () {
   gl.viewport(0, 0, this.shared.res, this.shared.res)
 
   gl.bindTexture(gl.TEXTURE_2D, this.shared.blurTexture)
+  gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
+}
+
+painters.drawCompositor_ALTERNATE = function () {
+  /** @type {WebGLRenderingContext} */
+  const gl = this.gl
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+  gl.viewport(0, 0, this.shared.res, this.shared.res)
+
+  gl.uniform1i(this.uBlurTex, this.shared.readTexture)
+  // gl.bindTexture(gl.TEXTURE_2D, this.shared.blurTexture)
+  
   gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
 }
 
