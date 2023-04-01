@@ -52,7 +52,6 @@ void main (void) {
   s2 = clamp(s2, 0., 1.);
   s3 = clamp(s3, 0., 1.);
 
-  // debug -- specular testing:
   vec4 viewDirection = vWorld4d;
   vec4 reflected = reflect(viewDirection, vNormal);
   float specular1 = clamp(
@@ -69,7 +68,6 @@ void main (void) {
     0., 1.);
 
   // This part is specific to the border rendering:
-  // (need to set a to zero to avoid disrupting the depth value)
   vec4 frameColor =  mix(nearFrameColor, farFrameColor,
     clamp(t, 0., 1.));
 
@@ -104,16 +102,25 @@ void main (void) {
   vec4 wLight2 = vec4(0., -0.707106781, 0., -0.707106781);
   vec4 wLight3 = vec4(0.577350269, 0.577350269, -0.577350269, 0.);
   vec4 wLight4 = vec4(0., 0., -1., 0.);
-  float s1 = dot(vNormal, wLight1);
-  float s2 = dot(vNormal, wLight2);
-  float s3 = dot(vNormal, wLight3);
-  s1 = clamp(s1, 0., 1.);
-  s2 = clamp(s2, 0., 1.);
-  s3 = clamp(s3, 0., 1.);
 
-  // debug -- specular testing:
-  vec4 viewDirection = vWorld4d;
-  vec4 reflected = reflect(viewDirection, vNormal);
+  // Use world position vector as the view direction:
+  vec4 reflected = reflect(vWorld4d, vNormal);
+
+  // debug -- test removing abs:
+  // nothing to do with performance, just less busy. Better or worse? A-B it?
+  float specular1 = clamp(
+    dot(reflected, wLight1),
+    0., 1.);
+  float specular2 = clamp(
+    dot(reflected, wLight2),
+    0., 1.);
+  float specular3 = clamp(
+    dot(reflected, wLight3),
+    0., 1.);
+  float specular4 = clamp(
+    dot(reflected, wLight4),
+    0., 1.);
+  /*
   float specular1 = clamp(
     abs(dot(reflected, wLight1)),
     0., 1.);
@@ -126,6 +133,7 @@ void main (void) {
   float specular4 = clamp(
     abs(dot(reflected, wLight4)),
     0., 1.);
+  */
 
   vec4 shine =
       pow(specular1, 26.) * (specularColor1 * 3.)

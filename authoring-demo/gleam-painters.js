@@ -213,18 +213,18 @@ painters.drawTesseractBorder = function () {
 
   gl.uniformMatrix4fv(this.uM3, false, this.M3)
   gl.uniformMatrix4fv(this.uM4, false, this.M4)
-  // gl.uniform4fv(this.nearFrameColor, state.lighting.nearFrameColor)
-  // gl.uniform4fv(this.farFrameColor, state.lighting.farFrameColor)
+  gl.uniform4fv(this.nearFrameColor, state.lighting.nearFrameColor)
+  gl.uniform4fv(this.farFrameColor, state.lighting.farFrameColor)
   if (this.frameSpecularWeight) {
-    // gl.uniform1f(this.frameSpecularWeight, state.lighting.borderSpecularity)
+    gl.uniform1f(this.frameSpecularWeight, state.lighting.borderSpecularity)
   }
 
   // If the mesh has normals, provide colors for specularity:
   if (this.mesh.stride === 8) {
-    // gl.uniform4fv(this.specularColor1, state.lighting.specularLights[0].rgba)
-    // gl.uniform4fv(this.specularColor2, state.lighting.specularLights[1].rgba)
-    // gl.uniform4fv(this.specularColor3, state.lighting.specularLights[2].rgba)
-    // gl.uniform4fv(this.specularColor4, state.lighting.specularLights[3].rgba)
+    gl.uniform4fv(this.specularColor1, state.lighting.specularLights[0].rgba)
+    gl.uniform4fv(this.specularColor2, state.lighting.specularLights[1].rgba)
+    gl.uniform4fv(this.specularColor3, state.lighting.specularLights[2].rgba)
+    gl.uniform4fv(this.specularColor4, state.lighting.specularLights[3].rgba)
   }
 
   gl.drawArrays(gl.TRIANGLES, 0, this.mesh.blocks)
@@ -285,18 +285,18 @@ painters.drawGlassTesseract = function () {
   
   gl.uniformMatrix4fv(this.uM3, false, this.M3)
   gl.uniformMatrix4fv(this.uM4, false, this.M4)
-  // gl.uniform4fv(this.glowColor, state.lighting.glow.rgba)
-  // gl.uniform4fv(this.membraneColor, state.lighting.membrane.rgba)
-  // gl.uniform4fv(this.diffuseColor1, state.lighting.diffuseLights[0].rgba)
-  // gl.uniform4fv(this.diffuseColor2, state.lighting.diffuseLights[1].rgba)
-  // gl.uniform4fv(this.diffuseColor3, state.lighting.diffuseLights[2].rgba)
+  gl.uniform4fv(this.glowColor, state.lighting.glow.rgba)
+  gl.uniform4fv(this.membraneColor, state.lighting.membrane.rgba)
+  gl.uniform4fv(this.diffuseColor1, state.lighting.diffuseLights[0].rgba)
+  gl.uniform4fv(this.diffuseColor2, state.lighting.diffuseLights[1].rgba)
+  gl.uniform4fv(this.diffuseColor3, state.lighting.diffuseLights[2].rgba)
 
-  // gl.uniform4fv(this.specularColor1, state.lighting.specularLights[0].rgba)
-  // gl.uniform4fv(this.specularColor2, state.lighting.specularLights[1].rgba)
-  // gl.uniform4fv(this.specularColor3, state.lighting.specularLights[2].rgba)
-  // gl.uniform4fv(this.specularColor4, state.lighting.specularLights[3].rgba)
+  gl.uniform4fv(this.specularColor1, state.lighting.specularLights[0].rgba)
+  gl.uniform4fv(this.specularColor2, state.lighting.specularLights[1].rgba)
+  gl.uniform4fv(this.specularColor3, state.lighting.specularLights[2].rgba)
+  gl.uniform4fv(this.specularColor4, state.lighting.specularLights[3].rgba)
 
-  // gl.viewport(0, 0, this.shared.res, this.shared.res)
+  gl.viewport(0, 0, this.shared.res, this.shared.res)
 
   gl.drawArrays(gl.TRIANGLES, 0, this.mesh.blocks)
 }
