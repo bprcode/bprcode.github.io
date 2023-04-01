@@ -219,17 +219,6 @@ void main (void) {
 }
 `
 
-shaders.textureCheckFrag =
-/* glsl */`
-precision mediump float;
-uniform sampler2D uTex;
-varying vec2 vTexel;
-
-void main (void) {
-  gl_FragColor = texture2D(uTex, vTexel);
-}
-`
-
 shaders.blur1dFrag =
 /* glsl */`
 precision mediump float;
