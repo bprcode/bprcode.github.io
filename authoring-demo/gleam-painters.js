@@ -42,9 +42,9 @@ painters.initBlur = function () {
   const texAlternates = []
 
   texAlternates[0] = blankTexture(gl, gl.TEXTURE0 + 3,
-    () => gl.canvas.clientWidth)
+    () => gl.canvas.clientWidth / 2)
   texAlternates[1] = blankTexture(gl, gl.TEXTURE0 + 4,
-    () => gl.canvas.clientWidth)
+    () => gl.canvas.clientWidth / 2)
 
   for (let i = 0; i < fboAlternates.length; i++) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, fboAlternates[i])
@@ -162,7 +162,7 @@ painters.prepareBlurSurfaces = function () {
   verifyFramebuffer(gl)
 
   this.shared.res = res
-  this.shared.blurRes = res
+  this.shared.blurRes = res / 2
   this.shared.fboClear = fboClear
   this.shared.clearTexture = clearTexture
 
