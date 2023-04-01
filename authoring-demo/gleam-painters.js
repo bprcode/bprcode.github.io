@@ -168,7 +168,7 @@ painters.prepareBlurSurfaces = function () {
 
   window.addEventListener('resize', event => {
     this.shared.res = gl.canvas.clientWidth
-    this.shared.blurRes = gl.canvas.clientWidth
+    this.shared.blurRes = gl.canvas.clientWidth / 2
   })
 }
 
