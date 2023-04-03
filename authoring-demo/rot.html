@@ -21,7 +21,7 @@
 <body>
   <div class="center-content">
     <header>
-      <h1>Bidirectional specular comparison</h1>
+      <h1>Single-canvas MSAA performance testing</h1>
       <hr>
     </header>
 
@@ -52,16 +52,8 @@
         <div class="view-label">Initializing WebGL...</div>
         <div><span id="fps-1"></span> FPS</div>
       </span>
-
-      <span class="view-title" id="second-title">
-        <div class="view-label">Initializing WebGL...</div>
-        <div><span id="fps-2"></span> FPS</div>
-        <div id="current-l" style="white-space:pre;"></div>
-        <div id="current-r" style="white-space:pre;"></div>
-      </span>
         
-      <canvas width="50" height="50" id="main-canvas" class="render-canvas square-shadow" style="background:#0f0;"></canvas>
-      <canvas width="50" height="50" id="second-canvas" class="render-canvas square-shadow" style="background:#ff0;"></canvas>
+      <canvas width="50" height="50" id="main-canvas" class="render-canvas square-shadow" style="background:#111;"></canvas>
 
       <div class="animation-speeds-container">
         <fieldset class="animation-speeds">
@@ -924,9 +916,7 @@ fieldset {
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
     'first'
-    'second'
     'title1'
-    'title2'
     'radios'
     'rollers'
     'speeds'
@@ -939,8 +929,8 @@ fieldset {
   .views {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
-    'title1 title2'
-    'first second'
+    'title1 title1'
+    'first first'
     'rollers speeds'
     'radios compositions'
     'info info';

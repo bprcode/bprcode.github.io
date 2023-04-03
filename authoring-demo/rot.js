@@ -48,7 +48,6 @@ const state = {
 
   // State objects for each animation
   animation1: { keepAnimating: true },
-  animation2: { keepAnimating: true }
 }
 
 if (document.readyState === 'loading') {
@@ -77,6 +76,11 @@ try {
   loadPalette()
   loadCompositions()
 
+  // Simulate an initial click
+  document.querySelector('.composition-entry')
+    .querySelector('.composition-restore-button')
+    .dispatchEvent(new Event('click'))
+    
   for (const c of [
     el('main-canvas'),
     el('second-canvas')
@@ -96,16 +100,8 @@ try {
       'webgl', { alpha: false, premultipliedAlpha: true, antialias: false })
   }
 
-  let gl2 = el('second-canvas').getContext(
-      'webgl2', { alpha: false, premultipliedAlpha: true, antialias: false })
-  if (!gl2) {
-    gl2 = el('second-canvas').getContext(
-      'webgl', { alpha: false, premultipliedAlpha: true, antialias: false })
-  }
-
   for (const [ctx, label] of [
     [gl, el('first-title').querySelector('.view-label')],
-    [gl2, el('second-title').querySelector('.view-label')]
   ]) {
     ctx.canvas.width = ctx.canvas.clientWidth
     ctx.canvas.height = ctx.canvas.clientHeight
@@ -119,74 +115,13 @@ try {
     }
   }
 
-  // Experimental canvas
+  // Primary canvas
   state.animation1.context = gl
   state.animation1.showFPS = () => {
     el('fps-1').textContent = state.animation1.lastFPS.toFixed(1)
   }
   state.animation1.draw = glPipeline(gl,
     { animationState: state.animation1,
-      nearPlane: 1,
-      farPlane: 100,
-      applyView: quatViewReadOnly
-    },
-    [
-      {
-        init: painters.prepareBlurSurfaces,
-        draw: painters.useClearTarget
-      },
-      { // draw border with optional specularity
-        vertexShader: shaders.projectorVert,
-        fragmentShader: shaders.borderFrag,
-        mesh: geometry.tesseractOutline,
-        components: 4,
-        init: painters.initTesseractBorder,
-        draw: painters.drawTesseractBorder
-      },
-      { // Draw diffuse light panes (with a little glow):
-        vertexShader: shaders.projectorVert,
-        fragmentShader: shaders.diffuseFrag,
-        opacityFunction: () => state.lighting.diffuseOpacity,
-        mesh: geometry.normalTesseract,
-        components: 4,
-        init: painters.initGlassTesseract,
-        draw: painters.drawGlassTesseract
-      },
-      { // Draw glittery specular faces
-        vertexShader: shaders.projectorVert,
-        fragmentShader: shaders.glitterFrag,
-        opacityFunction: () => state.lighting.specularOpacity,
-        mesh: geometry.normalTesseract,
-        components: 4,
-        init: painters.initGlassTesseract,
-        draw: painters.drawGlassTesseract
-      },
-      {
-        draw: painters.resolveClearTarget
-      },
-      { // post-process the output with iterated Gaussian blur:
-        vertexShader: shaders.textureVert,
-        fragmentShader: shaders.blur1dFrag,
-        mesh: geometry.texSquare,
-        init: painters.initBlur,
-        draw: painters.drawBlur
-      },
-      { // compose the blur (0) and clear (1) textures using depth (2).
-        vertexShader: shaders.textureVert,
-        fragmentShader: shaders.alphaCompositorFrag,
-        mesh: geometry.texSquare,
-        init: painters.initCompositor,
-        draw: painters.drawCompositor
-      },
-    ])
-
-  // Currently primary, reference canvas
-  state.animation2.context = gl2
-  state.animation2.showFPS = () => {
-    el('fps-2').textContent = state.animation2.lastFPS.toFixed(1)
-  }
-  state.animation2.draw = glPipeline(gl2,
-    { animationState: state.animation2,
       nearPlane: 1,
       farPlane: 100,
       applyView: quatView
@@ -244,14 +179,6 @@ try {
   function easeQuartic(t) {
     return t < 0.5  ? 8 * t**4
                     : 1 - Math.pow(-2 * t + 2, 4) / 2
-  }
-
-  function quatViewReadOnly () {
-    this.gl.uniform4fv(this.qViewL, state.viewL)
-    this.gl.uniform4fv(this.qViewR, state.viewR)
-
-    this.gl.uniform4fv(this.qModelL, state.modelL)
-    this.gl.uniform4fv(this.qModelR, state.modelR)
   }
 
   function quatView () {
@@ -582,9 +509,6 @@ function applyOrientationAnimations (dt) {
       state.modelR.postmultiply(animationQuats[i % 6].R.atAngle(dΘ))
     }
   }
-
-  el('current-l').textContent = state.modelL.toFixedString()
-  el('current-r').textContent = state.modelR.toFixedString()
 }
 
 function syncPickers () {
@@ -646,7 +570,7 @@ function takeLightingSnapshot (source = state) {
     img.height = 48
     snap.append(img)
     // Set a screenshot request callback:
-    state.animation2.requestScreenshot = copyScreenshot
+    state.animation1.requestScreenshot = copyScreenshot
   } else {
     // Skip the screenshot for loaded arrangements; write generic label.
     const count =
@@ -710,7 +634,7 @@ function takePositionSnapshot (source = state) {
     img.height = 48
     snap.append(img)
     // Set a screenshot request callback:
-    state.animation2.requestScreenshot = copyScreenshot
+    state.animation1.requestScreenshot = copyScreenshot
   } else {
     // Skip the screenshot for loaded orientations; write generic label.
     const count =
@@ -1100,8 +1024,7 @@ function addComposition (source = state, name) {
 function initListeners () {
   window.addEventListener('resize', event => {
     for (const s of [
-      state.animation1,
-      state.animation2
+      state.animation1
     ]) {
       const ctx = s.context
       ctx.canvas.width = ctx.canvas.clientWidth
@@ -1314,7 +1237,6 @@ function initListeners () {
     state.pointerdown = true
   }
   el('main-canvas').addEventListener('pointerdown', pointerdown)
-  el('second-canvas').addEventListener('pointerdown', pointerdown)
   
   const pointerup = event => {
     state.pointerdown = false
@@ -1323,13 +1245,11 @@ function initListeners () {
     state.viewSnapT = 0
   }
   el('main-canvas').addEventListener('pointerup', pointerup)
-  el('second-canvas').addEventListener('pointerup', pointerup)
 
   const mouseleave = event => {
     pointerup()
   }
   el('main-canvas').addEventListener('mouseleave', mouseleave)
-  el('second-canvas').addEventListener('mouseleave', mouseleave)
 
   const pointermove = event => {
     
@@ -1355,7 +1275,6 @@ function initListeners () {
   }
 
   el('main-canvas').addEventListener('pointermove', pointermove)
-  el('second-canvas').addEventListener('pointermove', pointermove)
 
   // The model orientation is controlled by twelve degrees of freedom:
   // Six local rotations (xy, xz, yz, xw, yw, zw), and six global.

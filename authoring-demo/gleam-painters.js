@@ -112,11 +112,7 @@ painters.prepareBlurSurfaces = function () {
   const gl = this.gl
   const res = gl.canvas.clientWidth
 
-  // From experience, devices only supporting 4x MSAA also tend to
-  // incur a steep performance penalty using it, so we only run
-  // antialiasing on more performant platforms.
-  if (!(gl instanceof WebGLRenderingContext)
-      && gl.getParameter(gl.MAX_SAMPLES) > 8) {
+  if (!(gl instanceof WebGLRenderingContext)) {
         
       const rb = gl.createRenderbuffer()
       const samples = Math.min(16, gl.getParameter(gl.MAX_SAMPLES))
