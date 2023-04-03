@@ -1,5 +1,8 @@
 'use strict';
 
+/**
+ * Extension of Array with methods making it easier to prepare data for WebGL.
+ */
 class Mesh extends Array {
   stride = 1
 
@@ -36,6 +39,11 @@ class Mesh extends Array {
     }
   }
 
+  /**
+   * Sequentially process the contents of this array by passing them to
+   * a callback function, then using the results of that function to replace
+   * the original elements.
+   */
   replace (callback, stride = this.stride) {
     const result = []
     let lastReplaceLength = 0
@@ -104,9 +112,9 @@ const geometry = {}
 
 geometry.square2d = [
   -1, -1,
-  1,  -1,
-  1,  1,
-  -1, 1,
+   1, -1,
+   1,  1,
+  -1,  1,
 ]
 
 geometry.texSquare = Mesh.from(geometry.square2d)
@@ -114,49 +122,8 @@ geometry.texSquare.stride = 2
 geometry.texSquare.interleave(v => [(v[0] + 1) / 2, (v[1] + 1) / 2])
 geometry.texSquare.stride = 4
 
-geometry.flatQuad = new Mesh(
-  -1,  1,  1, //front
-  -1, -1,  1,
-    1, -1,  1,
-    1,  1,  1,
-)
-
-geometry.quadLoop = new Mesh(
-  -1,  1,  1, //front
-  -1, -1,  1,
-    1, -1,  1,
-    1,  1,  1,
-  -1,  1,  1
-)
-
-geometry.quadLoop.stride = 3
-
-geometry.triCube = extrudeLineStrip(geometry.quadLoop, 0, 0, 2.0)
-
 geometry.tesseractOutline = buildTesseract(edgeNormalFace, 8)
 geometry.normalTesseract = buildTesseract(normalSquare, 8)
-
-geometry.triCube.replace(breakQuad, 12)
-geometry.triCube.push(
-  ...fanClose(geometry.quadLoop.slice(0, 12)).invertTriangles(),
-  ...transformMesh3(fanClose(geometry.quadLoop.slice(0, 12)),
-      translateMatrix(0,0,2)))
-
-// center the cube:
-geometry.triCube.replace(v => [v[0], v[1], v[2] - 2], 3)
-
-geometry.triCube.replace(v => { // Compute and interleave normals
-  const n = triangleNormal3(v)
-  return [
-    v[0], v[1], v[2], ...n,
-    v[3], v[4], v[5], ...n,
-    v[6], v[7], v[8], ...n,
-  ]
-}, 9)
-geometry.triCube.stride = 6
-
-geometry.squareMesh = Mesh.from(geometry.square2d)
-geometry.squareMesh.stride = 2
 
 //   return buildGeometry.geometry = geometry
 // }

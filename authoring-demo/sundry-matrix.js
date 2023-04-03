@@ -1,4 +1,5 @@
 'use strict';
+
 const π = Math.PI
 const τ = 2*π
 
@@ -183,8 +184,10 @@ function triangleNormal3 (tri) {
   return det
 }
 
-// Compute a matrix product for two 4x4 matrices
-// interpreted as column-major arrays
+/**
+ * Compute a matrix product for two 4x4 matrices,
+ * interpreted as column-major arrays.
+ */
 function product4x4 (A, B) {
   let result = Array(16).fill(0)
 
@@ -228,7 +231,6 @@ function rotateXY (theta) {
   ]
 }
 
-// debug -- choice of sign ambiguous?
 function rotateXW (theta) {
   return [
     Math.cos(theta),  0, 0, Math.sin(theta),
@@ -488,6 +490,7 @@ class Quaternion extends Array {
     const sinΘ = Math.sin(Θ)
     const cosΘ = Math.cos(Θ)
 
+    // Check validity -- does not cover every possible case:
     if (this[3] !== 1 || (    Math.abs(this[0]) !== 1
                           &&  Math.abs(this[1]) !== 1
                           &&  Math.abs(this[2]) !== 1 )) {

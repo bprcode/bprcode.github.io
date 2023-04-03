@@ -38,13 +38,14 @@ painters.initBlur = function () {
 
   // Initialize two framebuffers, each with a color texture,
   // to alternate between when blur rendering
-  const fboAlternates = [gl.createFramebuffer(), gl.createFramebuffer()]
-  const texAlternates = []
-
-  texAlternates[0] = blankTexture(gl, gl.TEXTURE0 + 3,
-    () => gl.canvas.clientWidth / 2)
-  texAlternates[1] = blankTexture(gl, gl.TEXTURE0 + 4,
-    () => gl.canvas.clientWidth / 2)
+  const fboAlternates = [
+    gl.createFramebuffer(),
+    gl.createFramebuffer()
+  ]
+  const texAlternates = [
+    blankTexture(gl, gl.TEXTURE0 + 3, () => gl.canvas.clientWidth / 2),
+    blankTexture(gl, gl.TEXTURE0 + 4, () => gl.canvas.clientWidth / 2)
+  ]
 
   for (let i = 0; i < fboAlternates.length; i++) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, fboAlternates[i])
@@ -320,7 +321,6 @@ painters.useClearTarget = function () {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.shared.fboClear)
   }
 
-  // debug -- this may be unnecessary
   gl.viewport(0, 0, this.shared.res, this.shared.res)
   gl.clear(gl.COLOR_BUFFER_BIT)
 }

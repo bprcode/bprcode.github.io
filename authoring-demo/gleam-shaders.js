@@ -30,7 +30,7 @@ uniform vec4 specularColor2;
 uniform vec4 specularColor3;
 uniform vec4 specularColor4;
 
-#define wMid ${(shaders.wOffset).toFixed(6)}
+#define wMid ${(shaders.wOffset).toFixed(9)}
 #define wFar (wMid - 2.)
 #define wNear (wMid + 2.)
 
@@ -52,19 +52,18 @@ void main (void) {
   s2 = clamp(s2, 0., 1.);
   s3 = clamp(s3, 0., 1.);
 
-  vec4 viewDirection = vWorld4d;
-  vec4 reflected = reflect(viewDirection, vNormal);
+  vec4 reflected = reflect(vWorld4d, vNormal);
   float specular1 = clamp(
-    abs(dot(reflected, wLight1)),
+    dot(reflected, wLight1),
     0., 1.);
   float specular2 = clamp(
-    abs(dot(reflected, wLight2)),
+    dot(reflected, wLight2),
     0., 1.);
   float specular3 = clamp(
-    abs(dot(reflected, wLight3)),
+    dot(reflected, wLight3),
     0., 1.);
   float specular4 = clamp(
-    abs(dot(reflected, wLight4)),
+    dot(reflected, wLight4),
     0., 1.);
 
   // This part is specific to the border rendering:
@@ -80,12 +79,12 @@ void main (void) {
 }
 `
 
+// Shade specular planes:
 shaders.glitterFrag =
 /* glsl */`
 precision mediump float;
 varying vec4 vNormal;
 varying vec4 vWorld4d;
-varying float w;
 uniform float opacity;
 
 uniform vec4 specularColor1;
@@ -93,7 +92,7 @@ uniform vec4 specularColor2;
 uniform vec4 specularColor3;
 uniform vec4 specularColor4;
 
-#define wMid ${(shaders.wOffset).toFixed(6)}
+#define wMid ${(shaders.wOffset).toFixed(9)}
 #define wFar (wMid - 2.)
 #define wNear (wMid + 2.)
 
@@ -106,8 +105,6 @@ void main (void) {
   // Use world position vector as the view direction:
   vec4 reflected = reflect(vWorld4d, vNormal);
 
-  // debug -- test removing abs:
-  // nothing to do with performance, just less busy. Better or worse? A-B it?
   float specular1 = clamp(
     dot(reflected, wLight1),
     0., 1.);
@@ -120,20 +117,6 @@ void main (void) {
   float specular4 = clamp(
     dot(reflected, wLight4),
     0., 1.);
-  /*
-  float specular1 = clamp(
-    abs(dot(reflected, wLight1)),
-    0., 1.);
-  float specular2 = clamp(
-    abs(dot(reflected, wLight2)),
-    0., 1.);
-  float specular3 = clamp(
-    abs(dot(reflected, wLight3)),
-    0., 1.);
-  float specular4 = clamp(
-    abs(dot(reflected, wLight4)),
-    0., 1.);
-  */
 
   vec4 shine =
       pow(specular1, 26.) * (specularColor1 * 3.)
@@ -144,6 +127,7 @@ void main (void) {
 }
 `
 
+// Shade diffuse planes (and a fourth-dimensional depth-based glow effect):
 shaders.diffuseFrag =
 /* glsl */`
 precision mediump float;
@@ -158,7 +142,7 @@ uniform vec4 diffuseColor1;
 uniform vec4 diffuseColor2;
 uniform vec4 diffuseColor3;
 
-#define wMid ${(shaders.wOffset).toFixed(6)}
+#define wMid ${(shaders.wOffset).toFixed(9)}
 #define wFar (wMid - 2.)
 #define wNear (wMid + 2.)
 
@@ -199,6 +183,7 @@ void main (void) {
 }
 `
 
+// Basic pass-through vertex shader with texture coordinates:
 shaders.textureVert =
 /* glsl */`
 precision mediump float;
@@ -212,6 +197,7 @@ void main (void) {
 }
 `
 
+// Weighted mix of blurry and clear textures, based on alpha value:
 shaders.alphaCompositorFrag =
 /* glsl */`
 precision mediump float;
@@ -227,6 +213,7 @@ void main (void) {
 }
 `
 
+// Compute a one-dimensional blur effect, based on a given kernel:
 shaders.blur1dFrag =
 /* glsl */`
 precision mediump float;
@@ -251,6 +238,7 @@ void main (void) {
 }
 `
 
+// Vertex project from fourth-dimensional space, applying quaternions:
 shaders.projectorVert = 
 /* glsl */ `
 precision mediump float;
@@ -284,7 +272,7 @@ vec4 qvp (vec4 q, vec4 v, vec4 p) {
 }
 
 void main (void) {
-  const float wOffset = ${(shaders.wOffset).toFixed(6)};
+  const float wOffset = ${(shaders.wOffset).toFixed(9)};
   const float wNear = 1.0;
   vec4 v = pos;
 
