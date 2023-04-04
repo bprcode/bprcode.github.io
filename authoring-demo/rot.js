@@ -82,8 +82,7 @@ try {
     .dispatchEvent(new Event('click'))
     
   for (const c of [
-    el('main-canvas'),
-    el('second-canvas')
+    el('main-canvas')
   ]) {
     if (c) {
       const rect = c.getBoundingClientRect()
