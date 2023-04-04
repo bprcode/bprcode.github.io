@@ -403,15 +403,17 @@ function blankTexture (context, unit, resolution, format) {
 
   if (typeof resolution === 'function') {
     res = resolution()
+    logError(`resolution() returned this: ->${res}<-`)
+    if (!res) { logError('(which was falsy)')}
     window.addEventListener('resize', _ => {
       const restore = gl.getParameter(gl.TEXTURE_BINDING_2D)
       res = resolution()
       // debug
       if (lastRes === res) { 
-        logError('skipping resize since lastRes === ', res)
+        logError(`skipping resize since lastRes === ->${lastRes}<-`)
         return }
       
-      logError('resizing to ', res)
+      logError(`resizing to ->${res}<-`)
       gl.bindTexture(gl.TEXTURE_2D, tex)
       setTexture()
       gl.bindTexture(gl.TEXTURE_2D, restore)
