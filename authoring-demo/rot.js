@@ -4,8 +4,6 @@ const log = console.log.bind(console)
 const el = document.getElementById.bind(document)
 
 const state = {
-  sliders: [],
-  checkboxes: [],
   animationSpeeds: [],
   // Lighting object storing color and direction of all current light sources:
   lighting: new Lighting,
@@ -1080,6 +1078,12 @@ function initListeners () {
   el('composition-load-button')
     .addEventListener('click', () => {
     loadCompositions()
+  })
+
+  el('dump-state')
+    .addEventListener('click', () => {
+    document.querySelector('.feedback').textContent = ''
+    logError(JSON.stringify(state).replaceAll(',"', ',\n"'))
   })
 
   // Color event handlers and initialization
