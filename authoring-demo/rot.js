@@ -1,5 +1,14 @@
 'use strict';
 
+window.addEventListener('error', debugError, true)
+function debugError(event) {
+  logError('⚠️ Error detected in ' + event.filename + '\n')
+  log(event.type  + '\n')
+  logError('At line ' + event.lineno + '\n')
+  logError(event.message + '\n')
+  log(event)
+}
+
 const log = console.log.bind(console)
 const el = document.getElementById.bind(document)
 
