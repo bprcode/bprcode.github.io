@@ -43,8 +43,8 @@ painters.initBlur = function () {
     gl.createFramebuffer()
   ]
   const texAlternates = [
-    blankTexture(gl, gl.TEXTURE0 + 3, () => gl.canvas.clientWidth / 2),
-    blankTexture(gl, gl.TEXTURE0 + 4, () => gl.canvas.clientWidth / 2)
+    blankTexture('blurA', gl, gl.TEXTURE0 + 3, () => gl.canvas.clientWidth / 2),
+    blankTexture('blurB', gl, gl.TEXTURE0 + 4, () => gl.canvas.clientWidth / 2)
   ]
 
   for (let i = 0; i < fboAlternates.length; i++) {
@@ -113,7 +113,7 @@ painters.prepareBlurSurfaces = function () {
   const res = gl.canvas.clientWidth
 
   // debug -- disabling MSAA for testing purposes
-  if (false && !(gl instanceof WebGLRenderingContext)) {
+  if (!(gl instanceof WebGLRenderingContext)) {
         
       const rb = gl.createRenderbuffer()
       const samples = Math.min(16, gl.getParameter(gl.MAX_SAMPLES))
@@ -149,12 +149,10 @@ painters.prepareBlurSurfaces = function () {
     logError('✔ Bypassing MSAA.')
   }
 
-  console.warn('Debug -- temporarily override resolution update for Chrome test')
-  const debug = gl.canvas.clientWidth
-  const clearTexture = blankTexture(gl, gl.TEXTURE0 + 1,
+  const clearTexture = blankTexture('clearTexture', gl, gl.TEXTURE0 + 1,
     () => {
       const r = gl.canvas.clientWidth
-      logError('Attempting to set clearTexture res to ' + r)
+      logError('Debug: Attempting to set clearTexture res to ' + r)
       return r
     })
   //const clearTexture = blankTexture(gl, gl.TEXTURE0 + 1,
@@ -393,7 +391,7 @@ painters.drawCompositor = function () {
  * @param {GLenum} format Defaults to gl.RGBA, can be gl.DEPTH_COMPONENT
  * @returns {WebGLTexture} 
  */
-function blankTexture (context, unit, resolution, format) {
+function blankTexture (label, context, unit, resolution, format) {
   /**@type {WebGLRenderingContext} */
   const gl = context
   const tex = gl.createTexture()
@@ -403,17 +401,17 @@ function blankTexture (context, unit, resolution, format) {
 
   if (typeof resolution === 'function') {
     res = resolution()
-    logError(`resolution() returned this: ->${res}<-`)
+    logError(`(${label}) resolution() returned this: ->${res}<-`)
     if (!res) { logError('(which was falsy)')}
     window.addEventListener('resize', _ => {
       const restore = gl.getParameter(gl.TEXTURE_BINDING_2D)
       res = resolution()
       // debug
       if (lastRes === res) { 
-        logError(`skipping resize since lastRes === ->${lastRes}<-`)
+        logError(`(${label}) skipping resize since lastRes === ->${lastRes}<-`)
         return }
       
-      logError(`resizing to ->${res}<-`)
+      logError(`(${label}) resizing to ->${res}<-`)
       gl.bindTexture(gl.TEXTURE_2D, tex)
       setTexture()
       gl.bindTexture(gl.TEXTURE_2D, restore)
