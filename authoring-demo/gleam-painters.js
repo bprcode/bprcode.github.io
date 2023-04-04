@@ -152,7 +152,13 @@ painters.prepareBlurSurfaces = function () {
   console.warn('Debug -- temporarily override resolution update for Chrome test')
   const debug = gl.canvas.clientWidth
   const clearTexture = blankTexture(gl, gl.TEXTURE0 + 1,
-    () => debug, gl.RGBA)
+    () => {
+      const r = gl.canvas.clientWidth
+      logError('Attempting to set clearTexture res to ' + r)
+      return r
+    })
+  //const clearTexture = blankTexture(gl, gl.TEXTURE0 + 1,
+  //  () => debug, gl.RGBA)
   // const clearTexture = blankTexture(gl, gl.TEXTURE0 + 1,
   //   () => gl.canvas.clientWidth, gl.RGBA)
 
@@ -400,8 +406,12 @@ function blankTexture (context, unit, resolution, format) {
     window.addEventListener('resize', _ => {
       const restore = gl.getParameter(gl.TEXTURE_BINDING_2D)
       res = resolution()
-      if (lastRes === res) { return }
+      // debug
+      if (lastRes === res) { 
+        logError('skipping resize since lastRes === ', res)
+        return }
       
+      logError('resizing to ', res)
       gl.bindTexture(gl.TEXTURE_2D, tex)
       setTexture()
       gl.bindTexture(gl.TEXTURE_2D, restore)
