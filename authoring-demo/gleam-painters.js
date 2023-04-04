@@ -112,6 +112,7 @@ painters.prepareBlurSurfaces = function () {
   const gl = this.gl
   const res = gl.canvas.clientWidth
 
+  // debug -- disabling MSAA for testing purposes
   if (false && !(gl instanceof WebGLRenderingContext)) {
         
       const rb = gl.createRenderbuffer()
@@ -148,8 +149,12 @@ painters.prepareBlurSurfaces = function () {
     logError('✔ Bypassing MSAA.')
   }
 
+  console.warn('Debug -- temporarily override resolution update for Chrome test')
+  const debug = gl.canvas.clientWidth
   const clearTexture = blankTexture(gl, gl.TEXTURE0 + 1,
-    () => gl.canvas.clientWidth, gl.RGBA)
+    () => debug, gl.RGBA)
+  // const clearTexture = blankTexture(gl, gl.TEXTURE0 + 1,
+  //   () => gl.canvas.clientWidth, gl.RGBA)
 
   const fboClear = gl.createFramebuffer()
   gl.bindFramebuffer(gl.FRAMEBUFFER, fboClear)
