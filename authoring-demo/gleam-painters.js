@@ -112,7 +112,7 @@ painters.prepareBlurSurfaces = function () {
   const gl = this.gl
   const res = gl.canvas.clientWidth
 
-  if (!(gl instanceof WebGLRenderingContext)) {
+  if (false && !(gl instanceof WebGLRenderingContext)) {
         
       const rb = gl.createRenderbuffer()
       const samples = Math.min(16, gl.getParameter(gl.MAX_SAMPLES))
