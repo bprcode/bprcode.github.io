@@ -127,10 +127,6 @@ painters.prepareBlurSurfaces = function () {
 
       function fitRenderbuffer (buffer, format) {
         const updatedRes = gl.canvas.clientWidth
-        if (lastRes === updatedRes) {
-          logError(`RB updated res matches (${lastRes}); skipping`)
-          return
-        }
         const restore = gl.getParameter(gl.RENDERBUFFER_BINDING)
 
         gl.bindRenderbuffer(gl.RENDERBUFFER, buffer)
@@ -138,11 +134,10 @@ painters.prepareBlurSurfaces = function () {
         gl.renderbufferStorageMultisample(gl.RENDERBUFFER,
           samples, format, updatedRes, updatedRes)
 
-        // debug begin
         gl.bindFramebuffer(gl.FRAMEBUFFER, fboAA)
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
           gl.RENDERBUFFER, rb)
-        // debug end
+
         gl.bindRenderbuffer(gl.RENDERBUFFER, restore)
         lastRes = updatedRes
       }
@@ -152,11 +147,6 @@ painters.prepareBlurSurfaces = function () {
       window.addEventListener('resize', event => {
         fitRenderbuffer(rb, gl.RGBA8)
       })
-
-      //const fboAA = gl.createFramebuffer()
-      // gl.bindFramebuffer(gl.FRAMEBUFFER, fboAA)
-      // gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-      //   gl.RENDERBUFFER, rb)
 
       verifyFramebuffer(gl)
       this.shared.fboAA = fboAA
@@ -413,8 +403,10 @@ function blankTexture (label, context, unit, resolution, format) {
 
   if (typeof resolution === 'function') {
     res = resolution()
+    lastRes = res
     logError(`(${label}) resolution() returned this: ->${res}<-`)
     if (!res) { logError('(which was falsy)')}
+
     window.addEventListener('resize', _ => {
       const restore = gl.getParameter(gl.TEXTURE_BINDING_2D)
       res = resolution()
@@ -431,6 +423,7 @@ function blankTexture (label, context, unit, resolution, format) {
     })
   } else {
     res = resolution
+    lastRes = res
   }
 
   gl.activeTexture(unit)
