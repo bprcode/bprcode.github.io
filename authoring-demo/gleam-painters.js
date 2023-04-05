@@ -122,7 +122,7 @@ painters.prepareBlurSurfaces = function () {
       logError('Applying ' + samples + 'x MSAA\n')
 
       function fitRenderbuffer (buffer, format) {
-        const restore = gl.getParameter(gl.RENDERBUFFER_BINDING)
+        // const restore = gl.getParameter(gl.RENDERBUFFER_BINDING)
         const updatedRes = gl.canvas.clientWidth
 
         gl.bindRenderbuffer(gl.RENDERBUFFER, buffer)
@@ -130,13 +130,13 @@ painters.prepareBlurSurfaces = function () {
         gl.renderbufferStorageMultisample(gl.RENDERBUFFER,
           samples, format, updatedRes, updatedRes)
 
-        gl.bindRenderbuffer(gl.RENDERBUFFER, restore)
+        // gl.bindRenderbuffer(gl.RENDERBUFFER, restore)
       }
 
       fitRenderbuffer(rb, gl.RGBA8)
 
       window.addEventListener('resize', event => {
-        fitRenderbuffer(rb, gl.RGBA8)
+        //fitRenderbuffer(rb, gl.RGBA8)
       })
 
       const fboAA = gl.createFramebuffer()
