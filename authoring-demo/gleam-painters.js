@@ -120,6 +120,8 @@ painters.prepareBlurSurfaces = function () {
         
       const rb = gl.createRenderbuffer()
       const samples = Math.min(16, gl.getParameter(gl.MAX_SAMPLES))
+      const fboAA = gl.createFramebuffer()
+
       log('Applying ' + samples + 'x MSAA')
       logError('Applying ' + samples + 'x MSAA\n')
 
@@ -136,6 +138,11 @@ painters.prepareBlurSurfaces = function () {
         gl.renderbufferStorageMultisample(gl.RENDERBUFFER,
           samples, format, updatedRes, updatedRes)
 
+        // debug begin
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fboAA)
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
+          gl.RENDERBUFFER, rb)
+        // debug end
         gl.bindRenderbuffer(gl.RENDERBUFFER, restore)
         lastRes = updatedRes
       }
@@ -146,10 +153,10 @@ painters.prepareBlurSurfaces = function () {
         fitRenderbuffer(rb, gl.RGBA8)
       })
 
-      const fboAA = gl.createFramebuffer()
-      gl.bindFramebuffer(gl.FRAMEBUFFER, fboAA)
-      gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-        gl.RENDERBUFFER, rb)
+      //const fboAA = gl.createFramebuffer()
+      // gl.bindFramebuffer(gl.FRAMEBUFFER, fboAA)
+      // gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
+      //   gl.RENDERBUFFER, rb)
 
       verifyFramebuffer(gl)
       this.shared.fboAA = fboAA
