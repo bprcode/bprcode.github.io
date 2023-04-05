@@ -43,9 +43,9 @@ painters.initBlur = function () {
     gl.createFramebuffer()
   ]
   const texAlternates = [
-    blankTexture('blurA', gl, gl.TEXTURE0 + 3,
+    blankTexture(gl, gl.TEXTURE0 + 3,
       () => Math.floor(gl.canvas.clientWidth / 2)),
-    blankTexture('blurB', gl, gl.TEXTURE0 + 4,
+    blankTexture(gl, gl.TEXTURE0 + 4,
       () => Math.floor(gl.canvas.clientWidth / 2))
   ]
 
@@ -127,14 +127,10 @@ painters.prepareBlurSurfaces = function () {
 
       function fitRenderbuffer (buffer, format) {
         const updatedRes = gl.canvas.clientWidth
-        if (lastRes === updatedRes) {
-          logError(`RB: Skip resize (${updatedRes})`)
-          return
-        }
+        if (lastRes === updatedRes) { return }
         const restore = gl.getParameter(gl.RENDERBUFFER_BINDING)
 
         gl.bindRenderbuffer(gl.RENDERBUFFER, buffer)
-        logError(`Updating renderbufferstorageMS to ${samples} samples\nin ${format} format\nwith ${updatedRes} res`)
         gl.renderbufferStorageMultisample(gl.RENDERBUFFER,
           samples, format, updatedRes, updatedRes)
 
@@ -159,12 +155,8 @@ painters.prepareBlurSurfaces = function () {
     logError('✔ Bypassing MSAA.')
   }
 
-  const clearTexture = blankTexture('clearTexture', gl, gl.TEXTURE0 + 1,
-    () => gl.canvas.clientWidth)
-  //const clearTexture = blankTexture(gl, gl.TEXTURE0 + 1,
-  //  () => debug, gl.RGBA)
-  // const clearTexture = blankTexture(gl, gl.TEXTURE0 + 1,
-  //   () => gl.canvas.clientWidth, gl.RGBA)
+  const clearTexture = blankTexture(gl, gl.TEXTURE0 + 1,
+    () => gl.canvas.clientWidth, gl.RGBA)
 
   const fboClear = gl.createFramebuffer()
   gl.bindFramebuffer(gl.FRAMEBUFFER, fboClear)
@@ -393,33 +385,29 @@ painters.drawCompositor = function () {
  * Allocate a blank WebGLTexture and initialize it with common parameters.
  * @param {WebGLRenderingContext|WebGL2RenderingContext} context The
  * context binding this texture
+ * @param {GLint} unit The texture unit on which to bind the texture 
  * @param {number} resolution Width/height of the texture
  * @param {GLenum} format Defaults to gl.RGBA, can be gl.DEPTH_COMPONENT
  * @returns {WebGLTexture} 
  */
-function blankTexture (label, context, unit, resolution, format) {
+function blankTexture (context, unit, resolution, format) {
   /**@type {WebGLRenderingContext} */
   const gl = context
   const tex = gl.createTexture()
-  let res
-  let lastRes
+  let res = null
+  let lastRes = null
   format ??= gl.RGBA
 
   if (typeof resolution === 'function') {
     res = resolution()
     lastRes = res
-    logError(`(${label}) resolution() returned this: ->${res}<-`)
-    if (!res) { logError('(which was falsy)')}
 
     window.addEventListener('resize', _ => {
       const restore = gl.getParameter(gl.TEXTURE_BINDING_2D)
       res = resolution()
-      // debug
-      if (lastRes === res) { 
-        logError(`(${label}) skipping resize since lastRes === ->${lastRes}<-`)
-        return }
+
+      if (lastRes === res) { return }
       
-      logError(`(${label}) resizing to ->${res}<-`)
       gl.bindTexture(gl.TEXTURE_2D, tex)
       setTexture()
       gl.bindTexture(gl.TEXTURE_2D, restore)
