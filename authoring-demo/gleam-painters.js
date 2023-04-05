@@ -136,7 +136,7 @@ painters.prepareBlurSurfaces = function () {
       fitRenderbuffer(rb, gl.RGBA8)
 
       window.addEventListener('resize', event => {
-        //fitRenderbuffer(rb, gl.RGBA8)
+        fitRenderbuffer(rb, gl.RGBA8)
       })
 
       const fboAA = gl.createFramebuffer()
