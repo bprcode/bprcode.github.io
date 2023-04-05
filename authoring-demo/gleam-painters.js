@@ -127,6 +127,10 @@ painters.prepareBlurSurfaces = function () {
 
       function fitRenderbuffer (buffer, format) {
         const updatedRes = gl.canvas.clientWidth
+        if (lastRes === updatedRes) {
+          logError(`RB: Skip resize (${updatedRes})`)
+          return
+        }
         const restore = gl.getParameter(gl.RENDERBUFFER_BINDING)
 
         gl.bindRenderbuffer(gl.RENDERBUFFER, buffer)
