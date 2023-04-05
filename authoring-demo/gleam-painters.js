@@ -43,8 +43,10 @@ painters.initBlur = function () {
     gl.createFramebuffer()
   ]
   const texAlternates = [
-    blankTexture('blurA', gl, gl.TEXTURE0 + 3, () => gl.canvas.clientWidth / 2),
-    blankTexture('blurB', gl, gl.TEXTURE0 + 4, () => gl.canvas.clientWidth / 2)
+    blankTexture('blurA', gl, gl.TEXTURE0 + 3,
+      () => Math.floor(gl.canvas.clientWidth / 2)),
+    blankTexture('blurB', gl, gl.TEXTURE0 + 4,
+      () => Math.floor(gl.canvas.clientWidth / 2))
   ]
 
   for (let i = 0; i < fboAlternates.length; i++) {
@@ -112,8 +114,7 @@ painters.prepareBlurSurfaces = function () {
   const gl = this.gl
   const res = gl.canvas.clientWidth
 
-  // debug -- disabling MSAA for testing purposes
-  if (false && !(gl instanceof WebGLRenderingContext)) {
+  if (!(gl instanceof WebGLRenderingContext)) {
         
       const rb = gl.createRenderbuffer()
       const samples = Math.min(16, gl.getParameter(gl.MAX_SAMPLES))
@@ -122,11 +123,12 @@ painters.prepareBlurSurfaces = function () {
 
       function fitRenderbuffer (buffer, format) {
         const restore = gl.getParameter(gl.RENDERBUFFER_BINDING)
-        const res = gl.canvas.clientWidth
+        const updatedRes = gl.canvas.clientWidth
 
         gl.bindRenderbuffer(gl.RENDERBUFFER, buffer)
+        logError(`Updating renderbufferstorageMS to ${updatedRes}`)
         gl.renderbufferStorageMultisample(gl.RENDERBUFFER,
-          samples, format, res, res)
+          samples, format, updatedRes, updatedRes)
 
         gl.bindRenderbuffer(gl.RENDERBUFFER, restore)
       }
@@ -150,11 +152,7 @@ painters.prepareBlurSurfaces = function () {
   }
 
   const clearTexture = blankTexture('clearTexture', gl, gl.TEXTURE0 + 1,
-    () => {
-      const r = gl.canvas.clientWidth
-      logError('Debug: Attempting to set clearTexture res to ' + r)
-      return r
-    })
+    () => gl.canvas.clientWidth)
   //const clearTexture = blankTexture(gl, gl.TEXTURE0 + 1,
   //  () => debug, gl.RGBA)
   // const clearTexture = blankTexture(gl, gl.TEXTURE0 + 1,
@@ -168,13 +166,13 @@ painters.prepareBlurSurfaces = function () {
   verifyFramebuffer(gl)
 
   this.shared.res = res
-  this.shared.blurRes = res / 2
+  this.shared.blurRes = Math.floor(res / 2)
   this.shared.fboClear = fboClear
   this.shared.clearTexture = clearTexture
 
   window.addEventListener('resize', event => {
     this.shared.res = gl.canvas.clientWidth
-    this.shared.blurRes = gl.canvas.clientWidth / 2
+    this.shared.blurRes = Math.floor(gl.canvas.clientWidth / 2)
   })
 }
 
