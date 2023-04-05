@@ -114,6 +114,8 @@ painters.prepareBlurSurfaces = function () {
   const gl = this.gl
   const res = gl.canvas.clientWidth
 
+  let lastRes = null
+
   if (!(gl instanceof WebGLRenderingContext)) {
         
       const rb = gl.createRenderbuffer()
@@ -122,15 +124,20 @@ painters.prepareBlurSurfaces = function () {
       logError('Applying ' + samples + 'x MSAA\n')
 
       function fitRenderbuffer (buffer, format) {
-        // const restore = gl.getParameter(gl.RENDERBUFFER_BINDING)
         const updatedRes = gl.canvas.clientWidth
+        if (lastRes === updatedRes) {
+          logError(`RB updated res matches (${lastRes}); skipping`)
+          return
+        }
+        const restore = gl.getParameter(gl.RENDERBUFFER_BINDING)
 
         gl.bindRenderbuffer(gl.RENDERBUFFER, buffer)
-        logError(`Updating renderbufferstorageMS to ${updatedRes}`)
+        logError(`Updating renderbufferstorageMS to ${samples} samples\nin ${format} format\nwith ${updatedRes} res`)
         gl.renderbufferStorageMultisample(gl.RENDERBUFFER,
           samples, format, updatedRes, updatedRes)
 
-        // gl.bindRenderbuffer(gl.RENDERBUFFER, restore)
+        gl.bindRenderbuffer(gl.RENDERBUFFER, restore)
+        lastRes = updatedRes
       }
 
       fitRenderbuffer(rb, gl.RGBA8)
