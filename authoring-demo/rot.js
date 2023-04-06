@@ -1019,6 +1019,17 @@ function addComposition (source = state, name) {
 }
 
 function initListeners () {
+  function updateBlurLevel () {
+    if (el('main-canvas').clientWidth > 350) {
+      state.blurPassCount = 4
+    } else {
+      state.blurPassCount = 2
+    }
+
+    el('blur-pass-count').value = state.blurPassCount
+    el('blur-pass-count').dispatchEvent(new Event('input'))
+  }
+
   window.addEventListener('resize', event => {
     for (const s of [
       state.animation1
@@ -1029,6 +1040,8 @@ function initListeners () {
       ctx.viewport(0, 0, ctx.canvas.width, ctx.canvas.height)
       if (!s.keepAnimating) { requestAnimationFrame(s.draw) }
     }
+
+    updateBlurLevel()
   })
 
   el('reset-button')
@@ -1078,12 +1091,6 @@ function initListeners () {
   el('composition-load-button')
     .addEventListener('click', () => {
     loadCompositions()
-  })
-
-  el('dump-state')
-    .addEventListener('click', () => {
-    document.querySelector('.feedback').textContent = ''
-    logError(JSON.stringify(state).replaceAll(',"', ',\n"'))
   })
 
   // Color event handlers and initialization
@@ -1194,6 +1201,7 @@ function initListeners () {
   el('specular-opacity').dispatchEvent(new Event('input'))
   el('border-specularity').dispatchEvent(new Event('input'))
   el('blur-pass-count').dispatchEvent(new Event('input'))
+  updateBlurLevel()
 
   for (const [i,e] of
     document.querySelectorAll('input[type="radio"]').entries()) {

@@ -135,6 +135,8 @@ painters.prepareBlurSurfaces = function () {
           samples, format, updatedRes, updatedRes)
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, fboAA)
+        // N.B. the following call does not need to happen on every resize
+        // for most platforms, but Chrome mobile requires it:
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
           gl.RENDERBUFFER, rb)
 
