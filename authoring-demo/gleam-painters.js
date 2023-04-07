@@ -147,6 +147,7 @@ painters.prepareBlurSurfaces = function () {
       fitRenderbuffer(rb, gl.RGBA8)
 
       window.addEventListener('resize', event => {
+        countResize()
         fitRenderbuffer(rb, gl.RGBA8)
       })
 
@@ -173,6 +174,7 @@ painters.prepareBlurSurfaces = function () {
   this.shared.clearTexture = clearTexture
 
   window.addEventListener('resize', event => {
+    countResize()
     this.shared.res = gl.canvas.clientWidth
     this.shared.blurRes = Math.floor(gl.canvas.clientWidth / 2)
   })
@@ -273,6 +275,7 @@ painters.initGlassTesseract = function () {
   this.shared.res ??= res
 
   window.addEventListener('resize', event => {
+    countResize()
     this.shared.res = gl.canvas.clientWidth
   })
 }
@@ -405,6 +408,7 @@ function blankTexture (context, unit, resolution, format) {
     lastRes = res
 
     window.addEventListener('resize', _ => {
+      countResize()
       const restore = gl.getParameter(gl.TEXTURE_BINDING_2D)
       res = resolution()
 
