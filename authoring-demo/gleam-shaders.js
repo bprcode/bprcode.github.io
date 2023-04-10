@@ -29,6 +29,10 @@ uniform vec4 specularColor1;
 uniform vec4 specularColor2;
 uniform vec4 specularColor3;
 uniform vec4 specularColor4;
+uniform vec4 specularDirection1;
+uniform vec4 specularDirection2;
+uniform vec4 specularDirection3;
+uniform vec4 specularDirection4;
 
 #define wMid ${(shaders.wOffset).toFixed(9)}
 #define wFar (wMid - 2.)
@@ -41,29 +45,18 @@ void main (void) {
   // Use negatives since edge0 must be < edge1 per the spec:
   float t = smoothstep(-wNear, -wFar, -w);
 
-  vec4 wLight1 = vec4(-0.707106781, 0., 0.707106781, 0.);
-  vec4 wLight2 = vec4(0., -0.707106781, 0., -0.707106781);
-  vec4 wLight3 = vec4(0.577350269, 0.577350269, -0.577350269, 0.);
-  vec4 wLight4 = vec4(0., 0., -1., 0.);
-  float s1 = dot(vNormal, wLight1);
-  float s2 = dot(vNormal, wLight2);
-  float s3 = dot(vNormal, wLight3);
-  s1 = clamp(s1, 0., 1.);
-  s2 = clamp(s2, 0., 1.);
-  s3 = clamp(s3, 0., 1.);
-
   vec4 reflected = reflect(vWorld4d, vNormal);
   float specular1 = clamp(
-    dot(reflected, wLight1),
+    dot(reflected, specularDirection1),
     0., 1.);
   float specular2 = clamp(
-    dot(reflected, wLight2),
+    dot(reflected, specularDirection2),
     0., 1.);
   float specular3 = clamp(
-    dot(reflected, wLight3),
+    dot(reflected, specularDirection3),
     0., 1.);
   float specular4 = clamp(
-    dot(reflected, wLight4),
+    dot(reflected, specularDirection4),
     0., 1.);
 
   // This part is specific to the border rendering:
@@ -91,31 +84,30 @@ uniform vec4 specularColor1;
 uniform vec4 specularColor2;
 uniform vec4 specularColor3;
 uniform vec4 specularColor4;
+uniform vec4 specularDirection1;
+uniform vec4 specularDirection2;
+uniform vec4 specularDirection3;
+uniform vec4 specularDirection4;
 
 #define wMid ${(shaders.wOffset).toFixed(9)}
 #define wFar (wMid - 2.)
 #define wNear (wMid + 2.)
 
 void main (void) {
-  vec4 wLight1 = vec4(-0.707106781, 0., 0.707106781, 0.);
-  vec4 wLight2 = vec4(0., -0.707106781, 0., -0.707106781);
-  vec4 wLight3 = vec4(0.577350269, 0.577350269, -0.577350269, 0.);
-  vec4 wLight4 = vec4(0., 0., -1., 0.);
-
   // Use world position vector as the view direction:
   vec4 reflected = reflect(vWorld4d, vNormal);
 
   float specular1 = clamp(
-    dot(reflected, wLight1),
+    dot(reflected, specularDirection1),
     0., 1.);
   float specular2 = clamp(
-    dot(reflected, wLight2),
+    dot(reflected, specularDirection2),
     0., 1.);
   float specular3 = clamp(
-    dot(reflected, wLight3),
+    dot(reflected, specularDirection3),
     0., 1.);
   float specular4 = clamp(
-    dot(reflected, wLight4),
+    dot(reflected, specularDirection4),
     0., 1.);
 
   vec4 shine =
@@ -141,6 +133,9 @@ uniform vec4 membraneColor;
 uniform vec4 diffuseColor1;
 uniform vec4 diffuseColor2;
 uniform vec4 diffuseColor3;
+uniform vec4 diffuseDirection1;
+uniform vec4 diffuseDirection2;
+uniform vec4 diffuseDirection3;
 
 #define wMid ${(shaders.wOffset).toFixed(9)}
 #define wFar (wMid - 2.)
@@ -165,12 +160,9 @@ void main (void) {
   vec4 membranePart = membraneColor * thickness;
 
   // Diffuse light pane contributions:
-  vec4 wLightDir1 = vec4(-0.707106781, 0., 0.707106781, 0.);
-  vec4 wLightDir2 = vec4(0., -0.707106781, 0., -0.707106781);
-  vec4 wLightDir3 = vec4(0., 0., 0., -1.);
-  float s1 = dot(vNormal, wLightDir1);
-  float s2 = dot(vNormal, wLightDir2);
-  float s3 = dot(vNormal, wLightDir3);
+  float s1 = dot(vNormal, diffuseDirection1);
+  float s2 = dot(vNormal, diffuseDirection2);
+  float s3 = dot(vNormal, diffuseDirection3);
   s1 = clamp(s1, 0., 1.);
   s2 = clamp(s2, 0., 1.);
   s3 = clamp(s3, 0., 1.);

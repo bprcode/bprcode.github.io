@@ -208,6 +208,14 @@ painters.initTesseractBorder = function () {
     this.specularColor2 = gl.getUniformLocation(this.program, 'specularColor2')
     this.specularColor3 = gl.getUniformLocation(this.program, 'specularColor3')
     this.specularColor4 = gl.getUniformLocation(this.program, 'specularColor4')
+    this.specularDirection1 =
+      gl.getUniformLocation(this.program, 'specularDirection1')
+    this.specularDirection2 =
+      gl.getUniformLocation(this.program, 'specularDirection2')
+    this.specularDirection3 =
+      gl.getUniformLocation(this.program, 'specularDirection3')
+    this.specularDirection4 =
+      gl.getUniformLocation(this.program, 'specularDirection4')
     this.frameSpecularWeight =
       gl.getUniformLocation(this.program, 'frameSpecularWeight')
   }
@@ -227,12 +235,20 @@ painters.drawTesseractBorder = function () {
     gl.uniform1f(this.frameSpecularWeight, state.lighting.borderSpecularity)
   }
 
-  // If the mesh has normals, provide colors for specularity:
+  // If the mesh has normals, provide values for specularity:
   if (this.mesh.stride === 8) {
     gl.uniform4fv(this.specularColor1, state.lighting.specularLights[0].rgba)
     gl.uniform4fv(this.specularColor2, state.lighting.specularLights[1].rgba)
     gl.uniform4fv(this.specularColor3, state.lighting.specularLights[2].rgba)
     gl.uniform4fv(this.specularColor4, state.lighting.specularLights[3].rgba)
+    gl.uniform4fv(this.specularDirection1,
+      state.lighting.specularLights[0].xyzw)
+    gl.uniform4fv(this.specularDirection2,
+      state.lighting.specularLights[1].xyzw)
+    gl.uniform4fv(this.specularDirection3,
+      state.lighting.specularLights[2].xyzw)
+    gl.uniform4fv(this.specularDirection4,
+      state.lighting.specularLights[3].xyzw)
   }
 
   gl.drawArrays(gl.TRIANGLES, 0, this.mesh.blocks)
@@ -260,11 +276,25 @@ painters.initGlassTesseract = function () {
   this.diffuseColor1 = gl.getUniformLocation(this.program, 'diffuseColor1')
   this.diffuseColor2 = gl.getUniformLocation(this.program, 'diffuseColor2')
   this.diffuseColor3 = gl.getUniformLocation(this.program, 'diffuseColor3')
+  this.diffuseDirection1 =
+    gl.getUniformLocation(this.program, 'diffuseDirection1')
+  this.diffuseDirection2 =
+    gl.getUniformLocation(this.program, 'diffuseDirection2')
+  this.diffuseDirection3 =
+    gl.getUniformLocation(this.program, 'diffuseDirection3')
 
   this.specularColor1 = gl.getUniformLocation(this.program, 'specularColor1')
   this.specularColor2 = gl.getUniformLocation(this.program, 'specularColor2')
   this.specularColor3 = gl.getUniformLocation(this.program, 'specularColor3')
   this.specularColor4 = gl.getUniformLocation(this.program, 'specularColor4')
+  this.specularDirection1 =
+    gl.getUniformLocation(this.program, 'specularDirection1')
+  this.specularDirection2 =
+    gl.getUniformLocation(this.program, 'specularDirection2')
+  this.specularDirection3 =
+    gl.getUniformLocation(this.program, 'specularDirection3')
+  this.specularDirection4 =
+    gl.getUniformLocation(this.program, 'specularDirection4')
 
   gl.enableVertexAttribArray(this.normal)
   gl.vertexAttribPointer(this.normal, this.components, gl.FLOAT, false,
@@ -299,11 +329,22 @@ painters.drawGlassTesseract = function () {
   gl.uniform4fv(this.diffuseColor1, state.lighting.diffuseLights[0].rgba)
   gl.uniform4fv(this.diffuseColor2, state.lighting.diffuseLights[1].rgba)
   gl.uniform4fv(this.diffuseColor3, state.lighting.diffuseLights[2].rgba)
+  gl.uniform4fv(this.diffuseDirection1, state.lighting.diffuseLights[0].xyzw)
+  gl.uniform4fv(this.diffuseDirection2, state.lighting.diffuseLights[1].xyzw)
+  gl.uniform4fv(this.diffuseDirection3, state.lighting.diffuseLights[2].xyzw)
 
   gl.uniform4fv(this.specularColor1, state.lighting.specularLights[0].rgba)
   gl.uniform4fv(this.specularColor2, state.lighting.specularLights[1].rgba)
   gl.uniform4fv(this.specularColor3, state.lighting.specularLights[2].rgba)
   gl.uniform4fv(this.specularColor4, state.lighting.specularLights[3].rgba)
+  gl.uniform4fv(this.specularDirection1,
+    state.lighting.specularLights[0].xyzw)
+  gl.uniform4fv(this.specularDirection2,
+    state.lighting.specularLights[1].xyzw)
+  gl.uniform4fv(this.specularDirection3,
+    state.lighting.specularLights[2].xyzw)
+  gl.uniform4fv(this.specularDirection4,
+    state.lighting.specularLights[3].xyzw)
 
   gl.viewport(0, 0, this.shared.res, this.shared.res)
 
@@ -483,7 +524,10 @@ function verifyFramebuffer(gl) {
 }
 
 // Utility function for converting lighting data from prior RGB format
-function convertLightingToAlpha (original) {
+function sanitizeLighting (original) {
+  // Constructor-initialized default lighting for direction comparsion:
+  const directions = new Lighting
+
   for (const ref of [
     original.specularLights[0],
     original.specularLights[1],
@@ -502,6 +546,27 @@ function convertLightingToAlpha (original) {
       log('converted ' + prev + ' to ' + ref.rgba)
     }
   }
+
+  // Update all-zero directions to newly preferred defaults:
+  for (const [ref, basis] of [
+    [original.specularLights[0], directions.specularLights[0]],
+    [original.specularLights[1], directions.specularLights[1]],
+    [original.specularLights[2], directions.specularLights[2]],
+    [original.specularLights[3], directions.specularLights[3]],
+    [original.diffuseLights[0], directions.diffuseLights[0]],
+    [original.diffuseLights[1], directions.diffuseLights[1]],
+    [original.diffuseLights[2], directions.diffuseLights[2]]
+  ]) {
+    if (   ref.xyzw[0] === 0
+        && ref.xyzw[1] === 0
+        && ref.xyzw[2] === 0
+        && ref.xyzw[3] === 0) {
+      log('replacing ', ref.xyzw, ' with ', basis.xyzw)
+      ref.xyzw = [...basis.xyzw]
+    }
+  }
+
+
   if (original.nearFrameColor.length === 3) {
     original.nearFrameColor.push(0)
   }
@@ -518,27 +583,32 @@ class Lighting {
   static Light = class {
     xyzw = [0,0,0,0]
     rgba = [0,0,0,0]
+
+    constructor (initial = {}) {
+      if (initial.xyzw) { this.xyzw = [...initial.xyzw] }
+      if (initial.rgba) { this.xyzw = [...initial.rgba] }
+    }
   }
 
   constructor () {
     this.specularLights = [
-      new Lighting.Light,
-      new Lighting.Light,
-      new Lighting.Light,
-      new Lighting.Light
+      new Lighting.Light({xyzw: [-0.707106781, 0, 0.707106781, 0]}),
+      new Lighting.Light({xyzw: [0, -0.707106781, 0, -0.707106781]}),
+      new Lighting.Light({xyzw: [0.577350269, 0.577350269, -0.577350269, 0]}),
+      new Lighting.Light({xyzw: [0, 0, -1, 0]}),
     ]
     
     this.diffuseLights = [
-      new Lighting.Light,
-      new Lighting.Light,
-      new Lighting.Light,
+      new Lighting.Light({xyzw: [-0.707106781, 0, 0.707106781, 0]}),
+      new Lighting.Light({xyzw: [0, -0.707106781, 0, -0.707106781]}),
+      new Lighting.Light({xyzw: [0, 0, 0, -1]}),
     ]
 
     this.glow = new Lighting.Light
     this.membrane = new Lighting.Light
 
     this.nearFrameColor = [0,0,0,0]
-    this.farFrameColor = [0,0,0,1]
+    this.farFrameColor = [0,0,0,0]
 
     this.diffuseOpacity = 1
     this.specularOpacity = 0
