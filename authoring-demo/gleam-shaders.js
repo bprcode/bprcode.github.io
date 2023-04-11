@@ -64,10 +64,10 @@ void main (void) {
     clamp(t, 0., 1.));
 
   vec4 shine =
-    pow(specular1, 26.) * specularColor1 * 3.
-    + pow(specular2, 26.) * specularColor2 * 3.
-    + pow(specular3, 26.) * specularColor3 * 3.
-    + pow(specular4, 80.) * specularColor4 * 7.;
+      pow(specular1, 26.) * specularColor1
+    + pow(specular2, 26.) * specularColor2
+    + pow(specular3, 26.) * specularColor3
+    + pow(specular4, 80.) * specularColor4;
   gl_FragColor = shine * frameSpecularWeight + frameColor;
 }
 `
@@ -111,10 +111,10 @@ void main (void) {
     0., 1.);
 
   vec4 shine =
-      pow(specular1, 26.) * (specularColor1 * 3.)
-    + pow(specular2, 26.) * (specularColor2 * 3.)
-    + pow(specular3, 26.) * (specularColor3 * 3.)
-    + pow(specular4, 80.) * (specularColor4 * 7.);
+      pow(specular1, 26.) * specularColor1
+    + pow(specular2, 26.) * specularColor2
+    + pow(specular3, 26.) * specularColor3
+    + pow(specular4, 80.) * specularColor4;
   gl_FragColor = shine * opacity;
 }
 `
