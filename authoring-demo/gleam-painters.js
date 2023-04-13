@@ -566,7 +566,6 @@ function sanitizeLighting (original) {
     }
   }
 
-
   if (original.nearFrameColor.length === 3) {
     original.nearFrameColor.push(0)
   }
@@ -611,7 +610,7 @@ class Lighting {
     this.farFrameColor = [0,0,0,0]
 
     this.diffuseOpacity = 1
-    this.specularOpacity = 0
+    this.specularOpacity = 1
     this.borderSpecularity = 0
   }  
 }
