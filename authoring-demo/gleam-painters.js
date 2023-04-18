@@ -585,7 +585,7 @@ class Lighting {
 
     constructor (initial = {}) {
       if (initial.xyzw) { this.xyzw = [...initial.xyzw] }
-      if (initial.rgba) { this.xyzw = [...initial.rgba] }
+      if (initial.rgba) { this.rgba = [...initial.rgba] }
     }
   }
 
