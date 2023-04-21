@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Voltaire&display=swap" rel="stylesheet">
+
+  <title>In Which More is Rendered</title>
+
+  <link rel="icon" href="./code-slash.svg">
+  <script defer src="./sundry-matrix.js"></script>
+  <script defer src="./gleam-shaders.js"></script>
+  <script defer src="./gleam-geometry.js"></script>
+  <script defer src="./gleam-painters.js"></script>
+  <script defer src="./cycle.js"></script>
+</head>
+
+<body>
+  <div class="center-content">
+    <div class="views">
+      <div class="canvas-container">
+        <canvas width="300" height="300" id="main-canvas" class="render-canvas" style="background:#111;"></canvas>
+      </div>
+      
+      <span class="view-title" id="first-title">
+        <div class="view-label">Initializing WebGL...</div>
+        <div><span id="fps-1"></span> FPS</div>
+      </span>
+      <pre class="feedback"></pre>
+    </div>
+  </div>
+
+</body>
+</html>
+
+<style>
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+:root {
+  --light-text: rgb(220, 201, 233);
+}
+
+.hidden {
+  display: none;
+}
+
+body {
+  /* background-color: rgb(91, 83, 108); */
+  background-color: #000;
+  font-family: 'Voltaire', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--light-text);
+
+  margin: 0px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+header h1 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+header {
+  font-size: 1rem;
+  max-width: 70rem;
+  margin: 0px auto;
+  padding-left: 0.6rem;
+  padding-right: 0.6rem;
+}
+
+.center-content {
+  /* border: 1px cyan dashed; */
+  width: min(100vw, 900px);
+  margin: 0px auto;
+  font-size: 1.2rem;
+  overflow: hidden;
+}
+
+.render-canvas {
+  /* border: 1px dashed limegreen !important; */
+  touch-action: none;
+  cursor: grab;
+  width: min(400px, 95vw);
+  height: min(400px, 95vw);
+  margin-top: 15vh;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.views {
+  margin: 0rem auto;
+  width: max-content;
+  max-width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'first'
+    'title1'
+    'info';
+  grid-gap: 1.5rem;
+}
+
+@media (min-width: 500px) {
+  .views {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+    'first first'
+    'title1 title1'
+    'info info';
+  }
+
+  .render-canvas {
+    width: min(500px, 95vw);
+    height: min(500px, 95vw);
+  }
+}
+
+.view-title {
+  margin-top: 50vh;
+  font-size: 1rem;
+  max-width: 400px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.canvas-container {
+  grid-area: first;
+  background-color: #000;
+  height: min(520px, 100vw);
+  display: grid;
+  place-items: center;
+}
+
+.feedback {
+  visibility: hidden;
+  grid-area: info;
+  width: 100%;
+  padding: 0.5rem;
+  background-color: #111;
+  color: #abf;
+  font-size: 1rem;
+  white-space: pre-wrap;
+}
+</style>
