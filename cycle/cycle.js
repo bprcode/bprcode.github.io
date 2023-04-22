@@ -608,14 +608,14 @@ function interpolateLighting (initial, final, t) {
 
   for (const key of ['specularLights', 'diffuseLights']) {
     for (const index in initial[key]) {
-      interpolated[key][index] = lerpLight(
+      interpolated[key][index] = gammaInterpolateLight(
         initial[key][index], final[key][index], t
       )
     }
   }
 
-  interpolated.glow = lerpLight(initial.glow, final.glow, t)
-  interpolated.membrane = lerpLight(initial.membrane, final.membrane, t)
+  interpolated.glow = gammaInterpolateLight(initial.glow, final.glow, t)
+  interpolated.membrane = gammaInterpolateLight(initial.membrane, final.membrane, t)
 
   interpolated.nearFrameColor =
     initial.nearFrameColor.map(
@@ -634,32 +634,47 @@ function interpolateLighting (initial, final, t) {
   return interpolated
 }
 
-// n.b. interpolations across negative values may not appear smooth:
-// debug -- todo -- use compressed interpolation for those.
 function gammaInterpolateLight (first, second, t) {
+  const isPositive = [
+    first.rgba[0] >= 0 && second.rgba[0] >= 0,
+    first.rgba[1] >= 0 && second.rgba[1] >= 0,
+    first.rgba[2] >= 0 && second.rgba[2] >= 0,
+  ]
+
   function linearize (c) {
     if (Math.abs(c) < 0.04045) return c / 12.92
-    if (c > 0) return Math.pow((c + 0.055)/1.055, 2.4)
-    return -Math.pow((-c + 0.055)/1.055, 2.4)
+    return Math.pow((c + 0.055)/1.055, 2.4)
   }
 
   function compress (c) {
     if (Math.abs(c) < 0.0031308) return c * 12.92
-    if (c > 0) return 1.055 * Math.pow(c, 1/2.4) - 0.055
-    return -(1.055 * Math.pow(-c, 1/2.4) - 0.055)
+    return 1.055 * Math.pow(c, 1/2.4) - 0.055
   }
 
+  // For negative values, just use regular, non-decompressed interpolation:
   const firstLinear = [
-    linearize(first.rgba[0]),
-    linearize(first.rgba[1]),
-    linearize(first.rgba[2]),
+    isPositive[0]
+      ? linearize(first.rgba[0])
+      : first.rgba[0],
+    isPositive[1]
+      ? linearize(first.rgba[1])
+      : first.rgba[1],
+    isPositive[2]
+      ? linearize(first.rgba[2])
+      : first.rgba[2],
     first.rgba[3]
   ]
 
   const secondLinear = [
-    linearize(second.rgba[0]),
-    linearize(second.rgba[1]),
-    linearize(second.rgba[2]),
+    isPositive[0]
+      ? linearize(second.rgba[0])
+      : second.rgba[0],
+    isPositive[1]
+      ? linearize(second.rgba[1])
+      : second.rgba[1],
+    isPositive[2]
+      ? linearize(second.rgba[2])
+      : second.rgba[2],
     second.rgba[3]
   ]
 
@@ -673,9 +688,15 @@ function gammaInterpolateLight (first, second, t) {
   return new Lighting.Light({
     xyzw: first.xyzw.map((v, i) => lerpScalar(v, second.xyzw[i], t)),
     rgba: [
-      compress(interpolated[0]),
-      compress(interpolated[1]),
-      compress(interpolated[2]),
+      isPositive[0]
+        ? compress(interpolated[0])
+        : interpolated[0],
+      isPositive[1]
+        ? compress(interpolated[1])
+        : interpolated[1],
+      isPositive[2]
+        ? compress(interpolated[2])
+        : interpolated[2],
       interpolated[3]
   ]})
 }
@@ -777,13 +798,13 @@ function startTemporaryDemo () {
       beginLightingTransition(
         state.lighting,
         nextAnimation.lighting,
-        duration * 0.75)
+        duration * 1.5)
     }, duration * 2/3)
 
     timeout2 = setTimeout(() => {
       beginVelocityTransition(
         zeroVelocities,
-        nextAnimation.animationSpeeds.map(s => 1.5*s),
+        nextAnimation.animationSpeeds.map(s => 1.4*s),
         duration / 4
       )
     }, duration);
