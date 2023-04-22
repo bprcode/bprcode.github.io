@@ -682,6 +682,10 @@ function shuffleUpcoming () {
 function startTemporaryDemo () {
   const duration = 3000
   const zeroVelocities = Array(12).fill(0)
+  let frozen = false
+  let interval1 = -1
+  let timeout1 = -1
+  let timeout2 = -1
 
   shuffleUpcoming()
   const firstAnimation = state.upcomingAnimations.pop()
@@ -690,9 +694,31 @@ function startTemporaryDemo () {
   state.animationSpeeds = [...firstAnimation.animationSpeeds]
   state.lighting = firstAnimation.lighting
 
+  interval1 = setInterval(startNextAnimation, 18000)
   setInterval(() => {
-    // if (state.pointerdown) { return }
+    // Check for two successive frozen states; restart if encountered.
+    for (const s of state.animationSpeeds) {
+      if(s) { return }
+    }
 
+    // debug -- hack solution to avoid freezing state
+    if (frozen) {
+      log('frozen! Restarting...')
+      clearInterval(interval1)
+      clearTimeout(timeout1)
+      clearTimeout(timeout2)
+      startNextAnimation()
+      interval1 = setInterval(startNextAnimation, 18000)
+      state.animationSpeeds[0] = 0.000001
+      frozen = false
+      return
+    }
+
+    frozen = true
+  }, 1000)
+
+
+  function startNextAnimation () {
     const nextAnimation = state.upcomingAnimations.pop()
     if (!state.upcomingAnimations.length) { shuffleUpcoming() }
 
@@ -701,23 +727,21 @@ function startTemporaryDemo () {
       duration
     )
 
-    setTimeout(() => {
-      // if (state.pointerdown) { return }
+    timeout1 = setTimeout(() => {
       beginLightingTransition(
         state.lighting,
         nextAnimation.lighting,
         duration)
     }, duration / 4)
 
-    setTimeout(() => {
+    timeout2 = setTimeout(() => {
       beginVelocityTransition(
         zeroVelocities,
         nextAnimation.animationSpeeds.map(s => 1.5*s),
         duration / 4
       )
     }, duration);
-
-  }, 18000)
+  }
 }
 
 
