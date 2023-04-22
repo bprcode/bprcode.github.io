@@ -1,4 +1,6 @@
 'use strict';
+// Copyright © 2023 Bryan Rauen.
+// All rights reserved. https://bprcode.github.io/
 
 const π = Math.PI
 const τ = 2*π

@@ -1,4 +1,6 @@
 'use strict';
+// Copyright © 2023 Bryan Rauen.
+// All rights reserved. https://bprcode.github.io/
 
 // function buildShaders () {
 //   if (buildShaders.shaders) { return buildShaders.shaders }

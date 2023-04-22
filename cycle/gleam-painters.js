@@ -1,4 +1,6 @@
 'use strict';
+// Copyright © 2023 Bryan Rauen.
+// All rights reserved. https://bprcode.github.io/
 
 // function buildPainters () {
 //   if (buildPainters.painters) { return buildPainters.painters }

@@ -1,4 +1,6 @@
 'use strict';
+// Copyright © 2023 Bryan Rauen.
+// All rights reserved. https://bprcode.github.io/
 
 const log = console.log.bind(console)
 const el = document.getElementById.bind(document)

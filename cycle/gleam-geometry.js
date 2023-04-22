@@ -1,4 +1,6 @@
 'use strict';
+// Copyright © 2023 Bryan Rauen.
+// All rights reserved. https://bprcode.github.io/
 
 /**
  * Extension of Array with methods making it easier to prepare data for WebGL.
