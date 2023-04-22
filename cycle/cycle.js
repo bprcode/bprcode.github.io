@@ -608,14 +608,14 @@ function interpolateLighting (initial, final, t) {
 
   for (const key of ['specularLights', 'diffuseLights']) {
     for (const index in initial[key]) {
-      interpolated[key][index] = gammaInterpolateLight(
+      interpolated[key][index] = lerpLight(
         initial[key][index], final[key][index], t
       )
     }
   }
 
-  interpolated.glow = gammaInterpolateLight(initial.glow, final.glow, t)
-  interpolated.membrane = gammaInterpolateLight(initial.membrane, final.membrane, t)
+  interpolated.glow = lerpLight(initial.glow, final.glow, t)
+  interpolated.membrane = lerpLight(initial.membrane, final.membrane, t)
 
   interpolated.nearFrameColor =
     initial.nearFrameColor.map(
