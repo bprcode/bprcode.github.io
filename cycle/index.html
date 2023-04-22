@@ -108,6 +108,13 @@ header {
   margin-right: auto;
 }
 
+@media only screen and (max-device-width: 480px) {
+  .render-canvas {
+    /* compensate for the navigation bar on narrow devices */
+    margin-top: -10vh;
+  }
+}
+
 .view-title {
   grid-area: environment-info;
   margin-top: 15vh;
