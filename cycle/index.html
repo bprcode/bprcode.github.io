@@ -22,24 +22,20 @@
 </head>
 
 <body>
-  <div class="center-content">
-    <div class="views">
-      <div class="canvas-container">
-        <canvas width="300" height="300" id="main-canvas" class="render-canvas" style="background:#111;"></canvas>
-      </div>
-      
-      <span class="view-title" id="first-title">
-        <div class="view-label">Initializing WebGL...</div>
-        <div><span id="fps-1"></span> FPS</div>
-      </span>
-      <pre class="feedback"></pre>
-    </div>
+  <div class="canvas-container">
+    <canvas width="300" height="300" id="main-canvas" class="render-canvas" style="background:#111;"></canvas>
+  </div>
+  
+  <span class="view-title" id="first-title">
+    <div class="view-label">Initializing WebGL...</div>
+    <div><span id="fps-1"></span> FPS</div>
+  </span>
 
-    <div class="copyright-notice">© 2023&nbsp;<a href="https://bprcode.github.io" style="text-decoration:none;"><span style="text-decoration: underline;">bprcode</span> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
-        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-      </svg></a>
+  <pre class="feedback"></pre>
 
-    </div>
+  <div class="copyright-notice">© 2023&nbsp;<a href="https://bprcode.github.io" style="text-decoration:none;"><span style="text-decoration: underline;">bprcode</span> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+    </svg></a>
   </div>
 
 </body>
@@ -62,15 +58,19 @@ html {
 }
 
 body {
-  /* background-color: rgb(91, 83, 108); */
   background-color: #000;
   font-family: 'Voltaire', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: var(--light-text);
 
   margin: 0px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  display: grid;
+  place-items: center;
+  grid-template-rows: minmax(0, 1fr) minmax(0) minmax(0) minmax(0);
+  grid-template-areas:
+    'canvas-container'
+    'environment-info'
+    'feedback'
+    'copyright';
 }
 
 header h1 {
@@ -87,6 +87,7 @@ header {
 }
 
 .copyright-notice {
+  grid-area: copyright;
   margin-bottom: 3.5rem;
   margin-top: 1rem;
   font-size: 1.1rem;
@@ -98,72 +99,35 @@ header {
   color: rgb(138, 148, 255);
 }
 
-.center-content {
-  /* border: 1px cyan dashed; */
-  width: min(100vw, 900px);
-  margin: 0px auto;
-  font-size: 1.2rem;
-  overflow: hidden;
-}
-
 .render-canvas {
-  /* border: 1px dashed limegreen !important; */
   touch-action: none;
   cursor: grab;
-  width: min(400px, 95vw);
-  height: min(400px, 95vw);
-  margin-top: 15vh;
+  width: min(500px, 95vw, 95vh);
+  height: min(500px, 95vw, 95vh);
   margin-left: auto;
   margin-right: auto;
 }
 
-.views {
-  margin: 0rem auto;
-  width: max-content;
-  max-width: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas:
-    'first'
-    'title1'
-    'info';
-  grid-gap: 1.5rem;
-}
-
-@media (min-width: 500px) {
-  .views {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-areas:
-    'first first'
-    'title1 title1'
-    'info info';
-  }
-
-  .render-canvas {
-    width: min(500px, 95vw);
-    height: min(500px, 95vw);
-  }
-}
-
 .view-title {
-  margin-top: 50vh;
+  grid-area: environment-info;
+  margin-top: 15vh;
   font-size: 1rem;
   max-width: 400px;
   font-family: 'Courier New', Courier, monospace;
 }
 
 .canvas-container {
-  grid-area: first;
+  grid-area: canvas-container;
   background-color: #000;
-  height: min(520px, 100vw);
+  height: 100vh;
   display: grid;
   place-items: center;
 }
 
 .feedback {
+  grid-area: feedback;
   visibility: hidden;
-  grid-area: info;
-  width: 100%;
+  max-width: 60rem;
   padding: 0.5rem;
   background-color: #111;
   color: #abf;
