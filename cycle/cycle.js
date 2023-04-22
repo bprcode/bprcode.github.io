@@ -761,7 +761,7 @@ function startTemporaryDemo () {
   state.animationSpeeds = [...firstAnimation.animationSpeeds]
   state.lighting = firstAnimation.lighting
 
-  interval1 = setInterval(startNextAnimation, 18000)
+  interval1 = setInterval(startNextAnimation, 24000)
   setInterval(() => {
     // Check for two successive frozen states; restart if encountered.
     for (const s of state.animationSpeeds) {
@@ -775,7 +775,7 @@ function startTemporaryDemo () {
       clearTimeout(timeout1)
       clearTimeout(timeout2)
       startNextAnimation()
-      interval1 = setInterval(startNextAnimation, 18000)
+      interval1 = setInterval(startNextAnimation, 24000)
       state.animationSpeeds[0] = 0.000001
       frozen = false
       return
@@ -804,7 +804,7 @@ function startTemporaryDemo () {
     timeout2 = setTimeout(() => {
       beginVelocityTransition(
         zeroVelocities,
-        nextAnimation.animationSpeeds.map(s => 1.4*s),
+        nextAnimation.animationSpeeds.map(s => 1.3*s),
         duration / 4
       )
     }, duration);
