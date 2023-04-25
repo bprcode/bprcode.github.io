@@ -807,7 +807,7 @@ function startTemporaryDemo () {
     timeout2 = setTimeout(() => {
       beginVelocityTransition(
         zeroVelocities,
-        nextAnimation.animationSpeeds.map(s => 1.35*s),
+        nextAnimation.animationSpeeds.map(s => 1.3*s),
         duration / 4
       )
     }, duration);
