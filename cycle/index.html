@@ -22,13 +22,15 @@
 </head>
 
 <body>
+  <h1 class="noscript-notice">Initializing scripts...</h1>
+
   <div class="canvas-container">
     <canvas width="300" height="300" id="main-canvas" class="render-canvas" style="background:#111;"></canvas>
   </div>
   
   <span class="view-title" id="first-title">
     <div class="view-label">Initializing WebGL...</div>
-    <div><span id="fps-1"></span> FPS</div>
+    <div><span id="fps-1">&nbsp;</span></div>
   </span>
 
   <pre class="feedback"></pre>
@@ -67,10 +69,18 @@ body {
   place-items: center;
   grid-template-rows: minmax(0, 1fr) minmax(0) minmax(0) minmax(0);
   grid-template-areas:
+    'noscript-notice'
     'canvas-container'
     'environment-info'
     'feedback'
     'copyright';
+}
+
+.noscript-notice {
+  grid-area: noscript-notice;
+  position: absolute;
+  top: 0px;
+  color: #fa4;
 }
 
 header h1 {

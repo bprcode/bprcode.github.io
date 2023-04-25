@@ -2,6 +2,8 @@
 // Copyright © 2023 Bryan Rauen.
 // All rights reserved. https://bprcode.github.io/
 
+document.querySelector('.noscript-notice').classList.add('hidden')
+
 const log = console.log.bind(console)
 const el = document.getElementById.bind(document)
 
@@ -68,6 +70,7 @@ if (document.readyState === 'loading') {
 
 function initialize () {
 try {
+  logError('Script loaded.')
   // These have been exposed as global objects to allow VSCode
   // to parse the symbols before runtime.
   // const shaders = buildShaders()
@@ -113,7 +116,7 @@ try {
   // Primary canvas
   state.animation1.context = gl
   state.animation1.showFPS = () => {
-    el('fps-1').textContent = state.animation1.lastFPS.toFixed(1)
+    el('fps-1').textContent = state.animation1.lastFPS.toFixed(1) + ' FPS'
   }
   state.animation1.draw = glPipeline(gl,
     { animationState: state.animation1,
@@ -761,7 +764,7 @@ function startTemporaryDemo () {
   state.animationSpeeds = [...firstAnimation.animationSpeeds]
   state.lighting = firstAnimation.lighting
 
-  interval1 = setInterval(startNextAnimation, 24000)
+  interval1 = setInterval(startNextAnimation, 20000)
   setInterval(() => {
     // Check for two successive frozen states; restart if encountered.
     for (const s of state.animationSpeeds) {
@@ -775,7 +778,7 @@ function startTemporaryDemo () {
       clearTimeout(timeout1)
       clearTimeout(timeout2)
       startNextAnimation()
-      interval1 = setInterval(startNextAnimation, 24000)
+      interval1 = setInterval(startNextAnimation, 20000)
       state.animationSpeeds[0] = 0.000001
       frozen = false
       return
@@ -804,7 +807,7 @@ function startTemporaryDemo () {
     timeout2 = setTimeout(() => {
       beginVelocityTransition(
         zeroVelocities,
-        nextAnimation.animationSpeeds.map(s => 1.3*s),
+        nextAnimation.animationSpeeds.map(s => 1.35*s),
         duration / 4
       )
     }, duration);
