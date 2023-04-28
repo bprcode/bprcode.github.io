@@ -360,15 +360,7 @@ export class Quaternion extends Array {
     let Ω = Math.acos(qi.inner(qf))
     // Skip interpolation for out-of-range inputs:
     if (Number.isNaN(Ω)) { return qf }
-
-    // debug -- removing shortest-path
-    // if (Ω > π/2) {  // Since qf and -qf represent equivalent orientations,
-    //                 // take the shortest path.
-    //   qf = qf.negative()
-    //   Ω = Math.acos(qi.inner(qf))
-    //   // Check for very unlikely numerical imprecision error:
-    //   if (Number.isNaN(Ω)) { return qf }
-    // }
+    
     if (Math.abs(Ω) < 0.000001) { return qf }
 
     const qt = new Quaternion

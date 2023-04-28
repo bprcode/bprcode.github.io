@@ -15,6 +15,7 @@ html {
 
 body {
   background-color: #000;
+  background-image: radial-gradient(75vw 60vh at 35vw 15vh, #222, #000);
   font-family: 'Voltaire', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: var(--light-text);
 
@@ -34,7 +35,7 @@ body {
   grid-area: noscript-notice;
   position: absolute;
   top: 0px;
-  color: rgb(68, 96, 255);
+  color: rgb(68, 118, 255);
 }
 
 header h1 {
@@ -89,7 +90,6 @@ header {
 
 .canvas-container {
   grid-area: canvas-container;
-  background-color: #000;
   height: 100vh;
   display: grid;
   place-items: center;

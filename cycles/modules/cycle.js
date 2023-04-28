@@ -15,29 +15,9 @@ export const log = console.log.bind(console)
 const el = document.getElementById.bind(document)
 
 export const state = {
-  resizeCount: 0,
   animationSpeeds: [],
   // Lighting object storing color and direction of all current light sources:
   lighting: new Lighting,
-  // The animation slider to update when a roller changes an animation speed:
-  correspondingAnimationSlider: null,
-  // The property to affect when receiving roller input:
-  rollerTarget: 'orientation',
-  // The lighting object whose direction to change:
-  targetLight: null,
-  // If specified, only read roller input at discrete steps:
-  constrainAngles: 0,
-  // 12-plane rotation control state
-  rollerPos: [{x: 0, y: 0}, {x: 0, y: 0},{x: 0, y: 0},{x: 0, y: 0}],
-  // The amount of (normalized) mouse input which has not yet been processed:
-  positionRemainder: {x: 0, y: 0},
-  currentRollerIndex: 0,
-  rollGlobal: false,
-  rollerLockX: false,
-  rollerLockY: false,
-  
-  turnL: new Quaternion,
-  turnR: new Quaternion,
 
   // Elastic camera drag state
   viewL: new Quaternion,
@@ -100,12 +80,11 @@ try {
     }
   }
 
-  // n.b. alpha: false significantly improves performance in tests.
   let gl = el('main-canvas').getContext(
-    'webgl2', { alpha: false, premultipliedAlpha: true, antialias: false })
+    'webgl2', { alpha: true, premultipliedAlpha: true, antialias: false })
   if (!gl) {
     gl = el('main-canvas').getContext(
-      'webgl', { alpha: false, premultipliedAlpha: true, antialias: false })
+      'webgl', { alpha: true, premultipliedAlpha: true, antialias: false })
   }
 
   for (const [ctx, label] of [
@@ -237,14 +216,6 @@ try {
           }
         }
 
-        // debug -- move this down to an "else" on the following clause
-        // Orientation updates:
-        applyOrientationAnimations(
-          state.animationSpeeds,
-          state.modelL,
-          state.modelR,
-          this.dt - this.tLast)
-
         // When a new animation orientation is requested, interpolate an
         // intermediate state based on the prior behavior:
         if (state.animationCycle.finalOrientation) {
@@ -277,6 +248,14 @@ try {
 
             state.animationCycle.finalOrientation = null
           }
+          
+        } else {
+          // Orientation updates, applied if not otherwise transitioning:
+          applyOrientationAnimations(
+            state.animationSpeeds,
+            state.modelL,
+            state.modelR,
+            this.dt - this.tLast)
         }
 
         if (state.modelSnapT < 1) {
@@ -756,6 +735,7 @@ function shuffleUpcoming () {
 
 function startTemporaryDemo () {
   const duration = 3000
+  const holdTime = 20000
   const zeroVelocities = Array(12).fill(0)
   let frozen = false
   let interval1 = -1
@@ -769,21 +749,19 @@ function startTemporaryDemo () {
   state.animationSpeeds = [...firstAnimation.animationSpeeds]
   state.lighting = firstAnimation.lighting
 
-  interval1 = setInterval(startNextAnimation, 20000)
+  interval1 = setInterval(startNextAnimation, holdTime)
   setInterval(() => {
     // Check for two successive frozen states; restart if encountered.
     for (const s of state.animationSpeeds) {
       if(s) { return }
     }
 
-    // debug -- hack solution to avoid freezing state
     if (frozen) {
-      log('frozen! Restarting...')
       clearInterval(interval1)
       clearTimeout(timeout1)
       clearTimeout(timeout2)
       startNextAnimation()
-      interval1 = setInterval(startNextAnimation, 20000)
+      interval1 = setInterval(startNextAnimation, holdTime)
       state.animationSpeeds[0] = 0.000001
       frozen = false
       return

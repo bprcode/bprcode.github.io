@@ -430,7 +430,8 @@ painters.drawCompositor = function () {
  * @param {WebGLRenderingContext|WebGL2RenderingContext} context The
  * context binding this texture
  * @param {GLint} unit The texture unit on which to bind the texture 
- * @param {number} resolution Width/height of the texture
+ * @param {number|Function} resolution Width/height of the texture, or
+ * a callback function to evaluate upon resize
  * @param {GLenum} format Defaults to gl.RGBA, can be gl.DEPTH_COMPONENT
  * @returns {WebGLTexture} 
  */
@@ -508,7 +509,7 @@ function verifyFramebuffer(gl) {
     log('test:')
       // Get a list of FRAMEBUFFER enums,
       // match the corresponding value.
-      // n.b. querying Object.entries on a WebGL2RenderingContext will throw
+      // N.B. querying Object.entries on a WebGL2RenderingContext will throw
       // an error from a canvas get method.
       const enums = Object.keys(Object.getPrototypeOf(gl))
                       .filter(x => x.startsWith('FRAMEBUFFER'))
@@ -518,61 +519,6 @@ function verifyFramebuffer(gl) {
         }
       }
   }
-}
-
-// Utility function for converting lighting data from prior RGB format
-function sanitizeLighting (original) {
-  // Constructor-initialized default lighting for direction comparsion:
-  const directions = new Lighting
-
-  for (const ref of [
-    original.specularLights[0],
-    original.specularLights[1],
-    original.specularLights[2],
-    original.specularLights[3],
-    original.diffuseLights[0],
-    original.diffuseLights[1],
-    original.diffuseLights[2],
-    original.glow,
-    original.membrane
-  ]) {
-    if (ref.rgb) {
-      const prev = ref.rgb
-      ref.rgba = [...ref.rgb, 0]
-      delete ref.rgb
-      log('converted ' + prev + ' to ' + ref.rgba)
-    }
-  }
-
-  // Update all-zero directions to newly preferred defaults:
-  for (const [ref, basis] of [
-    [original.specularLights[0], directions.specularLights[0]],
-    [original.specularLights[1], directions.specularLights[1]],
-    [original.specularLights[2], directions.specularLights[2]],
-    [original.specularLights[3], directions.specularLights[3]],
-    [original.diffuseLights[0], directions.diffuseLights[0]],
-    [original.diffuseLights[1], directions.diffuseLights[1]],
-    [original.diffuseLights[2], directions.diffuseLights[2]]
-  ]) {
-    if (   ref.xyzw[0] === 0
-        && ref.xyzw[1] === 0
-        && ref.xyzw[2] === 0
-        && ref.xyzw[3] === 0) {
-      log('replacing ', ref.xyzw, ' with ', basis.xyzw)
-      ref.xyzw = [...basis.xyzw]
-    }
-  }
-
-  if (original.nearFrameColor.length === 3) {
-    original.nearFrameColor.push(0)
-  }
-  if (original.farFrameColor.length === 3) {
-    original.farFrameColor.push(1)
-  }
-
-  original.borderSpecularity ??= 0
-
-  return original
 }
 
 export class Lighting {
