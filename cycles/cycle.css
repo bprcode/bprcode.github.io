@@ -15,7 +15,12 @@ html {
 
 body {
   background-color: #000;
-  background-image: radial-gradient(700vw 440vh at 70vw 85vh, #000, #030306 12%, #36327e 50%);
+  background-image: 
+    radial-gradient(230vw 30vh at 55vw 112vh, #000 45%, transparent),
+    radial-gradient(230vw 200vh at 55vw 112vh, #000, #020204 35%, #30268a 98%)
+    ;
+  background-size: auto 100vh;
+  background-repeat: no-repeat;
   font-family: 'Voltaire', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: var(--light-text);
 
@@ -71,12 +76,13 @@ header {
   height: min(500px, 95vw, 95vh);
   margin-left: auto;
   margin-right: auto;
+  margin-top: -7vh;
 }
 
 @media only screen and (max-device-width: 480px) {
   .render-canvas {
     /* compensate for the navigation bar on narrow devices */
-    margin-top: -10vh;
+    margin-top: -15vh;
   }
 }
 
