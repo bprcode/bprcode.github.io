@@ -40,7 +40,7 @@ body {
   grid-area: noscript-notice;
   position: absolute;
   top: 0px;
-  color: rgb(68, 118, 255);
+  color: rgb(172, 172, 180);
 }
 
 header h1 {

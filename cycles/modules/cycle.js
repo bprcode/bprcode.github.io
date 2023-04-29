@@ -41,7 +41,12 @@ export const state = {
   animation1: { keepAnimating: true },
   animationSet: [],
   animationCycle: {},
-  upcomingAnimations: []
+  upcomingAnimations: [],
+
+  // An array of { remaining, callback } objects used to queue actions,
+  // based on a timer which pauses while the user is interacting with
+  // the interface:
+  countdowns: []
 }
 
 export function logError (message) {
@@ -68,8 +73,8 @@ try {
   logError('Script loaded.')
   initListeners()
   initAnimationCycler()
-  startTemporaryDemo()
-    
+  startDemo()
+
   for (const c of [
     el('main-canvas')
   ]) {
@@ -286,6 +291,20 @@ try {
                           state.viewSnapT)
         }
         
+        // Update and run scheduled callbacks:
+        const decrement = this.dt - this.tLast
+        let needPrune = false
+        for (const c of state.countdowns) {
+          c.remaining -= decrement
+          if (c.remaining < 0) {
+            c.callback()
+            needPrune = true
+          }
+        }
+        if (needPrune) {
+          state.countdowns = state.countdowns.filter(e => e.remaining > 0)
+        }
+
         this.shared.animationState.needUpdate = false
       }
     }
@@ -733,14 +752,10 @@ function shuffleUpcoming () {
   }
 }
 
-function startTemporaryDemo () {
+function startDemo () {
   const duration = 3000
   const holdTime = 20000
   const zeroVelocities = Array(12).fill(0)
-  let frozen = false
-  let interval1 = -1
-  let timeout1 = -1
-  let timeout2 = -1
 
   shuffleUpcoming()
   const firstAnimation = state.upcomingAnimations.pop()
@@ -749,27 +764,10 @@ function startTemporaryDemo () {
   state.animationSpeeds = [...firstAnimation.animationSpeeds]
   state.lighting = firstAnimation.lighting
 
-  interval1 = setInterval(startNextAnimation, holdTime)
-  setInterval(() => {
-    // Check for two successive frozen states; restart if encountered.
-    for (const s of state.animationSpeeds) {
-      if(s) { return }
-    }
-
-    if (frozen) {
-      clearInterval(interval1)
-      clearTimeout(timeout1)
-      clearTimeout(timeout2)
-      startNextAnimation()
-      interval1 = setInterval(startNextAnimation, holdTime)
-      state.animationSpeeds[0] = 0.000001
-      frozen = false
-      return
-    }
-
-    frozen = true
-  }, 1000)
-
+  state.countdowns.push({
+    remaining: holdTime,
+    callback: startNextAnimation
+  })
 
   function startNextAnimation () {
     const nextAnimation = state.upcomingAnimations.pop()
@@ -780,20 +778,31 @@ function startTemporaryDemo () {
       duration
     )
 
-    timeout1 = setTimeout(() => {
-      beginLightingTransition(
-        state.lighting,
-        nextAnimation.lighting,
-        duration * 1.5)
-    }, duration * 2/3)
+    state.countdowns.push({
+      callback: () => {
+        beginLightingTransition(
+          state.lighting, nextAnimation.lighting, duration * 1.5
+        )
+      },
+      remaining: duration * 2/3
+    })
 
-    timeout2 = setTimeout(() => {
-      beginVelocityTransition(
-        zeroVelocities,
-        nextAnimation.animationSpeeds.map(s => 1.3*s),
-        duration / 4
-      )
-    }, duration);
+    state.countdowns.push({
+      callback: () => {
+        beginVelocityTransition(
+          zeroVelocities,
+          nextAnimation.animationSpeeds.map(s => 1.3*s),
+          duration / 4
+          )
+        },
+      remaining: duration,
+    })
+
+    // Queue the next transition:
+    state.countdowns.push({
+      remaining: holdTime,
+      callback: startNextAnimation
+    })
   }
 }
 
