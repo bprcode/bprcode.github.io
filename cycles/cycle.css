@@ -15,7 +15,7 @@ html {
 
 body {
   background-color: #000;
-  background-image: radial-gradient(75vw 60vh at 35vw 15vh, #222, #000);
+  background-image: radial-gradient(700vw 440vh at 70vw 85vh, #000, #030306 12%, #36327e 50%);
   font-family: 'Voltaire', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: var(--light-text);
 
