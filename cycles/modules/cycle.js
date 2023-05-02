@@ -294,7 +294,8 @@ try {
         // Update and run scheduled callbacks:
         const decrement = this.dt - this.tLast
         let needPrune = false
-        for (const c of state.countdowns) {
+        // Copy the array to avoid recursively expanding the countdown stack:
+        for (const c of [...state.countdowns]) {
           c.remaining -= decrement
           if (c.remaining < 0) {
             c.callback()
@@ -459,11 +460,6 @@ try {
       }
 
       p.draw()
-    }
-
-    if (shared.animationState.requestScreenshot) {
-      shared.animationState.requestScreenshot()
-      shared.animationState.requestScreenshot = null
     }
 
     if (shared.animationState.keepAnimating) {
