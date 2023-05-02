@@ -15,11 +15,11 @@ html {
 
 body {
   background-color: #000;
-  background-image: 
+  background-image:
     radial-gradient(230vw 30vh at 55vw 112vh, #000 45%, transparent),
     radial-gradient(230vw 200vh at 55vw 112vh, #000, #020204 35%, #30268a 98%)
     ;
-  background-size: auto 100vh;
+  background-size: 100vw 100vh;
   background-repeat: no-repeat;
   font-family: 'Voltaire', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: var(--light-text);
@@ -34,6 +34,29 @@ body {
     'environment-info'
     'feedback'
     'copyright';
+}
+
+.cloudscape {
+  position: absolute;
+  /* background-image: url('./alpha-cloud-1.png'); */
+  background-size: 200vw 100vh;
+  background-repeat: repeat-x;
+  mix-blend-mode: overlay;
+  top: 0px;
+  height: 85vh;
+  width: 100vw;
+
+  /* animation: scroll-fog 3s infinite; */
+}
+
+@keyframes scroll-fog {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
 }
 
 .noscript-notice {
