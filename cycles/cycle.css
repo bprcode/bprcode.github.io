@@ -38,6 +38,7 @@ body {
 
 .cloudscape {
   position: absolute;
+  pointer-events: none;
   /* background-image: url('./alpha-cloud-1.png'); */
   background-size: 200vw 100vh;
   background-repeat: repeat-x;
