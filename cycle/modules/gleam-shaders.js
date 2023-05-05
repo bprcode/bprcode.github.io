@@ -2,17 +2,14 @@
 // Copyright © 2023 Bryan Rauen.
 // All rights reserved. https://bprcode.github.io/
 
-// function buildShaders () {
-//   if (buildShaders.shaders) { return buildShaders.shaders }
-const shaders = {}
+export const shaders = {}
 shaders.blurKernelSize = 8
 
 // The desired projection ratio for a cube with side length 2 is used
 // to determine where to center an object, by default, in w-space:
 const wRatio = 0.5
 shaders.wOffset = (wRatio + 1) / (wRatio - 1)
-console.log('Using wOffset = ' + shaders.wOffset
-  + ' for projection ratio ' + wRatio)
+
 if (Math.abs(shaders.wOffset + 2) < 0.01) {
   console.warn('The specified projection is too close'
     + ' to the projection plane and may result in visual artifacts.')
@@ -310,5 +307,3 @@ void main (void) {
   gl_Position = projection * M3 * v;
 }
 `
-//   return buildShaders.shaders = shaders
-// }

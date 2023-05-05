@@ -2,10 +2,10 @@
 // Copyright © 2023 Bryan Rauen.
 // All rights reserved. https://bprcode.github.io/
 
-const π = Math.PI
-const τ = 2*π
+export const π = Math.PI
+export const τ = 2*π
 
-function scaleMatrix (sx, sy, sz) {
+export function scaleMatrix (sx, sy, sz) {
   if (typeof sz === 'undefined')
     sz = sx
   if (typeof sy === 'undefined')
@@ -26,7 +26,7 @@ function scaleMatrix (sx, sy, sz) {
  * @param {Number} z 
  * @returns 4x4 translation matrix
  */
-function translateMatrix (x, y, z) {
+export function translateMatrix (x, y, z) {
   return [
     1, 0, 0, 0,
     0, 1, 0, 0,
@@ -59,7 +59,7 @@ function mult4vec (result, A, v) {
  * @param {Number[]} B operand matrix
  * @returns {Number[]} reference to first argument
  */
-function mult4 (result, A, B) {
+export function mult4 (result, A, B) {
 
   if (result === B) {
     B = [...B]
@@ -97,7 +97,7 @@ function mult4 (result, A, B) {
  * @param {Number[]} A The premultiplying matrix
  * @param {Number[]} B The postmultiplying matrix
  */
-function mult3 (result, A, B) {
+export function mult3 (result, A, B) {
   if (result === A) {
     A = [...A]
   }
@@ -124,7 +124,7 @@ function mult3 (result, A, B) {
  * @param {*} M The 3x3 premultiplying matrix (column-major).
  * @param {*} v The vector to act upon.
  */
-function mult3vec (result, M, v) {
+export function mult3vec (result, M, v) {
   if (result === v) {
     v = [...v]
   }
@@ -135,7 +135,7 @@ function mult3vec (result, M, v) {
 }
 
 // Write a 4x4 column-major identity matrix into array M
-function ident (M) {
+export function ident (M) {
   M[0] = 1
   M[1] = 0
   M[2] = 0
@@ -157,7 +157,7 @@ function ident (M) {
   M[15] = 1
 }
 
-function crossProduct (u, v) {
+export function crossProduct (u, v) {
   return [
     u[1]*v[2] - u[2]*v[1],
     u[2]*v[0] - u[0]*v[2],
@@ -170,7 +170,7 @@ function crossProduct (u, v) {
  * @param {Number[]} tri The source triangle (9-element array, 3x3 components)
  * @returns The unit normal [x, y, z] to the triangle.
  */
-function triangleNormal3 (tri) {
+export function triangleNormal3 (tri) {
   const BminusA = [tri[3]-tri[0], tri[4]-tri[1], tri[5]-tri[2]]
   const CminusA = [tri[6]-tri[0], tri[7]-tri[1], tri[8]-tri[2]]
   const det = [
@@ -190,7 +190,7 @@ function triangleNormal3 (tri) {
  * Compute a matrix product for two 4x4 matrices,
  * interpreted as column-major arrays.
  */
-function product4x4 (A, B) {
+export function product4x4 (A, B) {
   let result = Array(16).fill(0)
 
   for (let i = 0; i < 4; i++) {
@@ -206,7 +206,7 @@ function product4x4 (A, B) {
   return result;
 }
 
-function rotateYZ (theta) {
+export function rotateYZ (theta) {
   return [
     1,  0,                0,               0,
     0,  Math.cos(theta),  Math.sin(theta), 0,
@@ -215,7 +215,7 @@ function rotateYZ (theta) {
   ]
 }
 
-function rotateXZ (theta) {
+export function rotateXZ (theta) {
   return [
     Math.cos(theta), 0, -Math.sin(theta), 0,
     0,               1, 0,                0,
@@ -224,7 +224,7 @@ function rotateXZ (theta) {
   ]
 }
 
-function rotateXY (theta) {
+export function rotateXY (theta) {
   return [
     Math.cos(theta),  Math.sin(theta), 0, 0,
     -Math.sin(theta), Math.cos(theta), 0, 0,
@@ -233,7 +233,7 @@ function rotateXY (theta) {
   ]
 }
 
-function rotateXW (theta) {
+export function rotateXW (theta) {
   return [
     Math.cos(theta),  0, 0, Math.sin(theta),
     0,                1, 0, 0,
@@ -242,7 +242,7 @@ function rotateXW (theta) {
   ]
 }
 
-function rotateYW (theta) {
+export function rotateYW (theta) {
   return [
     1, 0,                 0, 0,
     0, Math.cos(theta),   0, Math.sin(theta),
@@ -251,7 +251,7 @@ function rotateYW (theta) {
   ]
 }
 
-function rotateZW (theta) {
+export function rotateZW (theta) {
   return [
     1, 0, 0,                0,
     0, 1, 0,                0,
@@ -260,7 +260,7 @@ function rotateZW (theta) {
   ]
 }
 
-function identityMatrix (n = 4) {
+export function identityMatrix (n = 4) {
   const result = Array(n**2).fill(0)
   for(let i = 0; i < n; i++)
     result[ i*n + i ] = 1
@@ -274,7 +274,7 @@ function identityMatrix (n = 4) {
  * or { near, far, fov (in degrees), aspect }
  * @returns {Number[]} 16-element column-major projection matrix
  */
-function frustum (dimensions) {
+export function frustum (dimensions) {
   let {near: n, far: f, left: l, right: r, top: t, bottom: b} = dimensions
   if (dimensions.fov && dimensions.aspect) {
     const halfWidth = Math.tan(dimensions.fov/2 * Math.PI/180) * n
@@ -297,13 +297,13 @@ function frustum (dimensions) {
  * @param {Number[]} M The matrix to act upon (3x3, column-major)
  * @returns The determinant of the matrix.
  */
-function det3x3 (M) {
+export function det3x3 (M) {
   return M[0]* (M[4]*M[8] - M[5]*M[7])
         -M[3]* (M[1]*M[8] - M[2]*M[7])
         +M[6]* (M[1]*M[5] - M[2]*M[4])
 }
 
-function inverse3x3 (M) {
+export function inverse3x3 (M) {
   const result = []
   const det = det3x3(M)
   if (Math.abs(det - 0) < 0.000001) {
@@ -331,7 +331,7 @@ function inverse3x3 (M) {
  * @param {*} p 
  * @returns {Number[]} The [x, y, z, w] product.
  */
-function quatProduct (q, p) {
+export function quatProduct (q, p) {
   return [
     // Using the [x, y, z, w] convention
     q[3]*p[0] + q[0]*p[3] + q[1]*p[2] - q[2]*p[1],
@@ -341,11 +341,11 @@ function quatProduct (q, p) {
   ]
 }
 
-function quatConjugate (q) {
+export function quatConjugate (q) {
   return [-q[0], -q[1], -q[2], q[3]]
 }
 
-class Quaternion extends Array {
+export class Quaternion extends Array {
   static product (q, p) { return Quaternion.from(quatProduct(q,p)) }
 
   /**
@@ -360,15 +360,7 @@ class Quaternion extends Array {
     let Ω = Math.acos(qi.inner(qf))
     // Skip interpolation for out-of-range inputs:
     if (Number.isNaN(Ω)) { return qf }
-
-    // debug -- removing shortest-path
-    // if (Ω > π/2) {  // Since qf and -qf represent equivalent orientations,
-    //                 // take the shortest path.
-    //   qf = qf.negative()
-    //   Ω = Math.acos(qi.inner(qf))
-    //   // Check for very unlikely numerical imprecision error:
-    //   if (Number.isNaN(Ω)) { return qf }
-    // }
+    
     if (Math.abs(Ω) < 0.000001) { return qf }
 
     const qt = new Quaternion

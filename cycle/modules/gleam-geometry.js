@@ -108,9 +108,7 @@ class Mesh extends Array {
   }
 }
 
-// function buildGeometry () {
-//   if (buildGeometry.geometry) { return buildGeometry.geometry }
-const geometry = {}
+export const geometry = {}
 
 geometry.square2d = [
   -1, -1,
@@ -126,9 +124,6 @@ geometry.texSquare.stride = 4
 
 geometry.tesseractOutline = buildTesseract(edgeNormalFace, 8)
 geometry.normalTesseract = buildTesseract(normalSquare, 8)
-
-//   return buildGeometry.geometry = geometry
-// }
 
 function flip3Quad (q) {
   return [

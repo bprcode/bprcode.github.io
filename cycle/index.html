@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <!-- Copyright © 2023 Bryan Rauen. All rights reserved. https://bprcode.github.io/ -->
 
 <html lang="en" dir="ltr">
@@ -11,21 +10,21 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Voltaire&display=swap" rel="stylesheet">
 
+  <link rel="stylesheet" href="./cycle.css">
   <title>In Which More is Rendered</title>
 
   <link rel="icon" href="./code-slash.svg">
-  <script defer src="./sundry-matrix.js"></script>
-  <script defer src="./gleam-shaders.js"></script>
-  <script defer src="./gleam-geometry.js"></script>
-  <script defer src="./gleam-painters.js"></script>
-  <script defer src="./cycle.js"></script>
+  <script type="module" src="./modules/cycle.js"></script>
 </head>
 
 <body>
+  
   <h1 class="noscript-notice">Initializing scripts...</h1>
 
+  <div class="cloudscape"></div>
+  
   <div class="canvas-container">
-    <canvas width="300" height="300" id="main-canvas" class="render-canvas" style="background:#111;"></canvas>
+    <canvas width="300" height="300" id="main-canvas" class="render-canvas"></canvas>
   </div>
   
   <span class="view-title" id="first-title">
@@ -42,114 +41,3 @@
 
 </body>
 </html>
-
-<style>
-html {
-  box-sizing: border-box;
-}
-*, *:before, *:after {
-  box-sizing: inherit;
-}
-
-:root {
-  --light-text: rgb(220, 201, 233);
-}
-
-.hidden {
-  display: none;
-}
-
-body {
-  background-color: #000;
-  font-family: 'Voltaire', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: var(--light-text);
-
-  margin: 0px;
-  display: grid;
-  place-items: center;
-  grid-template-rows: minmax(0, 1fr) minmax(0) minmax(0) minmax(0);
-  grid-template-areas:
-    'noscript-notice'
-    'canvas-container'
-    'environment-info'
-    'feedback'
-    'copyright';
-}
-
-.noscript-notice {
-  grid-area: noscript-notice;
-  position: absolute;
-  top: 0px;
-  color: #fa4;
-}
-
-header h1 {
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-
-header {
-  font-size: 1rem;
-  max-width: 70rem;
-  margin: 0px auto;
-  padding-left: 0.6rem;
-  padding-right: 0.6rem;
-}
-
-.copyright-notice {
-  grid-area: copyright;
-  margin-bottom: 3.5rem;
-  margin-top: 1rem;
-  font-size: 1.1rem;
-  display: flex;
-  justify-content: center;
-}
-
-.copyright-notice a {
-  color: rgb(138, 148, 255);
-}
-
-.render-canvas {
-  touch-action: none;
-  cursor: grab;
-  width: min(500px, 95vw, 95vh);
-  height: min(500px, 95vw, 95vh);
-  margin-left: auto;
-  margin-right: auto;
-}
-
-@media only screen and (max-device-width: 480px) {
-  .render-canvas {
-    /* compensate for the navigation bar on narrow devices */
-    margin-top: -10vh;
-  }
-}
-
-.view-title {
-  grid-area: environment-info;
-  margin-top: 15vh;
-  font-size: 1rem;
-  max-width: 400px;
-  font-family: 'Courier New', Courier, monospace;
-}
-
-.canvas-container {
-  grid-area: canvas-container;
-  background-color: #000;
-  height: 100vh;
-  display: grid;
-  place-items: center;
-}
-
-.feedback {
-  grid-area: feedback;
-  visibility: hidden;
-  max-width: 60rem;
-  padding: 0.5rem;
-  background-color: #111;
-  color: #abf;
-  border-radius: 6px;
-  font-size: 1rem;
-  white-space: pre-wrap;
-}
-</style>
