@@ -1,0 +1,212 @@
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+:root {
+  --light-text: rgb(221, 199, 235);
+  --brighter-text: rgb(241, 225, 252);
+  --footer-height: 4rem;
+  --content-top-margin: 1.8rem;
+  --content-bottom-margin: 2.5rem;
+}
+
+.hidden {
+  display: none;
+}
+
+body {
+  background-color: #000;
+  background-image:
+    radial-gradient(230vw 30vh at 55vw 112vh, #000 45%, transparent),
+    radial-gradient(230vw 200vh at 55vw 112vh, #000, #020204 35%, #30268a 98%)
+    ;
+  background-size: 100vw 100vh;
+  background-repeat: no-repeat;
+
+  font-family: 'Catamaran', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 1.7rem;
+  color: var(--light-text);
+
+  margin: 0px;
+  display: grid;
+  place-items: center;
+  grid-template-areas:
+    'noscript-notice'
+    'canvas-container'
+    'environment-info'
+    'feedback'
+    'copyright'
+    'footer';
+}
+
+.noscript-notice {
+  grid-area: noscript-notice;
+  position: absolute;
+  top: 0px;
+  color: rgb(172, 172, 180);
+}
+
+.copyright-notice {
+  grid-area: copyright;
+  margin-bottom: 3.5rem;
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.copyright-notice a {
+  color: rgb(138, 148, 255);
+}
+
+.render-canvas {
+  touch-action: none;
+  cursor: grab;
+  width: min(500px, 95vw, 95vh);
+  height: min(500px, 95vw, 95vh);
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: calc(-7vh - 5rem);
+}
+
+@media only screen and (max-device-width: 480px) {
+  .render-canvas {
+    /* compensate for the navigation bar on narrow devices */
+    margin-top: -15vh;
+  }
+}
+
+.content {
+  position: absolute;
+  overflow: scroll;
+  top: var(--content-top-margin);
+  width:min(85vw, 50rem);
+  max-height: calc(100vh
+    - var(--content-top-margin)
+    - var(--footer-height)
+    - var(--content-bottom-margin));
+  padding-left: 1.35rem;
+  padding-right: 1.35rem;
+  font-family: 'Catamaran', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 400;
+  font-size: 1.2rem;
+}
+
+.content h1 {
+  margin: 0px;
+  margin-top: 1.35rem;
+}
+
+.frosted {
+  border-radius: 10px;
+  color: var(--brighter-text);
+  background-color: #000a;
+  background-image:
+    linear-gradient(138deg, #aaf8 -70%, #a0a0f005 110%);
+  backdrop-filter: blur(14px);
+  box-shadow:
+    -1px -1px 0px #fff4,
+    9px 9px 24px -6px #0004;
+
+  transition: opacity linear 1s;
+}
+
+.opaque {
+  opacity: 1.0;
+}
+
+.transparent {
+  opacity: 0.0;
+  pointer-events: none;
+}
+
+.view-title {
+  grid-area: environment-info;
+  margin-top: 15vh;
+  font-size: 1rem;
+  max-width: 400px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.canvas-container {
+  grid-area: canvas-container;
+  height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+.feedback {
+  grid-area: feedback;
+  visibility: hidden;
+  max-width: 60rem;
+  padding: 0.5rem;
+  background-color: #111;
+  color: #abf;
+  border-radius: 6px;
+  font-size: 1rem;
+  white-space: pre-wrap;
+}
+
+footer {
+  position: absolute;
+  bottom: 0px;
+  height: var(--footer-height);
+  width: min(90vw, 1100px);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  font-weight: 300;
+}
+
+footer span {
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
+.name-container {
+  padding-left: 1.3rem;
+}
+
+.name-tag {
+  color: rgb(220, 219, 255);
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: 0.065rem;
+}
+
+.small-title {
+  color: #9bacf0;
+  font-size: 1.4rem;
+  margin-left:0.5rem;
+  letter-spacing: 0.05rem;
+  font-weight: 100;
+}
+
+.line-link {
+  color: var(--light-text);
+  text-decoration: none;
+}
+
+.underline {
+  position: absolute;
+  right: 0px;
+  left: 100%;
+  top: 2.4rem;
+  height: 1px;
+  background-color: var(--light-text);
+}
+
+.delay-left {
+  transition: left 0.2s ease-in-out 0.1s, right 0.2s ease-in-out;
+}
+
+.delay-right {
+  transition: left 0.2s ease-in-out, right 0.2s ease-in-out 0.1s;
+}
+
+.no-delay {
+  transition: left 0.4s ease-in-out, right 0.4s ease-in-out;
+}
