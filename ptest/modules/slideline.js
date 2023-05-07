@@ -84,6 +84,11 @@ function initialize () {
         }
       }
 
+      const q =
+        document.querySelector('.' + event.target.dataset.target
+                                + ' .shine')
+      glint(q)
+
       // Blur the tesseract rendering to improve text overlay legibility:
       beginClarityTransition(0, 1000)
     })
@@ -101,6 +106,10 @@ function initialize () {
 
     // Do not close content when clicking a same-page link:
     if (event.target.classList.contains('line-link')) {
+      const q =
+        document.querySelector('.' + event.target.dataset.target
+                                + ' .shine')
+      glint(q)
       return
     }
 
@@ -109,7 +118,30 @@ function initialize () {
       e.classList.add('transparent')
     }
 
+    for (const e of all('.shine')) {
+      e.classList.remove('shine-reveal')
+    }
+
     // Restore the rendering clarity factor to its normal value:
     beginClarityTransition(1, 1000)
   })
+
+  let glintLockout = false
+  function glint (shinyElement) {
+    if (glintLockout) { return }
+    glintLockout = true
+    setTimeout(() => {
+      glintLockout = false
+    }, 1000)
+
+    for (const e of all('.shine')) {
+      e.classList.remove('shine-reveal')
+    }
+
+    setTimeout(() => {
+      shinyElement.classList.add('shine-reveal')
+    }, 200)
+  }
 }
+
+console.warn('debug -- todo: fix alignment of scrolled glint effect')

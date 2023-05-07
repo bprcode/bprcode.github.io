@@ -81,7 +81,8 @@ body {
 
 .content {
   position: absolute;
-  overflow: scroll;
+  overflow-x: hidden;
+  overflow-y: scroll;
   top: var(--content-top-margin);
   width:min(85vw, 50rem);
   max-height: calc(100vh
@@ -111,7 +112,7 @@ body {
     -1px -1px 0px #fff4,
     9px 9px 24px -6px #0004;
 
-  transition: opacity linear 1s;
+  transition: opacity ease-in-out 0.3s;
 }
 
 .opaque {
@@ -209,4 +210,24 @@ footer span {
 
 .no-delay {
   transition: left 0.4s ease-in-out, right 0.4s ease-in-out;
+}
+
+.shine {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 130%;
+  height: 100%;
+  /* debug -- should depend on the aspect ratio: */
+  --cutoff: 30%;
+  background: linear-gradient(
+    115deg, transparent var(--cutoff),
+    #ffbf8e52 43%, #ffee9760 50%, #98ffd640 58%,
+    transparent calc(100% - var(--cutoff)));
+  transform: translateX(100%);
+}
+
+.shine-reveal {
+  transition: transform 0.8s ease-out;
+  transform: translateX(-100%);
 }
