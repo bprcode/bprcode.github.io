@@ -402,6 +402,7 @@ painters.initCompositor = function () {
   this.aTexel = gl.getAttribLocation(this.program, 'aTexel')
   this.uBlurTex = gl.getUniformLocation(this.program, 'blurTex')
   this.uClearTex = gl.getUniformLocation(this.program, 'clearTex')
+  this.uClarityScale = gl.getUniformLocation(this.program, 'clarityScale')
 
   gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo)
   gl.enableVertexAttribArray(this.aTexel)
@@ -421,6 +422,7 @@ painters.drawCompositor = function () {
   gl.viewport(0, 0, this.shared.res, this.shared.res)
 
   gl.uniform1i(this.uBlurTex, this.shared.readTexture)
+  gl.uniform1f(this.uClarityScale, state.clarityScale)
   
   gl.drawArrays(gl.TRIANGLE_FAN, 0, this.mesh.blocks)
 }

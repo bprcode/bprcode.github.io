@@ -194,13 +194,14 @@ shaders.alphaCompositorFrag =
 precision mediump float;
 uniform sampler2D blurTex;
 uniform sampler2D clearTex;
+uniform float clarityScale;
 varying vec2 vTexel;
 
 void main (void) {
   vec4 clear = texture2D(clearTex, vTexel);
   vec4 blurry = texture2D(blurTex, vTexel);
 
-  gl_FragColor = mix(blurry, clear, clear.a);
+  gl_FragColor = mix(blurry, clear, clear.a * clarityScale);
 }
 `
 

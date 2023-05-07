@@ -2,6 +2,8 @@
 // Copyright © 2023 Bryan Rauen.
 // All rights reserved. https://bprcode.github.io/
 
+import { beginClarityTransition } from "./cycle.js"
+
 const log = console.log.bind(console)
 const el = document.getElementById.bind(document)
 const all = document.querySelectorAll.bind(document)
@@ -68,7 +70,7 @@ function initialize () {
     underline.style.right = rightBound + 'px'
   })
 
-  // Single-page link responses
+  // Single-page link reactions:
   for (const e of all('.line-link')) {
     e.addEventListener('click', event => {
       const target = event.target.dataset.target
@@ -81,6 +83,9 @@ function initialize () {
         e.classList.add('transparent')
         }
       }
+
+      // Blur the tesseract rendering to improve text overlay legibility:
+      beginClarityTransition(0, 1000)
     })
   }
 
@@ -103,5 +108,8 @@ function initialize () {
       e.classList.remove('opaque')
       e.classList.add('transparent')
     }
+
+    // Restore the rendering clarity factor to its normal value:
+    beginClarityTransition(1, 1000)
   })
 }

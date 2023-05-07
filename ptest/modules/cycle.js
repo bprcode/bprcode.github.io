@@ -38,6 +38,10 @@ export const state = {
   // Number of times to run the blur filter
   blurPassCount: 2,
 
+  // Factor used to scale the rendering clarity from 1.0 (normal clarity)
+  // down to 0.0 (maximum blur)
+  clarityScale: 1.0,
+
   animation1: { keepAnimating: true },
   animationSet: [],
   animationCycle: {},
@@ -112,6 +116,7 @@ try {
   state.animation1.showFPS = () => {
     el('fps-1').textContent = state.animation1.lastFPS.toFixed(1) + ' FPS'
   }
+
   state.animation1.draw = glPipeline(gl,
     { animationState: state.animation1,
       nearPlane: 1,
@@ -173,51 +178,75 @@ try {
                     : 1 - Math.pow(-2 * t + 2, 4) / 2
   }
 
+  function updateClarity (tCurrent) {
+    // Only update if a clarity change has been requested:
+    if (!state.clarityTransition) { return }
+
+    // If not set, start running a clock for this clarity transition:
+    state.clarityTransition.tStart ??= tCurrent
+
+    const dtClarity = Math.min(1,
+      (tCurrent - state.clarityTransition.tStart)
+        / state.clarityTransition.duration)
+
+    state.clarityScale = lerpScalar(
+      state.clarityTransition.initial,
+      state.clarityTransition.final,
+      dtClarity
+    )
+
+    // Stop running the transition once it has reached its end:
+    if (dtClarity === 1) {
+      delete state.clarityTransition
+    }
+  }
+
   function updateLights (tCurrent) {
-    // Only update if a lighting change has been requested:
-    if (!state.animationCycle.finalLighting) { return }
+    // Only update if a lighting transition has been requested:
+    if (!state.lightTransition) { return }
       
-    // If not set, start running a separate clock for light transitions:
-    state.animationCycle.tLightStart ??= tCurrent
+    // If not set, start running a clock for the light transition:
+    state.lightTransition.tStart ??= tCurrent
     const dtLight = Math.min(1,
-      (tCurrent - state.animationCycle.tLightStart)
-        / state.animationCycle.lightTransitionDuration)
+      (tCurrent - state.lightTransition.tStart)
+        / state.lightTransition.duration)
 
     state.lighting = interpolateLighting(
-      state.animationCycle.initialLighting,
-      state.animationCycle.finalLighting,
+      state.lightTransition.initial,
+      state.lightTransition.final,
       dtLight
     )
 
     // Stop running the transition once it has reached its end:
     if (dtLight === 1) {
-      state.animationCycle.finalLighting = null
+      delete state.lightTransition
     }
   }
 
   function updateVelocities (tCurrent) {
     // Only update if a velocity transition has been requested:
-    if (!state.animationCycle.finalVelocities) { return }
+    if (!state.velocityTransition) { return }
 
-    state.animationCycle.tVelocityStart ??= tCurrent
+    state.velocityTransition.tStart ??= tCurrent
+
     const dtVelocity = Math.min(1,
-      (tCurrent - state.animationCycle.tVelocityStart)
-        / state.animationCycle.velocityTransitionDuration)
+      (tCurrent - state.velocityTransition.tStart)
+        / state.velocityTransition.duration)
 
     state.animationSpeeds = interpolateVelocities(
-      state.animationCycle.initialVelocities,
-      state.animationCycle.finalVelocities,
+      state.velocityTransition.initial,
+      state.velocityTransition.final,
       dtVelocity)
 
     // Stop running the transition once it has reached its end:
     if (dtVelocity === 1) {
-      state.animationCycle.finalVelocities = null
+      delete state.velocityTransition
     }
   }
 
   function updateOrientation (tCurrent, tSinceLast) {
-    // If no target orientation has been set, apply basic rotations:
-    if (!state.animationCycle.finalOrientation) {
+    // If no orientation transition has been set, apply baseline rotations:
+    if (!state.orientationTransition) {
       applyOrientationAnimations(
         state.animationSpeeds,
         state.modelL,
@@ -228,38 +257,43 @@ try {
     }
 
     // Otherwise, interpolate towards the desired orientation.
-    state.animationCycle.tOrientationStart ??= tCurrent
+    state.orientationTransition.tStart ??= tCurrent
+    
     const dtOrientation = Math.min(1,
-      (tCurrent - state.animationCycle.tOrientationStart)
-        / state.animationCycle.orientationTransitionDuration)
+      (tCurrent - state.orientationTransition.tStart)
+        / state.orientationTransition.duration)
 
     const tEase = easeQuartic(dtOrientation)
 
+    // Continue to update the initial orientation as though it were still
+    // running, to provide smoother interpolation:
     applyOrientationAnimations(
-      state.animationCycle.priorSpeeds,
-      state.animationCycle.priorL,
-      state.animationCycle.priorR,
+      state.orientationTransition.initial.animationSpeeds,
+      state.orientationTransition.initial.modelL,
+      state.orientationTransition.initial.modelR,
       tSinceLast)
 
     state.modelL = Quaternion.slerpUnit(
-      state.animationCycle.priorL,
-      state.animationCycle.finalOrientation.modelL,
+      state.orientationTransition.initial.modelL,
+      state.orientationTransition.final.modelL,
       tEase)
 
     state.modelR = Quaternion.slerpUnit(
-      state.animationCycle.priorR,
-      state.animationCycle.finalOrientation.modelR,
+      state.orientationTransition.initial.modelR,
+      state.orientationTransition.final.modelR,
       tEase)
 
     if (dtOrientation === 1) {
       state.animationSpeeds =
-        [...state.animationCycle.finalOrientation.animationSpeeds]
+        [...state.orientationTransition.final.animationSpeeds]
 
-      state.animationCycle.finalOrientation = null
+      delete state.orientationTransition
     }
   }
 
   function applyTransitions () {
+    // this.t accumulates separately from the RAF timestamp,
+    // enabling it to pause progress without disrupting animation timing.
     this.t ??= 0
     this.tLast ??= this.dt
 
@@ -269,6 +303,7 @@ try {
       this.t += tSinceLast
 
       if (this.shared.animationState.needUpdate) {
+        updateClarity(this.t)
         updateLights(this.t)
         updateVelocities(this.t)
         updateOrientation(this.t, tSinceLast)
@@ -568,26 +603,43 @@ function applyOrientationAnimations (speeds, targetL, targetR, dt) {
   }
 }
 
-function beginVelocityTransition (initial, final, duration) {
-  // Remove prior timestamp:
-  delete state.animationCycle.tVelocityStart
+export function beginClarityTransition (final, duration) {
+  // Remove prior transition state, if any:
+  delete state.clarityTransition
 
-  state.animationCycle.velocityTransitionDuration = duration
-  state.animationCycle.initialVelocities = initial
-  state.animationCycle.finalVelocities = final
+  state.clarityTransition = {
+    initial: state.clarityScale,
+    final,
+    duration
+  }
+}
+
+function beginVelocityTransition (initial, final, duration) {
+  // Remove prior transition state, if any:
+  delete state.velocityTransition
+
+  state.velocityTransition = {
+    initial,
+    final,
+    duration
+  }
 }
 
 function beginOrientationTransition (final, duration = 2000) {
-  // Remove prior timestamp:
-  delete state.animationCycle.tOrientationStart
+  // Remove prior transition state, if any:
+  delete state.orientationTransition
 
-  // Copy the current orientation and angular velocities:
-  state.animationCycle.priorSpeeds = [...state.animationSpeeds]
-  state.animationCycle.priorL = Quaternion.from(state.modelL)
-  state.animationCycle.priorR = Quaternion.from(state.modelR)
+  state.orientationTransition = {
+    initial: {
+      // Copy current values
+      animationSpeeds: [...state.animationSpeeds],
+      modelL: Quaternion.from(state.modelL),
+      modelR: Quaternion.from(state.modelR)
+    },
+    final,
+    duration
+  }
 
-  state.animationCycle.orientationTransitionDuration = duration
-  state.animationCycle.finalOrientation = final
 }
 
 /**
@@ -595,12 +647,14 @@ function beginOrientationTransition (final, duration = 2000) {
  * interpolation on successive frames.
  */
 function beginLightingTransition (initial, final, duration = 2000) {
-  // Remove prior timestamp:
-  delete state.animationCycle.tLightStart
+  // Remove prior transition state, if any:
+  delete state.lightTransition
 
-  state.animationCycle.lightTransitionDuration = duration
-  state.animationCycle.initialLighting = initial
-  state.animationCycle.finalLighting = final
+  state.lightTransition = {
+    initial,
+    final,
+    duration
+  }
 }
 
 /**
