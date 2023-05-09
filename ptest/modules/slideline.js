@@ -74,13 +74,13 @@ function initialize () {
   for (const e of all('.line-link')) {
     e.addEventListener('click', event => {
       const target = event.target.dataset.target
-      document.querySelector('.' + target).classList.remove('transparent')
+      document.querySelector('.' + target).classList.remove('concealed')
       document.querySelector('.' + target).classList.add('opaque')
 
       for (const e of all('.content')) {
         if (!e.classList.contains(target)) {
         e.classList.remove('opaque')
-        e.classList.add('transparent')
+        e.classList.add('concealed')
         }
       }
 
@@ -91,6 +91,14 @@ function initialize () {
 
       // Blur the tesseract rendering to improve text overlay legibility:
       beginClarityTransition(0, 1000)
+    })
+
+    e.addEventListener('pointerenter', event => {
+      document.querySelector('.underline').classList.add('bright-underline')
+    })
+
+    e.addEventListener('pointerleave', event => {
+      document.querySelector('.underline').classList.remove('bright-underline')
     })
   }
 
@@ -115,7 +123,7 @@ function initialize () {
 
     for (const e of all('.content')) {
       e.classList.remove('opaque')
-      e.classList.add('transparent')
+      e.classList.add('concealed')
     }
 
     for (const e of all('.shine')) {
