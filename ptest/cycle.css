@@ -12,7 +12,7 @@ html {
   --content-top-margin: 1.8rem;
   --content-bottom-margin: 2.5rem;
   --content-padding: 1.35rem;
-  --cover-dimension: max(250vw, 250vh);
+  --cover-dimension: 283vmax; /* 2√2 to cover the entire viewport at a 45° angle */
 }
 
 .hidden {
@@ -67,8 +67,10 @@ body {
 .render-canvas {
   touch-action: none;
   cursor: grab;
-  width: min(500px, 95vw, 95vh);
-  height: min(500px, 95vw, 95vh);
+  width: min(500px, 95vmin);
+  height: min(500px, 95vmin);
+  width: min(500px, 95svmin);
+  height: min(500px, 95svmin);
   margin-left: auto;
   margin-right: auto;
   margin-top: calc(-7vh - 5rem);
