@@ -787,6 +787,13 @@ function initAnimationCycler () {
   for (const {name, string} of animationStrings) {
     const entry = JSON.parse(string)
 
+    // The premultiplied alpha compositor in Chrome will truncate
+    // pixels with zero alpha component, so provide a minimum alpha
+    // value everywhere in the tesseract via the ambient glow color:
+    if (entry.lighting.glow.rgba[3] === 0) {
+      entry.lighting.glow.rgba[3] = 0.05
+    }
+
     state.animationSet.push({
       title: name,
       modelL: Quaternion.parse(entry.Lstring),

@@ -22,6 +22,15 @@ function initialize () {
     document.querySelector('footer').getBoundingClientRect().right
   let lastMove = 'left'
 
+  // Synchronize positions of overlaid animation (.shine) and its
+  // associated content:
+  for (const e of all('.content')) {
+    e.addEventListener('scroll', event => {
+      event.target.querySelector('.shine-container')
+        .style.top = event.target.scrollTop + 'px'
+    })
+  }
+
   for (const link of all('.line-link')) {
     link.addEventListener('pointerenter', event => {
       underline.classList.remove('no-delay')
@@ -73,19 +82,21 @@ function initialize () {
   // Single-page link reactions:
   for (const e of all('.line-link')) {
     e.addEventListener('click', event => {
-      const target = event.target.dataset.target
-      document.querySelector('.' + target).classList.remove('concealed')
-      document.querySelector('.' + target).classList.add('opaque')
+      const section = event.target.dataset.section
+      const content = document.querySelector('.' + section)
+      content.classList.remove('concealed')
+      content.classList.add('opaque')
+      content.scrollTop = 0
 
       for (const e of all('.content')) {
-        if (!e.classList.contains(target)) {
-        e.classList.remove('opaque')
-        e.classList.add('concealed')
+        if (!e.classList.contains(section)) {
+          e.classList.remove('opaque')
+          e.classList.add('concealed')
         }
       }
 
       const q =
-        document.querySelector('.' + event.target.dataset.target
+        document.querySelector('.' + event.target.dataset.section
                                 + ' .shine')
       glint(q)
 
@@ -115,7 +126,7 @@ function initialize () {
     // Do not close content when clicking a same-page link:
     if (event.target.classList.contains('line-link')) {
       const q =
-        document.querySelector('.' + event.target.dataset.target
+        document.querySelector('.' + event.target.dataset.section
                                 + ' .shine')
       glint(q)
       return
@@ -151,5 +162,3 @@ function initialize () {
     }, 200)
   }
 }
-
-console.warn('debug -- todo: fix alignment of scrolled glint effect')
