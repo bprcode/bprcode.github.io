@@ -100,22 +100,27 @@ html {
   height: min(500px, 95svmin);
   margin-left: auto;
   margin-right: auto;
+}
+
+.render-canvas {
   margin-top: calc(-7vh - 5rem);
 }
 
 @media only screen and (max-device-width: 480px) {
-  .render-canvas {
+  .render-canvas,
+  .noise-texture {
     /* compensate for the navigation bar on narrow devices */
     margin-top: -15vh;
   }
 }
 
 .noise-texture {
+  border: 3px dashed orange;
   pointer-events: none;
   position: absolute;
   top: 0px;
-  width: min(700px, 70vw);
-  height: min(700px, 70vw);
+  width: min(700px, 100vw);
+  height: min(700px, 100vw);
   background-image: url(./noise-test.png);
   background-repeat: no-repeat;
   background-size: 100%;
