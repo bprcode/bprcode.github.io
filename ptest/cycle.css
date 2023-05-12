@@ -293,7 +293,7 @@ footer span {
 }
 
 .shine-container {
-  contain: strict;
+  /* contain: strict; */
   pointer-events: none;
   position: sticky;
   top: 0px;
