@@ -170,9 +170,9 @@ html {
 
 .content {
   position: absolute;
+  top: var(--content-top-margin);
   overflow-x: hidden;
   overflow-y: auto;
-  /* top: var(--content-top-margin); */
   width:min(85vw, 50rem); width:min(85lvw, 50rem);
   max-height: calc(100vh
     - var(--content-top-margin)
