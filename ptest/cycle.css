@@ -288,9 +288,12 @@ footer span {
   transition: left 0.4s ease-in-out, right 0.4s ease-in-out;
 }
 
-.shine-container {
-  /* debug -- perf test */
+.display-none {
   display: none;
+}
+
+.shine-container {
+  contain: strict;
   pointer-events: none;
   position: sticky;
   top: 0px;
@@ -303,7 +306,6 @@ footer span {
   /* Nullify container's padding */
   margin-left: calc(-1* var(--content-padding));
   margin-right: calc(-1* var(--content-padding));
-
 }
 
 .shine {
