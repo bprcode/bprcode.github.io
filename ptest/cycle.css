@@ -111,15 +111,16 @@ html {
 }
 
 .noise-texture {
+  pointer-events: none;
   position: absolute;
   top: 0px;
-  width: min(700px, 50vw);
-  height: min(700px, 50vw);
+  width: min(700px, 70vw);
+  height: min(700px, 70vw);
   background-image: url(./noise-test.png);
   background-repeat: no-repeat;
   background-size: 100%;
 
-  animation: fade-in-out 10s alternate infinite;
+  animation: fade-in-out 7s alternate infinite;
 }
 
 @keyframes fade-in-out {
@@ -130,7 +131,7 @@ html {
     opacity: 0;
   }
   90% {
-    opacity: 0.5;
+    opacity: 1;
   }
 }
 
