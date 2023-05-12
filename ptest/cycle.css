@@ -13,6 +13,8 @@ html {
   --content-bottom-margin: 2.5rem;
   --content-padding: 1.35rem;
   --cover-dimension: 283vmax; /* 2√2 to cover the entire viewport at a 45° angle */
+  --scrollbar-background: transparent;
+  --ff-scrollbar-thumb: #557;
 }
 
 .hidden {
@@ -42,6 +44,31 @@ body {
     'feedback'
     'copyright'
     'footer';
+}
+
+/* WebKit scrollbar styles */
+html::-webkit-scrollbar,
+.content::-webkit-scrollbar {
+  background-color: var(--scrollbar-background);
+  width: 6px;
+}
+
+html::-webkit-scrollbar-thumb,
+.content::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #44447c, #335 35%);
+  border-radius: 3px;
+  border: 1px solid var(--scrollbar-background);
+  background-clip: content-box;
+}
+
+.content::-webkit-scrollbar-thumb:vertical:hover {
+  background: unset;
+  background-color: #77a;
+}
+
+/* Firefox scrollbar styles */
+html {
+  scrollbar-color: var(--ff-scrollbar-thumb) var(--scrollbar-background);
 }
 
 .noscript-notice {
@@ -83,10 +110,34 @@ body {
   }
 }
 
+.noise-texture {
+  position: absolute;
+  top: 0px;
+  width: min(700px, 50vw);
+  height: min(700px, 50vw);
+  background-image: url(./noise-test.png);
+  background-repeat: no-repeat;
+  background-size: 100%;
+
+  animation: fade-in-out 10s alternate infinite;
+}
+
+@keyframes fade-in-out {
+  0% {
+    opacity: 0;
+  }
+  75% {
+    opacity: 0;
+  }
+  90% {
+    opacity: 0.5;
+  }
+}
+
 .content {
   position: absolute;
   overflow-x: hidden;
-  overflow-y: scroll;
+  overflow-y: auto;
   top: var(--content-top-margin);
   width:min(85vw, 50rem);
   max-height: calc(100vh
@@ -233,13 +284,18 @@ footer span {
 
 .shine-container {
   pointer-events: none;
-  position: absolute;
+  position: sticky;
+  top: 0px;
   overflow: hidden;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  /*  This ensures the overlaid animation covers at least the entire visible
+      area,while negative margin avoids taking up space in the layout. */
+  height: 100vh;
+  margin-top: -100vh;
   /* Nullify container's padding */
   margin-left: calc(-1* var(--content-padding));
   margin-right: calc(-1* var(--content-padding));
+
 }
 
 .shine {

@@ -22,15 +22,6 @@ function initialize () {
     document.querySelector('footer').getBoundingClientRect().right
   let lastMove = 'left'
 
-  // Synchronize positions of overlaid animation (.shine) and its
-  // associated content:
-  for (const e of all('.content')) {
-    e.addEventListener('scroll', event => {
-      event.target.querySelector('.shine-container')
-        .style.top = event.target.scrollTop + 'px'
-    })
-  }
-
   for (const link of all('.line-link')) {
     link.addEventListener('pointerenter', event => {
       underline.classList.remove('no-delay')
@@ -88,17 +79,14 @@ function initialize () {
       content.classList.add('opaque')
       content.scrollTop = 0
 
-      for (const e of all('.content')) {
-        if (!e.classList.contains(section)) {
-          e.classList.remove('opaque')
-          e.classList.add('concealed')
+      for (const c of all('.content')) {
+        if (!c.classList.contains(section)) {
+          c.classList.remove('opaque')
+          c.classList.add('concealed')
         }
       }
 
-      const q =
-        document.querySelector('.' + event.target.dataset.section
-                                + ' .shine')
-      glint(q)
+      glint(content.querySelector('.shine'))
 
       // Blur the tesseract rendering to improve text overlay legibility:
       beginClarityTransition(0, 1000)
