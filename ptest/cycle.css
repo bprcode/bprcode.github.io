@@ -13,6 +13,7 @@ html {
   --content-bottom-margin: 2.5rem;
   --content-padding: 1.35rem;
   --cover-dimension: 283vmax; /* 2√2 to cover the entire viewport at a 45° angle */
+  --cover-dimension: 283lvmax;
   --scrollbar-background: transparent;
   --ff-scrollbar-thumb: #557;
 }
@@ -303,13 +304,13 @@ footer span {
 }
 
 .display-block {
-  display: block;
+  display: block !important;
 }
 
 .shine-container {
   contain: strict;
-  /*display: none;*/ /* Avoid rendering when not in use,
-                    temporarily override on reveal */
+  display: none; /* For performance, avoid rendering when not in use,
+                    temporarily override on reveal. */
   pointer-events: none;
   position: sticky;
   top: 0px;
