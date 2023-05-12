@@ -81,10 +81,10 @@ function initialize () {
       content.classList.add('opaque')
       // content.scrollTop = 0
 
-      // shineContainer.classList.add('display-block')
-      // setTimeout(() => {
-      //   shineContainer.classList.remove('display-block')
-      // }, shineAnimationTime)
+      shineContainer.classList.add('display-block')
+      setTimeout(() => {
+        shineContainer.classList.remove('display-block')
+      }, shineAnimationTime / 3)
 
       for (const c of all('.content')) {
         if (!c.classList.contains(section)) {
