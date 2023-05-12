@@ -148,11 +148,20 @@ html {
   }
 }
 
+.content-panes {
+  border:2px dashed firebrick;
+  position: absolute;
+  contain: strict;
+  top: 50px;
+  height: calc(90lvh - 50px);
+  width:min(85lvw, 50rem);
+}
+
 .content {
   position: absolute;
   overflow-x: hidden;
   overflow-y: auto;
-  top: var(--content-top-margin);
+  /* top: var(--content-top-margin); */
   width:min(85vw, 50rem); width:min(85lvw, 50rem);
   max-height: calc(100vh
     - var(--content-top-margin)
