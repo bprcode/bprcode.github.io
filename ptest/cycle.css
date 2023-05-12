@@ -289,16 +289,18 @@ footer span {
   transition: left 0.4s ease-in-out, right 0.4s ease-in-out;
 }
 
-.display-none {
-  display: none;
+.display-block {
+  display: block;
 }
 
 .shine-container {
-  contain: layout size;
+  contain: layout size paint;
+  /*display: none;*/ /* Avoid rendering when not in use,
+                    temporarily override on reveal */
   pointer-events: none;
   position: sticky;
   top: 0px;
-  overflow: hidden;
+  /* overflow: hidden; */
   width: 100vw;
   /*  This ensures the overlaid animation covers at least the entire visible
       area,while negative margin avoids taking up space in the layout. */
@@ -332,14 +334,6 @@ footer span {
     #ffa86690 50%,
     #43c28460 72%,
     #3699c440 87.5%,
-    /* transparent 25%,
-    #ff792e00 26%,
-    #c83d4d60 50%,
-    #ffb95070 51%,
-    #58ffaf60 75%,
-    #58ffaf60 76%,
-    #48c8ff00 99%, */
-
     transparent
     );
   transform: rotate(0deg);
