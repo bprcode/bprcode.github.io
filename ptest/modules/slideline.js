@@ -84,7 +84,7 @@ function initialize () {
       shineContainer.classList.add('display-block')
       setTimeout(() => {
         shineContainer.classList.remove('display-block')
-      }, shineAnimationTime / 3)
+      }, shineAnimationTime)
 
       for (const c of all('.content')) {
         if (!c.classList.contains(section)) {
