@@ -24,14 +24,14 @@ html {
 
 body {
   background-color: #000;
-  /* background-image:
+  background-image:
     radial-gradient(230vw 30vh at 55vw 112vh, #000 45%, transparent),
     radial-gradient(230vw 200vh at 55vw 112vh, #000, #020204 35%, #30268a 98%)
     ;
   background-image:
     radial-gradient(230lvw 30lvh at 55lvw 112lvh, #000 45%, transparent),
     radial-gradient(230lvw 200lvh at 55lvw 112lvh, #000, #020204 35%, #30268a 98%)
-    ; */
+    ;
   background-size: 100vw 100vh;
   background-size: 100lvw 100lvh;
   background-repeat: no-repeat;
@@ -120,6 +120,17 @@ html {
     margin-top: -15vh;
     margin-top: -15lvh;
   }
+}
+
+.cloud-overlay {
+  position: absolute;
+  top: 0px;
+  width: 100vw; width: 100lvw;
+  height: 25vw; height: 25lvw;
+  background-image: url(./alpha-cloud-1-1024.png);
+  background-size: 3072px;
+  opacity: 0.15;
+  mix-blend-mode: overlay;
 }
 
 .noise-texture {
