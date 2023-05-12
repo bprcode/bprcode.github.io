@@ -196,6 +196,7 @@ html {
 }
 
 .canvas-container {
+  contain: paint layout;
   grid-area: canvas-container;
   height: 100vh;
   display: grid;
@@ -293,7 +294,7 @@ footer span {
 }
 
 .shine-container {
-  /* contain: strict; */
+  contain: layout size;
   pointer-events: none;
   position: sticky;
   top: 0px;
