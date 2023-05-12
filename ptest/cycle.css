@@ -27,7 +27,12 @@ body {
     radial-gradient(230vw 30vh at 55vw 112vh, #000 45%, transparent),
     radial-gradient(230vw 200vh at 55vw 112vh, #000, #020204 35%, #30268a 98%)
     ;
+  background-image:
+    radial-gradient(230lvw 30lvh at 55lvw 112lvh, #000 45%, transparent),
+    radial-gradient(230lvw 200lvh at 55lvw 112lvh, #000, #020204 35%, #30268a 98%)
+    ;
   background-size: 100vw 100vh;
+  background-size: 100lvw 100lvh;
   background-repeat: no-repeat;
 
   font-family: 'Catamaran', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -104,6 +109,7 @@ html {
 
 .render-canvas {
   margin-top: calc(-7vh - 5rem);
+  margin-top: calc(-7lvh - 5rem);
 }
 
 @media only screen and (max-device-width: 480px) {
@@ -111,6 +117,7 @@ html {
   .noise-texture {
     /* compensate for the navigation bar on narrow devices */
     margin-top: -15vh;
+    margin-top: -15lvh;
   }
 }
 
@@ -119,8 +126,8 @@ html {
   pointer-events: none;
   position: absolute;
   top: 0px;
-  width: min(700px, 100vw);
-  height: min(700px, 100vw);
+  width: min(700px, 100vw); width: min(700px, 100lvw);
+  height: min(700px, 100vw); height: min(700px, 100lvw);
   background-image: url(./noise-test.png);
   background-repeat: no-repeat;
   background-size: 100%;
@@ -145,8 +152,12 @@ html {
   overflow-x: hidden;
   overflow-y: auto;
   top: var(--content-top-margin);
-  width:min(85vw, 50rem);
+  width:min(85vw, 50rem); width:min(85lvw, 50rem);
   max-height: calc(100vh
+    - var(--content-top-margin)
+    - var(--footer-height)
+    - var(--content-bottom-margin));
+  max-height: calc(100lvh
     - var(--content-top-margin)
     - var(--footer-height)
     - var(--content-bottom-margin));
@@ -190,6 +201,7 @@ html {
 .view-title {
   grid-area: environment-info;
   margin-top: 15vh;
+  margin-top: 15lvh;
   font-size: 1rem;
   max-width: 400px;
   font-family: 'Courier New', Courier, monospace;
@@ -199,6 +211,7 @@ html {
   contain: paint layout;
   grid-area: canvas-container;
   height: 100vh;
+  height: 100lvh;
   display: grid;
   place-items: center;
 }
@@ -219,7 +232,7 @@ footer {
   position: absolute;
   bottom: 0px;
   height: var(--footer-height);
-  width: min(90vw, 1100px);
+  width: min(90vw, 1100px); width: min(90lvw, 1100px);
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -294,18 +307,17 @@ footer span {
 }
 
 .shine-container {
-  contain: layout size paint;
+  contain: strict;
   /*display: none;*/ /* Avoid rendering when not in use,
                     temporarily override on reveal */
   pointer-events: none;
   position: sticky;
   top: 0px;
-  /* overflow: hidden; */
-  width: 100vw;
+  width: 100vw; width: 100lvw;
   /*  This ensures the overlaid animation covers at least the entire visible
-      area,while negative margin avoids taking up space in the layout. */
-  height: 100vh;
-  margin-top: -100vh;
+      area, while negative margin avoids taking up space in the layout. */
+  height: 100vh; height: 100lvh;
+  margin-top: -100vh; margin-top: -100lvh;
   /* Nullify container's padding */
   margin-left: calc(-1* var(--content-padding));
   margin-right: calc(-1* var(--content-padding));
