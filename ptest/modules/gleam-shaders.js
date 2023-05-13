@@ -246,14 +246,13 @@ void main (void) {
     // vec4(1.) * (
     mixed * (
     0.75 +
-    1.5 * diminish(
-    // 1.7 * clamp(
+    2.2 * clamp(
     0.3
-    - pow(lens.a, 3.) * 0.5
-    + pow(squaredBrightness, 0.5) * pow(lens.a, 0.5) * 0.65
-    // ,
-    // 0., 0.5)
-    ));
+    - pow(lens.a, 3.) * 0.6
+     + diminish(pow(squaredBrightness, 0.5) * pow(lens.a, 3.) * 0.65)
+    ,
+    0., 0.5)
+    );
 }
 `
 
