@@ -457,7 +457,7 @@ painters.initLensCompositor = function () {
     gl.bindTexture(gl.TEXTURE_2D, restore)
   })
   console.warn('debug -- testing delayed resource load')
-  setTimeout(() => lensImage.src = './cloud-contrast.png', 1000)
+  setTimeout(() => lensImage.src = './ptest/cloud-contrast.png', 1000)
 }
 
 painters.drawCompositor = function () {
