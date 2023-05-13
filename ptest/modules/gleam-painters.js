@@ -414,9 +414,56 @@ painters.initCompositor = function () {
   gl.uniform1i(this.uClearTex, 1)
 }
 
+painters.initLensCompositor = function () {
+  /** @type {WebGLRenderingContext} */
+  const gl = this.gl
+
+  this.aTexel = gl.getAttribLocation(this.program, 'aTexel')
+  this.uBlurTex = gl.getUniformLocation(this.program, 'blurTex')
+  this.uClearTex = gl.getUniformLocation(this.program, 'clearTex')
+  this.uLensTex = gl.getUniformLocation(this.program, 'lensTex')
+  this.uTime = gl.getUniformLocation(this.program, 'time')
+  this.uClarityScale = gl.getUniformLocation(this.program, 'clarityScale')
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo)
+  gl.enableVertexAttribArray(this.aTexel)
+  gl.vertexAttribPointer(this.aTexel, 2, gl.FLOAT, false,
+    this.mesh.byteStride, 2 * Float32Array.BYTES_PER_ELEMENT)
+  gl.bindBuffer(gl.ARRAY_BUFFER, null)
+
+  gl.uniform1i(this.uBlurTex, 0)
+  gl.uniform1i(this.uClearTex, 1)
+  gl.uniform1i(this.uLensTex, 5)
+
+  // Create temporary texture, asynchronously load texture data:
+  this.lensTexture = gl.createTexture()
+  gl.activeTexture(gl.TEXTURE0 + 5)
+  gl.bindTexture(gl.TEXTURE_2D, this.lensTexture)
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
+    1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+    new Uint8Array([0, 0, 0, 0]))
+
+  const lensImage = new Image()
+  lensImage.addEventListener('load', () => {
+    log('Loaded!')
+    const restore = gl.getParameter(gl.TEXTURE_BINDING_2D)
+    gl.bindTexture(gl.TEXTURE_2D, this.lensTexture)
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE,
+      lensImage)
+
+    gl.bindTexture(gl.TEXTURE_2D, restore)
+  })
+  console.warn('debug -- testing delayed resource load')
+  setTimeout(() => lensImage.src = '../cloud-contrast.png', 1000)
+}
+
 painters.drawCompositor = function () {
   /** @type {WebGLRenderingContext} */
   const gl = this.gl
+  gl.uniform1f(this.uTime, this.dt)
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   gl.viewport(0, 0, this.shared.res, this.shared.res)

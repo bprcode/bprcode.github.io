@@ -205,6 +205,58 @@ void main (void) {
 }
 `
 
+// Final stage of rendering pipeline, producing a weighted mix of
+// the blurry and clear textures, overlaid with a variable lens texture
+shaders.lensCompositorFrag =
+/* glsl */`
+precision mediump float;
+uniform sampler2D blurTex;
+uniform sampler2D clearTex;
+uniform sampler2D lensTex;
+uniform float clarityScale;
+uniform float time;
+varying vec2 vTexel;
+
+float diminish (float x) {
+  return -1. / (x + 1.) + 1.;
+}
+
+void main (void) {
+  vec4 clear = texture2D(clearTex, vTexel);
+  vec4 blurry = texture2D(blurTex, vTexel);
+  float rate = 45000.;
+  float clock = mod(time, rate) / rate;
+  float clock2 = mod(time, 2. * rate) / (2. * rate);
+  vec4 lens = texture2D(lensTex,
+    vec2( vTexel.x / 4. - clock2,
+          vTexel.y / 4.))
+    + texture2D(lensTex,
+      vec2( vTexel.x / 8.,
+            vTexel.y / 8. + clock))
+    ;
+  // lens /= 2.;
+
+  vec4 mixed = mix(blurry, clear, clear.a * clarityScale);
+  float squaredBrightness =
+      0.299 * mixed.r * mixed.r
+    + 0.587 * mixed.g * mixed.g
+    + 0.114 * mixed.b * mixed.b;
+  gl_FragColor =
+    // vec4(lens.a);
+    // vec4(1.) * (
+    mixed * (
+    0.75 +
+    1.5 * diminish(
+    // 1.7 * clamp(
+    0.3
+    - pow(lens.a, 3.) * 0.5
+    + pow(squaredBrightness, 0.5) * pow(lens.a, 0.5) * 0.65
+    // ,
+    // 0., 0.5)
+    ));
+}
+`
+
 // Compute a one-dimensional blur effect, based on a given kernel:
 shaders.blur1dFrag =
 /* glsl */`

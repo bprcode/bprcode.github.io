@@ -159,15 +159,6 @@ html {
   }
 }
 
-.content-panes {
-  border:2px dashed firebrick;
-  position: absolute;
-  contain: strict;
-  top: 50px;
-  height: calc(90lvh - 50px);
-  width:min(85lvw, 50rem);
-}
-
 .content {
   position: absolute;
   top: var(--content-top-margin);
