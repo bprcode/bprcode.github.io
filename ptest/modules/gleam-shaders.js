@@ -227,32 +227,29 @@ void main (void) {
   float rate = 45000.;
   float clock = mod(time, rate) / rate;
   float clock2 = mod(time, 2. * rate) / (2. * rate);
-  vec4 lens = texture2D(lensTex,
+  vec4 lens =
+    texture2D(lensTex,
     vec2( vTexel.x / 4. - clock2,
           vTexel.y / 4.))
     + texture2D(lensTex,
       vec2( vTexel.x / 8.,
             vTexel.y / 8. + clock))
     ;
-  // lens /= 2.;
 
   vec4 mixed = mix(blurry, clear, clear.a * clarityScale);
   float squaredBrightness =
-      0.299 * mixed.r * mixed.r
-    + 0.587 * mixed.g * mixed.g
-    + 0.114 * mixed.b * mixed.b;
+      0.299 * blurry.r * blurry.r
+    + 0.587 * blurry.g * blurry.g
+    + 0.114 * blurry.b * blurry.b;
+
+  float signal = .5*cos(3.1415926535 * squaredBrightness) + .5;
+
+  // actually a very nice cloud effect:
+  float soft = pow(1.5*diminish(lens.a), 3.);
+  float cloud = pow(signal, 2.) * pow(lens.a, 3.);
   gl_FragColor =
-    // vec4(lens.a);
-    // vec4(1.) * (
-    mixed * (
-    0.75 +
-    2.2 * clamp(
-    0.3
-    - pow(lens.a, 3.) * 0.6
-     + diminish(pow(squaredBrightness, 0.5) * pow(lens.a, 3.) * 0.65)
-    ,
-    0., 0.5)
-    );
+    mixed *(1.+ 2.*pow(signal * 2. * soft, 2.))
+    ;
 }
 `
 
