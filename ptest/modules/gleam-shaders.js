@@ -214,9 +214,7 @@ uniform sampler2D blurTex;
 uniform sampler2D clearTex;
 uniform sampler2D lensTex;
 uniform float clarityScale;
-// To avoid floating-point precision limitations,
-// use a modular time variable for time control:
-uniform float secondHand;
+uniform float seconds;
 varying vec2 vTexel;
 
 float diminish (float x) {
@@ -236,19 +234,19 @@ float smoothDrop (float bound, float exponent, float x) {
 void main (void) {
   vec4 clear = texture2D(clearTex, vTexel);
   vec4 blurry = texture2D(blurTex, vTexel);
-  float rate = 50000.;
-  float t = secondHand / 60.;
-  float clockSlow = t / 4.;
-  float clockMed = t / 2.;
-  float clockFast = t;
+  float t = seconds;
+  float clockSlow = t / 120.;
+  float clockMed = t / 60.;
+  float clockFast = t / 30.;
   vec4 lens =
     0.15*texture2D(lensTex,
+    // Invert x & y to vary texture:
     vec2( -vTexel.x / 1.5 - clockSlow,
           -vTexel.y / 1.5 + clockSlow))
     + 0.8*texture2D(lensTex,
-    // intentionally swap x & y to vary texture:
-    vec2( vTexel.y / 3. - clockMed,
-          vTexel.x / 3.))
+    // Switch x & y to vary texture:
+    vec2( vTexel.y / 3.,
+          vTexel.x / 3. - clockMed))
     + 2.45*texture2D(lensTex,
       vec2( vTexel.x / 6.,
             vTexel.y / 6. + clockFast))
@@ -268,13 +266,12 @@ void main (void) {
   float dropCloud = smoothDrop(1., 0.45, soft);
   float boost = 20. * smoothDrop(1., 0.2, luminance);
 
+  // Weight the cloud color components to favor red light:
   gl_FragColor =
-      vec4(dropCloud)
-      // mixed
-      // + vec4(mixed.r, mixed.g*0.45, mixed.b*0.8, mixed.a) *
-      // boost*pow(signal,1.)*pow(dropCloud,1.3)
-    // mixed * (1. + boost*pow(signal,1.)*pow(dropCloud,1.3))
-    ;
+      vec4(dropCloud);
+    // mixed
+    // + vec4(mixed.r, mixed.g*0.45, mixed.b*0.8, mixed.a)
+    //   * boost * pow(signal,1.) * pow(dropCloud,1.3);
 }
 `
 
