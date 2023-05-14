@@ -234,10 +234,10 @@ float smoothDrop (float bound, float exponent, float x) {
 void main (void) {
   vec4 clear = texture2D(clearTex, vTexel);
   vec4 blurry = texture2D(blurTex, vTexel);
-  float t = seconds;
-  float clockSlow = t / 120.;
-  float clockMed = t / 60.;
-  float clockFast = t / 30.;
+  float rate = 40.;
+  float clockFast = seconds / rate;
+  float clockMed = seconds / (rate * 2.);
+  float clockSlow = seconds / (rate * 4.);
   vec4 lens =
     0.15*texture2D(lensTex,
     // Invert x & y to vary texture:
@@ -268,10 +268,9 @@ void main (void) {
 
   // Weight the cloud color components to favor red light:
   gl_FragColor =
-      vec4(dropCloud);
-    // mixed
-    // + vec4(mixed.r, mixed.g*0.45, mixed.b*0.8, mixed.a)
-    //   * boost * pow(signal,1.) * pow(dropCloud,1.3);
+    mixed
+    + vec4(mixed.r, mixed.g*0.5, mixed.b*0.8, mixed.a)
+      * boost * pow(signal,1.) * pow(dropCloud,1.3);
 }
 `
 
