@@ -221,6 +221,27 @@ float diminish (float x) {
   return -1. / (x + 1.) + 1.;
 }
 
+float hueFromRGB (float p, float q, float t) {
+  float result;
+  t += (1.0 - step(0.0, t));
+  t -= step(1.0, t);
+
+  result = p;
+  result =  step(2.0/3.0, t) * result
+            + (1.0 - step(2.0/3.0, t))
+              * (p + (q - p) * (2.0/3.0 - t) * 6.0);
+  
+  result = step(1.0/2.0, t) * result
+            + (1.0 - step(1.0/2.0, t))
+              * q;
+
+  result = step(1.0/6.0, t) * result
+            + (1.0 - step(1.0/6.0, t))
+              * (p + (q - p) * 6.0 * t);
+
+  return result;
+}
+
 // Variable extra-smooth downward step:
 // https://www.desmos.com/calculator/mxoykritdy
 float smoothDrop (float bound, float exponent, float x) {
@@ -266,7 +287,10 @@ void main (void) {
   float boost = 20. * smoothDrop(1., 0.2, luminance);
 
   gl_FragColor =
-    mixed * (1. + boost*pow(signal,1.)*pow(dropCloud,1.3))
+      mixed
+      + vec4(mixed.r, mixed.g*0.45, mixed.b*0.8, mixed.a) *
+      boost*pow(signal,1.)*pow(dropCloud,1.3)
+    // mixed * (1. + boost*pow(signal,1.)*pow(dropCloud,1.3))
     ;
 }
 `
