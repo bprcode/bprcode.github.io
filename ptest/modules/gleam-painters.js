@@ -422,7 +422,7 @@ painters.initLensCompositor = function () {
   this.uBlurTex = gl.getUniformLocation(this.program, 'blurTex')
   this.uClearTex = gl.getUniformLocation(this.program, 'clearTex')
   this.uLensTex = gl.getUniformLocation(this.program, 'lensTex')
-  this.uTime = gl.getUniformLocation(this.program, 'time')
+  this.uSecondHand = gl.getUniformLocation(this.program, 'secondHand')
   this.uClarityScale = gl.getUniformLocation(this.program, 'clarityScale')
 
   gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo)
@@ -469,7 +469,7 @@ painters.initLensCompositor = function () {
 painters.drawCompositor = function () {
   /** @type {WebGLRenderingContext} */
   const gl = this.gl
-  gl.uniform1f(this.uTime, this.dt)
+  gl.uniform1f(this.uSecondHand, (this.dt % 60000) / 1000)
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   gl.viewport(0, 0, this.shared.res, this.shared.res)

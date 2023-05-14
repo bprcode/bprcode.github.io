@@ -214,7 +214,9 @@ uniform sampler2D blurTex;
 uniform sampler2D clearTex;
 uniform sampler2D lensTex;
 uniform float clarityScale;
-uniform float time;
+// To avoid floating-point precision limitations,
+// use a modular time variable for time control:
+uniform float secondHand;
 varying vec2 vTexel;
 
 float diminish (float x) {
@@ -235,9 +237,10 @@ void main (void) {
   vec4 clear = texture2D(clearTex, vTexel);
   vec4 blurry = texture2D(blurTex, vTexel);
   float rate = 50000.;
-  float clockSlow = mod(time, 4. * rate) / (4. * rate);
-  float clockMed = mod(time, 2. * rate) / (2. * rate);
-  float clockFast = mod(time, rate) / rate;
+  float t = secondHand / 60.;
+  float clockSlow = t / 4.;
+  float clockMed = t / 2.;
+  float clockFast = t;
   vec4 lens =
     0.15*texture2D(lensTex,
     vec2( -vTexel.x / 1.5 - clockSlow,
@@ -266,7 +269,7 @@ void main (void) {
   float boost = 20. * smoothDrop(1., 0.2, luminance);
 
   gl_FragColor =
-      vec4(dropCloud) * (1.+cos(time/100.))
+      vec4(dropCloud)
       // mixed
       // + vec4(mixed.r, mixed.g*0.45, mixed.b*0.8, mixed.a) *
       // boost*pow(signal,1.)*pow(dropCloud,1.3)
