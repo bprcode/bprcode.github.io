@@ -214,7 +214,7 @@ uniform sampler2D blurTex;
 uniform sampler2D clearTex;
 uniform sampler2D lensTex;
 uniform float clarityScale;
-uniform float seconds;
+uniform float minutes;
 varying vec2 vTexel;
 
 float diminish (float x) {
@@ -234,10 +234,10 @@ float smoothDrop (float bound, float exponent, float x) {
 void main (void) {
   vec4 clear = texture2D(clearTex, vTexel);
   vec4 blurry = texture2D(blurTex, vTexel);
-  float rate = 50.;
-  float clockFast = mod(seconds / rate, 1.0);
-  float clockMed = mod(seconds / (rate * 2.), 1.0);
-  float clockSlow = mod(seconds / (rate * 4.), 1.0);
+  float rate = 0.8333;
+  float clockFast = minutes / rate;
+  float clockMed = minutes / (rate * 2.);
+  float clockSlow = minutes / (rate * 4.);
   vec4 lens =
     0.15*texture2D(lensTex,
     // Invert x & y to vary texture:
