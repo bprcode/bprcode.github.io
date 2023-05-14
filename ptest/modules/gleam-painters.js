@@ -422,7 +422,7 @@ painters.initLensCompositor = function () {
   this.uBlurTex = gl.getUniformLocation(this.program, 'blurTex')
   this.uClearTex = gl.getUniformLocation(this.program, 'clearTex')
   this.uLensTex = gl.getUniformLocation(this.program, 'lensTex')
-  this.uMinutes = gl.getUniformLocation(this.program, 'minutes')
+  this.uCloudPhase = gl.getUniformLocation(this.program, 'cloudPhase')
   this.uClarityScale = gl.getUniformLocation(this.program, 'clarityScale')
 
   gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo)
@@ -469,9 +469,10 @@ painters.initLensCompositor = function () {
 painters.drawCompositor = function () {
   /** @type {WebGLRenderingContext} */
   const gl = this.gl
-  // Periodically reset the time counter to retain granularity
-  // within the GLSL mediump range:
-  gl.uniform1f(this.uMinutes, (this.dt / 60000) % 60)
+
+  const cloudPeriod = 50000
+
+  gl.uniform1f(this.uCloudPhase, (this.dt % cloudPeriod) / cloudPeriod)
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   gl.viewport(0, 0, this.shared.res, this.shared.res)

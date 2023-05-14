@@ -214,7 +214,7 @@ uniform sampler2D blurTex;
 uniform sampler2D clearTex;
 uniform sampler2D lensTex;
 uniform float clarityScale;
-uniform float minutes;
+uniform float cloudPhase;
 varying vec2 vTexel;
 
 float diminish (float x) {
@@ -235,9 +235,9 @@ void main (void) {
   vec4 clear = texture2D(clearTex, vTexel);
   vec4 blurry = texture2D(blurTex, vTexel);
   float rate = 0.8333;
-  float clockFast = minutes / rate;
-  float clockMed = minutes / (rate * 2.);
-  float clockSlow = minutes / (rate * 4.);
+  float clockFast = cloudPhase;
+  float clockMed = cloudPhase * 2.;
+  float clockSlow = cloudPhase * 4.;
   vec4 lens =
     0.15*texture2D(lensTex,
     // Invert x & y to vary texture:
