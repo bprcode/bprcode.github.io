@@ -216,6 +216,7 @@ uniform sampler2D lensTex;
 uniform float clarityScale;
 uniform float cloudPhase;
 varying vec2 vTexel;
+const float tau = 6.283185;
 
 float diminish (float x) {
   return -1. / (x + 1.) + 1.;
@@ -234,22 +235,31 @@ float smoothDrop (float bound, float exponent, float x) {
 void main (void) {
   vec4 clear = texture2D(clearTex, vTexel);
   vec4 blurry = texture2D(blurTex, vTexel);
-  float rate = 0.8333;
-  float clockFast = cloudPhase;
-  float clockMed = cloudPhase * 2.;
-  float clockSlow = cloudPhase * 4.;
+
+  float osc = cos(100.*tau * cloudPhase);
+  float cloudAngle = tau * -0.125;
+  vec2 cloudDir1 = -vec2(cos(cloudAngle), sin(cloudAngle))
+                    + 0.0*osc * -vec2(cos(cloudAngle), -sin(cloudAngle));
+
+  const float cloudScale1 = 1.;
+  const float cloudScale2 = 3.;
+  const float cloudScale3 = 6.;
+  // In order to stay in sync with the modular timer,
+  // texture displacement frequencies must be integers:
+  vec2 driftFreq1 = vec2(15., -12.);
+  vec2 driftFreq2 = vec2(-7., 3.);
+  vec2 driftFreq3 = vec2(-2., 12.);
+
   vec4 lens =
-    0.15*texture2D(lensTex,
-    // Invert x & y to vary texture:
-    vec2( -vTexel.x / 1.5 - clockSlow,
-          -vTexel.y / 1.5 + clockSlow))
-    + 0.8*texture2D(lensTex,
-    // Switch x & y to vary texture:
-    vec2( vTexel.y / 3.,
-          vTexel.x / 3. - clockMed))
-    + 2.45*texture2D(lensTex,
-      vec2( vTexel.x / 6.,
-            vTexel.y / 6. + clockFast))
+    // Furthest (smallest-scale) cloud pane:
+    + 0.*0.1*texture2D(lensTex,
+      (vTexel / cloudScale1) + driftFreq1 * cloudPhase)
+    // Midground cloud pane:
+    + 0.55*texture2D(lensTex,
+      (-vTexel / cloudScale2) - driftFreq2 * cloudPhase)
+    // Closest (largest-scale) cloud pane:
+    + 2.25*texture2D(lensTex,
+      (vTexel / cloudScale3) + driftFreq3 * cloudPhase)
     ;
 
   vec4 mixed = mix(blurry, clear, clear.a * clarityScale);
@@ -268,9 +278,10 @@ void main (void) {
 
   // Weight the cloud color components to favor red light:
   gl_FragColor =
-    mixed
-    + vec4(mixed.r, mixed.g*0.5, mixed.b*0.8, mixed.a)
-      * boost * pow(signal,1.) * pow(dropCloud,1.3);
+  vec4(dropCloud);
+    // mixed
+    // + vec4(mixed.r, mixed.g*0.5, mixed.b*0.8, mixed.a)
+    //   * boost * pow(signal,1.) * pow(dropCloud,1.3);
 }
 `
 

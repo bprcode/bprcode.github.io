@@ -470,7 +470,7 @@ painters.drawCompositor = function () {
   /** @type {WebGLRenderingContext} */
   const gl = this.gl
 
-  const cloudPeriod = 50000
+  const cloudPeriod = 0.5 * 60000
 
   gl.uniform1f(this.uCloudPhase, (this.dt % cloudPeriod) / cloudPeriod)
 
