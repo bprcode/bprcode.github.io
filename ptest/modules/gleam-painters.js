@@ -471,7 +471,7 @@ painters.drawCompositor = function () {
   const gl = this.gl
   // Periodically reset the time counter to retain granularity
   // within the GLSL mediump range:
-  gl.uniform1f(this.uSeconds, (this.dt / 1000) % 400)
+  gl.uniform1f(this.uSeconds, ((this.dt / 1000)+300) % 400)
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   gl.viewport(0, 0, this.shared.res, this.shared.res)

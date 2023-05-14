@@ -13,7 +13,7 @@ document.querySelector('.noscript-notice').classList.add('hidden')
 
 export const log = console.log.bind(console)
 const el = document.getElementById.bind(document)
-
+console.warn('debug -- todo: fix fog granularity breakdown bug on mobile')
 export const state = {
   animationSpeeds: [],
   // Lighting object storing color and direction of all current light sources:
