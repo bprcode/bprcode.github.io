@@ -287,9 +287,10 @@ void main (void) {
   float boost = 20. * smoothDrop(1., 0.2, luminance);
 
   gl_FragColor =
-      mixed
-      + vec4(mixed.r, mixed.g*0.45, mixed.b*0.8, mixed.a) *
-      boost*pow(signal,1.)*pow(dropCloud,1.3)
+      vec4(dropCloud)
+      // mixed
+      // + vec4(mixed.r, mixed.g*0.45, mixed.b*0.8, mixed.a) *
+      // boost*pow(signal,1.)*pow(dropCloud,1.3)
     // mixed * (1. + boost*pow(signal,1.)*pow(dropCloud,1.3))
     ;
 }
