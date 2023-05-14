@@ -820,8 +820,8 @@ function shuffleUpcoming () {
 }
 
 function startDemo () {
-  const duration = 3000
-  const holdTime = 18000
+  const duration = 2000
+  const holdTime = 20000
   const zeroVelocities = Array(12).fill(0)
 
   shuffleUpcoming()

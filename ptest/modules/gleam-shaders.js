@@ -221,34 +221,52 @@ float diminish (float x) {
   return -1. / (x + 1.) + 1.;
 }
 
+// Variable extra-smooth downward step:
+// https://www.desmos.com/calculator/mxoykritdy
+float smoothDrop (float bound, float exponent, float x) {
+  float w = x / bound;
+  float smoothed = w*w*w* (6.*w*w - 15.*w + 10.);
+  return clamp(
+      1. - pow(w, exponent),
+    0., 1.);
+}
+
 void main (void) {
   vec4 clear = texture2D(clearTex, vTexel);
   vec4 blurry = texture2D(blurTex, vTexel);
-  float rate = 45000.;
-  float clock = mod(time, rate) / rate;
-  float clock2 = mod(time, 2. * rate) / (2. * rate);
+  float rate = 50000.;
+  float clockSlow = mod(time, 4. * rate) / (4. * rate);
+  float clockMed = mod(time, 2. * rate) / (2. * rate);
+  float clockFast = mod(time, rate) / rate;
   vec4 lens =
-    texture2D(lensTex,
-    vec2( vTexel.x / 4. - clock2,
-          vTexel.y / 4.))
-    + texture2D(lensTex,
-      vec2( vTexel.x / 8.,
-            vTexel.y / 8. + clock))
+    0.15*texture2D(lensTex,
+    vec2( -vTexel.x / 1.5 - clockSlow,
+          -vTexel.y / 1.5 + clockSlow))
+    + 0.8*texture2D(lensTex,
+    // intentionally swap x & y to vary texture:
+    vec2( vTexel.y / 3. - clockMed,
+          vTexel.x / 3.))
+    + 2.45*texture2D(lensTex,
+      vec2( vTexel.x / 6.,
+            vTexel.y / 6. + clockFast))
     ;
 
   vec4 mixed = mix(blurry, clear, clear.a * clarityScale);
-  float squaredBrightness =
-      0.299 * blurry.r * blurry.r
-    + 0.587 * blurry.g * blurry.g
-    + 0.114 * blurry.b * blurry.b;
+  float luminance =
+      0.2126 * blurry.r
+    + 0.7152 * blurry.g
+    + 0.0722 * blurry.b;
 
-  float signal = .5*cos(3.1415926535 * squaredBrightness) + .5;
+  float signal = smoothDrop(1., 1., luminance);
 
-  // actually a very nice cloud effect:
+  // Soft cloud effect:
   float soft = pow(1.5*diminish(lens.a), 3.);
-  float cloud = pow(signal, 2.) * pow(lens.a, 3.);
+
+  float dropCloud = smoothDrop(1., 0.45, soft);
+  float boost = 20. * smoothDrop(1., 0.2, luminance);
+
   gl_FragColor =
-    mixed *(1.+ 2.*pow(signal * 2. * soft, 2.))
+    mixed * (1. + boost*pow(signal,1.)*pow(dropCloud,1.3))
     ;
 }
 `

@@ -26,11 +26,11 @@ body {
   background-color: #000;
   background-image:
     radial-gradient(230vw 30vh at 55vw 112vh, #000 45%, transparent),
-    radial-gradient(230vw 200vh at 55vw 112vh, #000, #020204 35%, #30268a 98%)
+    radial-gradient(230vw 200vh at 55vw 112vh, #000, #020204 35%, #403866 98%)
     ;
   background-image:
     radial-gradient(230lvw 30lvh at 55lvw 112lvh, #000 45%, transparent),
-    radial-gradient(230lvw 200lvh at 55lvw 112lvh, #000, #020204 35%, #30268a 98%)
+    radial-gradient(230lvw 200lvh at 55lvw 112lvh, #000, #020204 35%, #403866 98%)
     ;
   background-size: 100vw 100vh;
   background-size: 100lvw 100lvh;
@@ -119,43 +119,6 @@ html {
     /* compensate for the navigation bar on narrow devices */
     margin-top: -15vh;
     margin-top: -15lvh;
-  }
-}
-
-.cloud-overlay {
-  position: absolute;
-  top: 0px;
-  width: 100vw; width: 100lvw;
-  height: 25vw; height: 25lvw;
-  background-image: url(./alpha-cloud-1-1024.png);
-  background-size: 3072px;
-  opacity: 0.15;
-  mix-blend-mode: overlay;
-}
-
-.noise-texture {
-  border: 3px dashed orange;
-  pointer-events: none;
-  position: absolute;
-  top: 0px;
-  width: min(700px, 100vw); width: min(700px, 100lvw);
-  height: min(700px, 100vw); height: min(700px, 100lvw);
-  background-image: url(./noise-test.png);
-  background-repeat: no-repeat;
-  background-size: 100%;
-
-  animation: fade-in-out 7s alternate infinite;
-}
-
-@keyframes fade-in-out {
-  0% {
-    opacity: 0;
-  }
-  75% {
-    opacity: 0;
-  }
-  90% {
-    opacity: 1;
   }
 }
 
