@@ -469,9 +469,9 @@ painters.initLensCompositor = function () {
 painters.drawCompositor = function () {
   /** @type {WebGLRenderingContext} */
   const gl = this.gl
-  // Modular divide by 2^14 due to the upper bound floating-point
-  // range of GLSL mediump values:
-  gl.uniform1f(this.uSeconds, (this.dt / 1000) % 16384)
+  // Periodically reset the time counter to retain granularity
+  // within the GLSL mediump range:
+  gl.uniform1f(this.uSeconds, (this.dt / 1000) % 400)
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   gl.viewport(0, 0, this.shared.res, this.shared.res)

@@ -234,7 +234,7 @@ float smoothDrop (float bound, float exponent, float x) {
 void main (void) {
   vec4 clear = texture2D(clearTex, vTexel);
   vec4 blurry = texture2D(blurTex, vTexel);
-  float rate = 40.;
+  float rate = 50.;
   float clockFast = seconds / rate;
   float clockMed = seconds / (rate * 2.);
   float clockSlow = seconds / (rate * 4.);
