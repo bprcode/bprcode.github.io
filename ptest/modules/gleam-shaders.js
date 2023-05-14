@@ -235,9 +235,9 @@ void main (void) {
   vec4 clear = texture2D(clearTex, vTexel);
   vec4 blurry = texture2D(blurTex, vTexel);
   float rate = 50.;
-  float clockFast = seconds / rate;
-  float clockMed = seconds / (rate * 2.);
-  float clockSlow = seconds / (rate * 4.);
+  float clockFast = mod(seconds / rate, 1.0);
+  float clockMed = mod(seconds / (rate * 2.), 1.0);
+  float clockSlow = mod(seconds / (rate * 4.), 1.0);
   vec4 lens =
     0.15*texture2D(lensTex,
     // Invert x & y to vary texture:
