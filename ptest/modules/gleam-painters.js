@@ -422,8 +422,13 @@ painters.initLensCompositor = function () {
   this.uBlurTex = gl.getUniformLocation(this.program, 'blurTex')
   this.uClearTex = gl.getUniformLocation(this.program, 'clearTex')
   this.uLensTex = gl.getUniformLocation(this.program, 'lensTex')
-  this.uCloudUV = gl.getUniformLocation(this.program, 'cloudUV')
   this.uClarityScale = gl.getUniformLocation(this.program, 'clarityScale')
+  this.uCloudShiftSmall =
+    gl.getUniformLocation(this.program, 'cloudShiftSmall')
+  this.uCloudShiftMedium =
+    gl.getUniformLocation(this.program, 'cloudShiftMedium')
+  this.uCloudShiftLarge =
+    gl.getUniformLocation(this.program, 'cloudShiftLarge')
 
   gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo)
   gl.enableVertexAttribArray(this.aTexel)
@@ -470,11 +475,12 @@ painters.drawCompositor = function () {
   /** @type {WebGLRenderingContext} */
   const gl = this.gl
 
-  const cloudPeriod = 0.5 * 60000
-
-  // gl.uniform1f(this.uCloudPhase, (this.dt % cloudPeriod) / cloudPeriod)
-  gl.uniform2fv(this.uCloudUV, [
-    (this.dt / -10000) % 1.0, (this.dt / 3000) % 1.0])
+  gl.uniform2fv(this.uCloudShiftSmall, [
+    (this.dt / 220000) % 1.0, (this.dt / -110000) % 1.0])
+  gl.uniform2fv(this.uCloudShiftMedium, [
+    (this.dt / -25000) % 1.0, (this.dt / 48000) % 1.0])
+  gl.uniform2fv(this.uCloudShiftLarge, [
+    (this.dt / -280000) % 1.0, (this.dt / 45000) % 1.0])
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   gl.viewport(0, 0, this.shared.res, this.shared.res)

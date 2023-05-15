@@ -214,7 +214,9 @@ uniform sampler2D blurTex;
 uniform sampler2D clearTex;
 uniform sampler2D lensTex;
 uniform float clarityScale;
-uniform vec2 cloudUV;
+uniform vec2 cloudShiftSmall;
+uniform vec2 cloudShiftMedium;
+uniform vec2 cloudShiftLarge;
 varying vec2 vTexel;
 
 float diminish (float x) {
@@ -236,14 +238,9 @@ void main (void) {
   vec4 blurry = texture2D(blurTex, vTexel);
 
   vec4 lens =
-    // Furthest (smallest-scale) cloud pane:
-    // + 0.*0.1*texture2D(lensTex,
-    //   (vTexel / cloudScale1) + driftFreq1 * cloudPhase)
-    // // Midground cloud pane:
-    // + 0.55*texture2D(lensTex,
-    //   (-vTexel / cloudScale2) - driftFreq2 * cloudPhase)
-    // Closest (largest-scale) cloud pane:
-    + 2.25*texture2D(lensTex, vTexel + cloudUV)
+    + 0.2*texture2D(lensTex, vTexel / 3. + cloudShiftSmall)
+    + 0.65*texture2D(lensTex, -vTexel / 3.5 - cloudShiftMedium)
+    + 2.2*texture2D(lensTex, vTexel / 6.5 + cloudShiftLarge)
     ;
 
   vec4 mixed = mix(blurry, clear, clear.a * clarityScale);
