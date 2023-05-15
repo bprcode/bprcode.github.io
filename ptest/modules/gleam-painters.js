@@ -476,11 +476,11 @@ painters.drawCompositor = function () {
   const gl = this.gl
 
   gl.uniform2fv(this.uCloudShiftSmall, [
-    (this.dt / 220000) % 1.0, (this.dt / -110000) % 1.0])
+    (this.dt / 120000) % 1.0, (this.dt / -95000) % 1.0])
   gl.uniform2fv(this.uCloudShiftMedium, [
-    (this.dt / -25000) % 1.0, (this.dt / 48000) % 1.0])
+    (this.dt / -37000) % 1.0, (this.dt / 120000) % 1.0])
   gl.uniform2fv(this.uCloudShiftLarge, [
-    (this.dt / -280000) % 1.0, (this.dt / 45000) % 1.0])
+    (this.dt / -500000) % 1.0, (this.dt / 65000) % 1.0])
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   gl.viewport(0, 0, this.shared.res, this.shared.res)
