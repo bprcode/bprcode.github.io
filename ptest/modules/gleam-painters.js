@@ -422,7 +422,7 @@ painters.initLensCompositor = function () {
   this.uBlurTex = gl.getUniformLocation(this.program, 'blurTex')
   this.uClearTex = gl.getUniformLocation(this.program, 'clearTex')
   this.uLensTex = gl.getUniformLocation(this.program, 'lensTex')
-  this.uCloudPhase = gl.getUniformLocation(this.program, 'cloudPhase')
+  this.uCloudUV = gl.getUniformLocation(this.program, 'cloudUV')
   this.uClarityScale = gl.getUniformLocation(this.program, 'clarityScale')
 
   gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo)
@@ -472,7 +472,9 @@ painters.drawCompositor = function () {
 
   const cloudPeriod = 0.5 * 60000
 
-  gl.uniform1f(this.uCloudPhase, (this.dt % cloudPeriod) / cloudPeriod)
+  // gl.uniform1f(this.uCloudPhase, (this.dt % cloudPeriod) / cloudPeriod)
+  gl.uniform2fv(this.uCloudUV, [
+    (this.dt / -10000) % 1.0, (this.dt / 3000) % 1.0])
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   gl.viewport(0, 0, this.shared.res, this.shared.res)

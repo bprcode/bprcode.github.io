@@ -214,9 +214,8 @@ uniform sampler2D blurTex;
 uniform sampler2D clearTex;
 uniform sampler2D lensTex;
 uniform float clarityScale;
-uniform float cloudPhase;
+uniform vec2 cloudUV;
 varying vec2 vTexel;
-const float tau = 6.283185;
 
 float diminish (float x) {
   return -1. / (x + 1.) + 1.;
@@ -236,30 +235,15 @@ void main (void) {
   vec4 clear = texture2D(clearTex, vTexel);
   vec4 blurry = texture2D(blurTex, vTexel);
 
-  float osc = cos(100.*tau * cloudPhase);
-  float cloudAngle = tau * -0.125;
-  vec2 cloudDir1 = -vec2(cos(cloudAngle), sin(cloudAngle))
-                    + 0.0*osc * -vec2(cos(cloudAngle), -sin(cloudAngle));
-
-  const float cloudScale1 = 1.;
-  const float cloudScale2 = 3.;
-  const float cloudScale3 = 6.;
-  // In order to stay in sync with the modular timer,
-  // texture displacement frequencies must be integers:
-  vec2 driftFreq1 = vec2(15., -12.);
-  vec2 driftFreq2 = vec2(-7., 3.);
-  vec2 driftFreq3 = vec2(-2., 12.);
-
   vec4 lens =
     // Furthest (smallest-scale) cloud pane:
-    + 0.*0.1*texture2D(lensTex,
-      (vTexel / cloudScale1) + driftFreq1 * cloudPhase)
-    // Midground cloud pane:
-    + 0.55*texture2D(lensTex,
-      (-vTexel / cloudScale2) - driftFreq2 * cloudPhase)
+    // + 0.*0.1*texture2D(lensTex,
+    //   (vTexel / cloudScale1) + driftFreq1 * cloudPhase)
+    // // Midground cloud pane:
+    // + 0.55*texture2D(lensTex,
+    //   (-vTexel / cloudScale2) - driftFreq2 * cloudPhase)
     // Closest (largest-scale) cloud pane:
-    + 2.25*texture2D(lensTex,
-      (vTexel / cloudScale3) + driftFreq3 * cloudPhase)
+    + 2.25*texture2D(lensTex, vTexel + cloudUV)
     ;
 
   vec4 mixed = mix(blurry, clear, clear.a * clarityScale);
