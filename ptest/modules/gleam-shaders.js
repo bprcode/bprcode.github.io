@@ -259,10 +259,9 @@ void main (void) {
 
   // Weight the cloud color components to favor red light:
   gl_FragColor =
-  // vec4(dropCloud);
     mixed
-    + vec4(mixed.r*0.8 + mixed.g*0.3 + mixed.b*0.2,
-      mixed.g*0.5,
+    + vec4(mixed.r*0.7 + mixed.g*0.4 + mixed.b*0.2,
+      mixed.g*0.5 +mixed.r *0.15,
       mixed.b*0.8,
       mixed.a)
       * boost * pow(signal,1.) * pow(dropCloud, 1.3);
