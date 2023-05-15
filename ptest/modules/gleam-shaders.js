@@ -239,8 +239,8 @@ void main (void) {
 
   vec4 lens =
     + 0.25*texture2D(lensTex, vTexel / 3. + cloudShiftSmall)
-    + 0.9*texture2D(lensTex, -vTexel / 5. - cloudShiftMedium)
-    + 2.45*texture2D(lensTex, vTexel / 7. + cloudShiftLarge)
+    + 0.9*texture2D(lensTex, -vTexel / 4.5 - cloudShiftMedium)
+    + 2.25*texture2D(lensTex, vTexel / 7. + cloudShiftLarge)
     ;
 
   vec4 mixed = mix(blurry, clear, clear.a * clarityScale);
@@ -254,17 +254,18 @@ void main (void) {
   // Soft cloud effect:
   float soft = pow(1.5*diminish(lens.a), 3.);
 
-  float dropCloud = smoothDrop(1., 0.7, soft);
+  float dropCloud = pow(smoothDrop(1., 0.8, soft), 1.3);
   float boost = 18. * smoothDrop(1., 0.2, luminance);
 
   // Weight the cloud color components to favor red light:
   gl_FragColor =
+  // vec4(dropCloud);
     mixed
-    + vec4(mixed.r*0.7 + mixed.g*0.4 + mixed.b*0.2,
-      mixed.g*0.5 +mixed.r *0.15,
-      mixed.b*0.8,
+    + vec4(mixed.r*0.6 + mixed.g*0.3 + mixed.b*0.15,
+      mixed.g*0.4 + mixed.r*0.1,
+      mixed.b*0.5 + mixed.r*0.2,
       mixed.a)
-      * boost * pow(signal,1.) * pow(dropCloud, 1.3);
+      * boost * pow(signal,1.) * dropCloud;
 }
 `
 

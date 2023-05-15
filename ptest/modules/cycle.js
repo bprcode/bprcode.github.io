@@ -845,10 +845,10 @@ function startDemo () {
     state.countdowns.push({
       callback: () => {
         beginLightingTransition(
-          state.lighting, nextAnimation.lighting, duration * 1.5
+          state.lighting, nextAnimation.lighting, duration * 2
         )
       },
-      remaining: duration * 2/3
+      remaining: duration
     })
 
     state.countdowns.push({
