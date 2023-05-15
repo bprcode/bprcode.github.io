@@ -206,8 +206,8 @@ void main (void) {
 `
 
 // Final stage of rendering pipeline, producing a weighted mix of
-// the blurry and clear textures, overlaid with a variable lens texture
-shaders.lensCompositorFrag =
+// the blurry and clear textures, overlaid with a cloud texture.
+shaders.texturedCompositorFrag =
 /* glsl */`
 precision mediump float;
 uniform sampler2D blurTex;
@@ -229,7 +229,7 @@ float smoothDrop (float bound, float exponent, float x) {
   float w = x / bound;
   float smoothed = w*w*w* (6.*w*w - 15.*w + 10.);
   return clamp(
-      1. - pow(w, exponent),
+      1. - pow(smoothed, exponent),
     0., 1.);
 }
 
@@ -238,9 +238,9 @@ void main (void) {
   vec4 blurry = texture2D(blurTex, vTexel);
 
   vec4 lens =
-    + 0.25*texture2D(lensTex, vTexel / 3. + cloudShiftSmall)
-    + 0.9*texture2D(lensTex, -vTexel / 4.5 - cloudShiftMedium)
-    + 2.25*texture2D(lensTex, vTexel / 7. + cloudShiftLarge)
+    + 0.35*texture2D(lensTex, vTexel / 3. + cloudShiftSmall)
+    + 0.9*texture2D(lensTex, -vTexel / 4. - cloudShiftMedium)
+    + 2.05*texture2D(lensTex, vTexel / 7. + cloudShiftLarge)
     ;
 
   vec4 mixed = mix(blurry, clear, clear.a * clarityScale);
@@ -249,23 +249,25 @@ void main (void) {
     + 0.7152 * blurry.g
     + 0.0722 * blurry.b;
 
-  float signal = smoothDrop(1., 1., luminance);
+  float signal = pow(smoothDrop(1., 1., luminance), 1.35);
 
   // Soft cloud effect:
   float soft = pow(1.5*diminish(lens.a), 3.);
 
   float dropCloud = pow(smoothDrop(1., 0.8, soft), 1.3);
-  float boost = 18. * smoothDrop(1., 0.2, luminance);
+  float boost = 7. * smoothDrop(1., 0.2, luminance);
 
   // Weight the cloud color components to favor red light:
   gl_FragColor =
+  // vec4(signal);
+  // vec4(boost);
   // vec4(dropCloud);
     mixed
-    + vec4(mixed.r*0.6 + mixed.g*0.3 + mixed.b*0.15,
-      mixed.g*0.4 + mixed.r*0.1,
-      mixed.b*0.5 + mixed.r*0.2,
+    + vec4(mixed.r*0.5 + mixed.g*0.3 + mixed.b*0.15,
+      mixed.g*0.3 + mixed.r*0.1,
+      mixed.b*0.5 + mixed.r*0.2 + mixed.b*0.15,
       mixed.a)
-      * boost * pow(signal,1.) * dropCloud;
+      * boost * signal * dropCloud;
 }
 `
 

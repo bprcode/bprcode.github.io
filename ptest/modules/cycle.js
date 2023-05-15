@@ -166,10 +166,10 @@ try {
       },
       { // compose the blur (0) and clear (1) textures using depth (2).
         vertexShader: shaders.textureVert,
-        fragmentShader: shaders.lensCompositorFrag,
+        fragmentShader: shaders.texturedCompositorFrag,
         mesh: geometry.texSquare,
-        init: painters.initLensCompositor,
-        draw: painters.drawCompositor
+        init: painters.initTexturedCompositor,
+        draw: painters.drawTexturedCompositor
       },
     ])
 
