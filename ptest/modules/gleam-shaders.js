@@ -254,19 +254,16 @@ void main (void) {
   // Soft cloud effect:
   float soft = pow(1.5*diminish(lens.a), 3.);
 
-  float dropCloud = pow(smoothDrop(1., 0.8, soft), 1.3);
-  float boost = 7. * smoothDrop(1., 0.2, luminance);
+  float dropCloud = pow(smoothDrop(1., 0.8, 1.-soft), 1.3);
+  float boost = 6. * smoothDrop(1., 0.2, luminance);
 
   // Weight the cloud color components to favor red light:
   gl_FragColor =
-  // vec4(signal);
-  // vec4(boost);
-  // vec4(dropCloud);
     mixed
-    + vec4(mixed.r*0.5 + mixed.g*0.3 + mixed.b*0.15,
-      mixed.g*0.3 + mixed.r*0.1,
-      mixed.b*0.5 + mixed.r*0.2 + mixed.b*0.15,
-      mixed.a)
+    + vec4( mixed.r*0.30 + mixed.g*0.40 + mixed.b*0.1,
+            mixed.r*0.10 + mixed.g*0.20,
+            mixed.r*0.15 + mixed.g*0.20 + mixed.b*0.50,
+            mixed.a)
       * boost * signal * dropCloud;
 }
 `
