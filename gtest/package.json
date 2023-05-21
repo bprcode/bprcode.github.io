@@ -1,0 +1,11 @@
+{
+  "name": "cycle",
+  "version": "0.0.2",
+  "description": "Tesseract animation demo",
+  "main": "",
+  "scripts": {
+    "test": "browser-sync start --server --index index.html files ."
+  },
+  "author": "bprcode <bprcode@gmail.com>",
+  "license": "UNLICENSED"
+}
