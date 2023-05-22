@@ -13,7 +13,6 @@ const all = document.querySelectorAll.bind(document)
 console.warn('debug -- check for pixel-off underline in Chrome mobile on link click')
 console.warn('debug -- occasional cloud opacity issue? Possibly resize-related? Or just a weird moment in a transition?')
 console.warn('debug -- n.b. canvas disappears if shrunk to literally zero')
-console.warn('debug -- clicking outside of grid does not trigger click event')
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initialize)
@@ -32,13 +31,16 @@ function initialize () {
   underline.style['right'] = bounds.right - links[links.length - 1]
     .getBoundingClientRect().right + 'px'
 
+  // Apply initial input states:
   setGrabStyle(select('input[name="grab-type"]:checked').value)
+  applyTheaterSetting()
 
-  // Settings pane listeners:
+  // Add settings pane listeners:
   select('.grab-style').addEventListener('input', event => {
-    log(event.target.value)
     setGrabStyle(event.target.value)
   })
+
+  select('.theater-checkbox').addEventListener('input', applyTheaterSetting)
 
   // Underline animation control:
   for (const box of all('.link-box')) {
@@ -106,16 +108,18 @@ function initialize () {
   })
 
   // Single-page link reactions:
-  for (const box of [...all('.link-box'), select('.hamburger')]) {
-    box.addEventListener('click', event => {
-      const shineAnimationTime = 1100
-      const section = box.dataset.section
-      const content = select('.' + section)
-      const shineContainer = content.querySelector('.shine-container')
+  for (const clickable of
+    [select('.gear'), ...all('.link-box')]) {
 
-      content.classList.remove('concealed')
-      content.classList.add('opaque')
-      content.scrollTop = 0
+    clickable.addEventListener('click', event => {
+      const shineAnimationTime = 1100
+      const selector = clickable.dataset.section
+      const section = select('.' + selector)
+      const shineContainer = section.querySelector('.shine-container')
+
+      section.classList.remove('concealed')
+      section.classList.add('opaque')
+      section.scrollTop = 0
 
       if (shineContainer) {
         shineContainer.classList.add('display-block')
@@ -125,29 +129,29 @@ function initialize () {
       }
 
       for (const c of all('.content')) {
-        if (!c.classList.contains(section)) {
+        if (!c.classList.contains(selector)) {
           c.classList.remove('opaque')
           c.classList.add('concealed')
         }
       }
 
-      glint(content.querySelector('.shine'))
+      glint(section.querySelector('.shine'))
 
       // Blur the tesseract rendering to improve text overlay legibility:
-      beginClarityTransition(0, 1000)
+      beginClarityTransition(0, 500)
     })
 
-    box.addEventListener('pointerenter', event => {
+    clickable.addEventListener('pointerenter', event => {
       select('.underline').classList.add('bright-underline')
     })
 
-    box.addEventListener('pointerleave', event => {
+    clickable.addEventListener('pointerleave', event => {
       select('.underline').classList.remove('bright-underline')
     })
   }
 
   // Close content panes upon any click outside of relevant areas:
-  document.body.addEventListener('click', event => {
+  window.addEventListener('click', event => {
     // Check whether the click was within a content section:
     for (const e of all('.content')) {
       if (e.contains(event.target) || e === event.target) {
@@ -159,7 +163,7 @@ function initialize () {
     // Do not close content when clicking a same-page link:
     if (event.target.classList.contains('link-box')
       || event.target.classList.contains('line-link')
-      || select('.hamburger').contains(event.target)) {
+      || select('.gear').contains(event.target)) {
       const q =
         select('.' + event.target.dataset.section
                                 + ' .shine')
@@ -178,13 +182,14 @@ function initialize () {
     }
 
     // Restore the rendering clarity factor to its normal value:
-    beginClarityTransition(1, 1000)
+    beginClarityTransition(1, 1500)
   })
 
   let glintLockout = false
   function glint (shinyElement) {
     if (!shinyElement) { return }
     if (glintLockout) { return }
+
     glintLockout = true
     setTimeout(() => {
       glintLockout = false
@@ -197,5 +202,18 @@ function initialize () {
     setTimeout(() => {
       shinyElement.classList.add('shine-reveal')
     }, 200)
+  }
+
+  function applyTheaterSetting () {
+    if (select('.theater-checkbox:checked')) {
+      select('.name-container').classList.add('fade-out')
+      select('.link-box-container').classList.add('fade-out')
+      select('.gear').classList.add('mostly-hidden')
+
+    } else {
+      select('.name-container').classList.remove('fade-out')
+      select('.link-box-container').classList.remove('fade-out')
+      select('.gear').classList.remove('mostly-hidden')
+    }
   }
 }

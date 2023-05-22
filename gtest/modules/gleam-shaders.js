@@ -297,7 +297,7 @@ void main (void) {
 }
 `
 
-// Vertex project from fourth-dimensional space, applying quaternions:
+// Project from fourth-dimensional space, applying quaternion transforms:
 shaders.projectorVert = 
 /* glsl */ `
 precision mediump float;
@@ -372,7 +372,7 @@ void main (void) {
     vec3(M3 * vec4(unprojected, 1.)), w
   ));
 
-  // Apply 3D model matrix, apply 3D -> 2D perspective projection:
+  // Apply 3D model matrix, then 3D -> 2D perspective projection:
   gl_Position = projection * M3 * v;
 }
 `
