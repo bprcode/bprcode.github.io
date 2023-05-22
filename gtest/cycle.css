@@ -143,13 +143,12 @@ html {
   color: #f000;
   background-color: #0009;
 
-  background-image: linear-gradient(138deg, #aaf4 -70%, #a0a0f005 110%);
+  /* background-image: linear-gradient(138deg, #aaf4 -70%, #a0a0f005 110%); */
   box-shadow:
     -1px -1px 0px #fff4,
     9px 9px 24px -6px #0004;
 
-  transition: color ease-in-out 0.35s;
-  /* transition: opacity ease-in-out 0.35s; */
+  transition: opacity ease-in-out 0.35s;
 }
 
 .opaque {
