@@ -340,12 +340,14 @@ footer {
     #3699c440 87.5%,
     transparent
     );
-  transform: rotate(0deg);
+
+  will-change: transform;
+  transform: translateZ(0) rotate(0deg);
 }
 
 .shine-reveal {
   transition: transform 1.1s cubic-bezier(0.215, 0.610, 0.355, 1.000);
-  transform: rotate(-360deg);
+  transform: translateZ(0) rotate(-360deg);
 }
 
 .opaque ~ .name-container {
