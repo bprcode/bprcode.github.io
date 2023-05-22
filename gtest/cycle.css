@@ -128,8 +128,6 @@ html {
   font-weight: 400;
   font-size: 1.2rem;
   box-shadow: 0px 0px 3px #0aff inset !important;
-
-  will-change: opacity;
 }
 
 .content h1 {
@@ -302,7 +300,7 @@ footer {
 
 .shine-container {
   contain: strict;
-  /*display: none;*/ /* For performance, avoid rendering when not in use,
+  display: none !important; /* For performance, avoid rendering when not in use,
                     temporarily override on reveal. */
   pointer-events: none;
   position: sticky;
@@ -343,7 +341,6 @@ footer {
     transparent
     );
 
-  will-change: transform;
   transform: translateZ(0) rotate(0deg);
 }
 
