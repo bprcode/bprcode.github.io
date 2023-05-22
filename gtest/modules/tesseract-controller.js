@@ -25,6 +25,7 @@ export const state = {
   releasedViewL: new Quaternion,
   releasedViewR: new Quaternion,
   viewSnapT: 1,
+  grabStyle: '3d',
 
   // Model orientation interpolation state
   modelL: new Quaternion,
@@ -870,6 +871,10 @@ function startDemo () {
   }
 }
 
+export function setGrabStyle (style) {
+  state.grabStyle = style
+}
+
 function initListeners () {
   function updateBlurLevel () {
     if (el('main-canvas').clientWidth > 350) {
@@ -924,11 +929,27 @@ function initListeners () {
       const tx = nx * π
       const ty = ny * π
 
-      state.viewL.premultiply([0, Math.sin(tx*.75), 0, Math.cos(tx*.75)])
-      state.viewR.postmultiply([0, -Math.sin(tx*.75), 0, Math.cos(tx*.75)])
+      switch (state.grabStyle) {
+        case '3d':
+          // Global rotation in XZ:
+          state.viewL.premultiply([0, Math.sin(tx*.75), 0, Math.cos(tx*.75)])
+          state.viewR.postmultiply([0, -Math.sin(tx*.75), 0, Math.cos(tx*.75)])
 
-      state.viewL.premultiply([Math.sin(ty*.75), 0, 0, Math.cos(ty*.75)])
-      state.viewR.postmultiply([-Math.sin(ty*.75), 0, 0, Math.cos(ty*.75)])
+          // Global rotation in YZ:
+          state.viewL.premultiply([Math.sin(ty*.75), 0, 0, Math.cos(ty*.75)])
+          state.viewR.postmultiply([-Math.sin(ty*.75), 0, 0, Math.cos(ty*.75)])
+        break
+
+        case '4d':
+          // Global rotation in XW:
+          state.viewL.premultiply([Math.sin(tx*.75), 0, 0, Math.cos(tx*.75)])
+          state.viewR.postmultiply([Math.sin(tx*.75), 0, 0, Math.cos(tx*.75)])
+
+          // Global rotation in ZW:
+          state.viewL.premultiply([0, 0, Math.sin(ty*.75), Math.cos(ty*.75)])
+          state.viewR.postmultiply([0, 0, Math.sin(ty*.75), Math.cos(ty*.75)])
+        break
+      }
 
       state.viewL.normalize()
       state.viewR.normalize()

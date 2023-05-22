@@ -335,7 +335,8 @@ void main (void) {
   const float wNear = 1.0;
   vec4 v = pos;
 
-  // To transform the normals (without using inverse transpose):
+  // This projection pipeline for normals assumes no nonuniform scaling,
+  // avoiding the inverse transpose:
   // Apply qvp (model)
   // Apply qvp (view)
   // Apply just the non-translational part of M3
@@ -345,7 +346,9 @@ void main (void) {
   vec3 n3 = mat3(M3) * vec3(n);
   vNormal = normalize(vec4(n3, n.w));
 
+  // Transform the position vector:
   v = qvp(qModelL, v, qModelR);
+  v = qvp(qViewL, v, qViewR);
   v.w += wOffset;
 
   w = v.w; // pass transformed w-value to fragment shader
@@ -353,25 +356,23 @@ void main (void) {
   vec3 unprojected = vec3(v); // Transformed x, y, z, sans projection.
 
   float s = wNear / (-v.w);
-  mat4 P4to3 = mat4(
+  mat4 Scale4Dto3D = mat4(
     s,  0., 0., 0.,
     0., s,  0., 0.,
     0., 0., s,  0.,
     0., 0., 0., 0.
   );
 
-  v = P4to3 * v;
+  v = Scale4Dto3D * v;
   v.w = 1.;
 
   // Normalizing vWorld4d in the vertex shader rather than fragment shader
   // is slightly inaccurate, but unnoticeably so.
-  vWorld4d = normalize(
-    vec4(vec3(M3 *
-    qvp(qViewL, vec4(unprojected, 1.), qViewR)),
-    w)
-  );
+  vWorld4d = normalize(vec4(
+    vec3(M3 * vec4(unprojected, 1.)), w
+  ));
 
-  v = qvp(qViewL, v, qViewR);
+  // Apply 3D model matrix, apply 3D -> 2D perspective projection:
   gl_Position = projection * M3 * v;
 }
 `
