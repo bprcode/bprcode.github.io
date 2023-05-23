@@ -2,7 +2,7 @@
 // Copyright © 2023 Bryan Rauen.
 // All rights reserved. https://bprcode.github.io/
 
-import { beginClarityTransition, setGrabStyle }
+import { beginClarityTransition, setGrabStyle, logError }
   from "./tesseract-controller.js"
 
 const log = console.log.bind(console)
@@ -13,6 +13,8 @@ const all = document.querySelectorAll.bind(document)
 console.warn('debug -- check for pixel-off underline in Chrome mobile on link click')
 console.warn('debug -- occasional cloud opacity issue? Possibly resize-related? Or just a weird moment in a transition?')
 console.warn('debug -- n.b. canvas disappears if shrunk to literally zero')
+console.warn('debug -- add close box, add fallback behavior for Safari/non dvh height issue')
+console.warn('debug -- hover possibly eating Safari click events?')
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initialize)
@@ -150,8 +152,28 @@ function initialize () {
     })
   }
 
+  function closeAllPanes () {
+    for (const e of all('.content')) {
+      e.classList.remove('opaque')
+      e.classList.add('concealed')
+    }
+
+    for (const e of all('.shine')) {
+      e.classList.remove('shine-reveal')
+    }
+
+    // Restore the rendering clarity factor to its normal value:
+    beginClarityTransition(1, 1500)
+  }
+
+  // Handle close button clicks
+  for (const button of all('.close')) {
+    button.addEventListener('click', closeAllPanes)
+  }
+
   // Close content panes upon any click outside of relevant areas:
   window.addEventListener('click', event => {
+    logError(new Date().toLocaleTimeString() + ' click received')
     // Check whether the click was within a content section:
     for (const e of all('.content')) {
       if (e.contains(event.target) || e === event.target) {
@@ -172,17 +194,7 @@ function initialize () {
       return
     }
 
-    for (const e of all('.content')) {
-      e.classList.remove('opaque')
-      e.classList.add('concealed')
-    }
-
-    for (const e of all('.shine')) {
-      e.classList.remove('shine-reveal')
-    }
-
-    // Restore the rendering clarity factor to its normal value:
-    beginClarityTransition(1, 1500)
+    closeAllPanes()
   })
 
   let glintLockout = false

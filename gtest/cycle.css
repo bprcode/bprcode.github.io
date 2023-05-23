@@ -1,12 +1,13 @@
 html {
   box-sizing: border-box;
+  height: 100%;
 }
 *, *:before, *:after {
   box-sizing: inherit;
 }
 
 * {
-  outline: 1px solid #0f04;
+  box-shadow: 0px 0px 2px #f0a8 inset;
 }
 
 :root {
@@ -53,9 +54,8 @@ body {
   margin: 0px auto;
   padding: 0px;
   display: grid;
-  /* debug -- test Safari fixes */
-  height: 80vh; height: 100dvh;
-  cursor: pointer;
+  /* debug */
+  height: 100%; height: 100dvh;
   width: min(100vw, 1000px); width: min(100lvw, 1000px);
   place-items: center;
   grid-template-areas:
@@ -80,10 +80,10 @@ html::-webkit-scrollbar-thumb,
   background-clip: content-box;
 }
 
-.content::-webkit-scrollbar-thumb:vertical:hover {
+/* .content::-webkit-scrollbar-thumb:vertical:hover {
   background: unset;
   background-color: #77a;
-}
+} */
 
 /* Firefox scrollbar styles */
 html {
@@ -119,6 +119,7 @@ html {
 }
 
 .content {
+  position: relative;
   z-index: 1; /* Stack atop canvas. */
   grid-area: name-container / name-container / canvas-container / canvas-container;
   overflow-y: auto;
@@ -137,6 +138,20 @@ html {
 .content h1 {
   margin: 0px;
   margin-top: 1.35rem;
+}
+
+.close {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 36px;
+  height: 36px;
+  background-color: transparent;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='gainsboro' class='bi bi-x' viewBox='0 0 16 16'%3E%3Cpath d='M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: cover;
+  border: none;
+  opacity: 0.5;
 }
 
 .frosted {
@@ -180,7 +195,6 @@ html {
 }
 
 .canvas-container {
-  contain: paint layout;
   grid-area: canvas-container;
   height: 100%;
   width: 100%;
@@ -254,9 +268,10 @@ footer {
   margin-right: 0px;
 }
 
-.link-box:hover a {
+/* debug -- testing Safari click behavior */
+/* .link-box:hover a {
   filter: brightness(120%);
-}
+} */
 
 .link-box:active a {
   color: rgb(155, 82, 103);
@@ -282,15 +297,16 @@ footer {
   height: 1.45em;
 }
 
-.gear:hover {
+/* debug -- testing Safari click behavior */
+/* .gear:hover {
   filter: brightness(120%);
-}
+} */
 
-footer:hover .fade-out,
+/* footer:hover .fade-out,
 footer:hover .mostly-hidden {
   opacity: 1 !important;
   transition: opacity ease-out 0.15s !important;
-}
+} */
 
 .mostly-hidden {
   opacity: 0.15;
@@ -327,7 +343,7 @@ footer:hover .mostly-hidden {
 }
 
 .shine-container {
-  contain: strict;
+  overflow: hidden;
   display: none; /* For performance, avoid rendering when not in use,
                     temporarily override on reveal. */
   pointer-events: none;
