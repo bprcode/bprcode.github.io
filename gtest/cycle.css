@@ -6,7 +6,7 @@ html {
 }
 
 * {
-  /* outline: 1px solid #0f04; */
+  outline: 1px solid #0f04;
 }
 
 :root {
@@ -53,7 +53,9 @@ body {
   margin: 0px auto;
   padding: 0px;
   display: grid;
-  height: 100vh; height: 100dvh;
+  /* debug -- test Safari fixes */
+  height: 80vh; height: 100dvh;
+  cursor: pointer;
   width: min(100vw, 1000px); width: min(100lvw, 1000px);
   place-items: center;
   grid-template-areas:
