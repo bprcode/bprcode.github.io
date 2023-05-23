@@ -112,8 +112,8 @@ html {
   cursor: grab;
   height: min(var(--max-canvas-resolution), 95vmin,
     calc(100vh - var(--name-container-height) - var(--nav-container-height)));
-  height: min(var(--max-canvas-resolution), 95svmin,
-    calc(100svh - var(--name-container-height) - var(--nav-container-height)));
+  /*height: min(var(--max-canvas-resolution), 95svmin,
+    calc(100svh - var(--name-container-height) - var(--nav-container-height))); */
   margin-left: auto;
   margin-right: auto;
 
