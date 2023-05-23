@@ -7,7 +7,7 @@ html {
 }
 
 * {
-  box-shadow: 0px 0px 2px #f0a8 inset;
+  /* box-shadow: 0px 0px 2px #f0a8 inset; */
 }
 
 :root {
@@ -80,10 +80,10 @@ html::-webkit-scrollbar-thumb,
   background-clip: content-box;
 }
 
-/* .content::-webkit-scrollbar-thumb:vertical:hover {
+.content::-webkit-scrollbar-thumb:vertical:hover {
   background: unset;
   background-color: #77a;
-} */
+}
 
 /* Firefox scrollbar styles */
 html {
@@ -113,8 +113,6 @@ html {
   height: min(var(--max-canvas-resolution), 95vmin, calc(100vh - var(--name-container-height) - var(--nav-container-height)));
   margin-left: auto;
   margin-right: auto;
-
-  box-shadow: 0px 0px 5px #f40f inset;
 }
 
 .content {
@@ -199,7 +197,6 @@ html {
   width: 100%;
   display: grid;
   place-items: center;
-  box-shadow: 0px 0px 5px #00ff inset;
 }
 
 .feedback {
@@ -268,10 +265,9 @@ footer {
   margin-right: 0px;
 }
 
-/* debug -- testing Safari click behavior */
-/* .link-box:hover a {
+.link-box:hover a {
   filter: brightness(120%);
-} */
+}
 
 .link-box:active a {
   color: rgb(155, 82, 103);
@@ -297,16 +293,15 @@ footer {
   height: 1.45em;
 }
 
-/* debug -- testing Safari click behavior */
-/* .gear:hover {
+.gear:hover {
   filter: brightness(120%);
-} */
+}
 
-/* footer:hover .fade-out,
+footer:hover .fade-out,
 footer:hover .mostly-hidden {
   opacity: 1 !important;
   transition: opacity ease-out 0.15s !important;
-} */
+}
 
 .mostly-hidden {
   opacity: 0.15;

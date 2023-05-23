@@ -14,7 +14,7 @@ console.warn('debug -- check for pixel-off underline in Chrome mobile on link cl
 console.warn('debug -- occasional cloud opacity issue? Possibly resize-related? Or just a weird moment in a transition?')
 console.warn('debug -- n.b. canvas disappears if shrunk to literally zero')
 console.warn('debug -- add close box, add fallback behavior for Safari/non dvh height issue')
-console.warn('debug -- hover possibly eating Safari click events?')
+console.warn('debug -- Safari not registering click transitions between pages consistently')
 console.warn('debug -- cloud texture burn / Safari + ember iris?')
 
 if (document.readyState === 'loading') {
@@ -180,7 +180,6 @@ function initialize () {
 
   // Close content panes upon any click outside of relevant areas:
   window.addEventListener('click', event => {
-    logError(new Date().toLocaleTimeString() + ' click received')
     // Check whether the click was within a content section:
     for (const e of all('.content')) {
       if (e.contains(event.target) || e === event.target) {
