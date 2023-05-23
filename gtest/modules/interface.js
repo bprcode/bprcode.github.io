@@ -173,9 +173,9 @@ function initialize () {
   }
 
   // debug
-  // document.body.addEventListener('click', event => {
-  //   logError('Body click received')
-  // })
+  document.body.addEventListener('click', event => {
+    logError('Body click received')
+  })
 
   // Close content panes upon any click outside of relevant areas:
   window.addEventListener('click', event => {
