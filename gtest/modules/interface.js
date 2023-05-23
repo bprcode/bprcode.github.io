@@ -15,6 +15,7 @@ console.warn('debug -- occasional cloud opacity issue? Possibly resize-related? 
 console.warn('debug -- n.b. canvas disappears if shrunk to literally zero')
 console.warn('debug -- add close box, add fallback behavior for Safari/non dvh height issue')
 console.warn('debug -- hover possibly eating Safari click events?')
+console.warn('debug -- cloud texture burn / Safari + ember iris?')
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initialize)
@@ -170,6 +171,11 @@ function initialize () {
   for (const button of all('.close')) {
     button.addEventListener('click', closeAllPanes)
   }
+
+  // debug
+  document.body.addEventListener('click', event => {
+    logError('Body click received')
+  })
 
   // Close content panes upon any click outside of relevant areas:
   window.addEventListener('click', event => {
