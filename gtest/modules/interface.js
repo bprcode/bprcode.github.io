@@ -172,10 +172,10 @@ function initialize () {
     button.addEventListener('click', closeAllPanes)
   }
 
-  // debug
   document.body.addEventListener('click', event => {
-    console.log('Test Safari workaround')
-    // logError('Body click received')
+    // WARNING: If this listener is removed, older versions of Safari
+    // will display a number of bugs, including pathological layout
+    // rendering and a failure of other click event listeners.
   })
 
   // Close content panes upon any click outside of relevant areas:
