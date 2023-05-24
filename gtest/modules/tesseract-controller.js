@@ -41,12 +41,13 @@ export const state = {
 
   // Factor used to scale the rendering clarity from 1.0 (normal clarity)
   // down to 0.0 (maximum blur)
-  clarityScale: 1.0,
+  clarityScale: 0.0,
 
   animation1: { keepAnimating: true },
   animationSet: [],
   animationCycle: {},
   upcomingAnimations: [],
+  currentAnimation: {},
 
   // An array of { remaining, callback } objects used to queue actions,
   // based on a timer which pauses while the user is interacting with
@@ -660,6 +661,15 @@ function beginLightingTransition (initial, final, duration = 2000) {
   }
 }
 
+export function beginFadeIn (duration = 3000) {
+  beginClarityTransition(
+    1, duration/2)
+  beginLightingTransition(
+    new Lighting, state.currentAnimation.lighting, duration)
+  beginVelocityTransition(
+    Array(12).fill(0), state.animationSpeeds, duration/4)
+}
+
 /**
  * Return a 12-element array of numbers (matching the 12 dimensions of
  * velocity), which are linearly interpolated between two other such arrays.
@@ -802,23 +812,32 @@ function initAnimationCycler () {
       modelL: Quaternion.parse(entry.Lstring),
       modelR: Quaternion.parse(entry.Rstring),
       animationSpeeds: entry.velocity,
-      lighting: entry.lighting
+      lighting: entry.lighting,
+      active: true
     })
 
   }
 }
 
-function shuffleUpcoming () {
+export function shuffleUpcoming () {
   const shuffle = []
   state.upcomingAnimations = []
 
-  for (let i = 0; i < state.animationSet.length; i++) {
+  const selected = state.animationSet.filter(a => a.active)
+
+  for (let i = 0; i < selected.length; i++) {
     shuffle[i] = i
   }
+
   while (shuffle.length) {
     const n = Math.floor(Math.random() * shuffle.length)
     const index = shuffle.splice(n,1)[0]
-    state.upcomingAnimations.push(state.animationSet[index])
+    state.upcomingAnimations.push(selected[index])
+  }
+
+  // Prevent repeats, if there is more than one element:
+  if (state.currentAnimation === state.upcomingAnimations[0]) {
+    state.upcomingAnimations.push(state.upcomingAnimations.shift())
   }
 }
 
@@ -828,11 +847,13 @@ function startDemo () {
   const zeroVelocities = Array(12).fill(0)
 
   shuffleUpcoming()
-  const firstAnimation = state.upcomingAnimations.pop()
+  const firstAnimation = state.upcomingAnimations.shift()
+  state.currentAnimation = firstAnimation
   state.modelL = Quaternion.from(firstAnimation.modelL)
   state.modelR = Quaternion.from(firstAnimation.modelR)
   state.animationSpeeds = [...firstAnimation.animationSpeeds]
-  state.lighting = firstAnimation.lighting
+  // Turn the lights off for the first appearance:
+  state.lighting = new Lighting
 
   state.countdowns.push({
     remaining: holdTime,
@@ -840,7 +861,9 @@ function startDemo () {
   })
 
   function startNextAnimation () {
-    const nextAnimation = state.upcomingAnimations.pop()
+    const nextAnimation = state.upcomingAnimations.shift()
+    state.currentAnimation = nextAnimation
+
     if (!state.upcomingAnimations.length) { shuffleUpcoming() }
 
     beginOrientationTransition(nextAnimation, duration)

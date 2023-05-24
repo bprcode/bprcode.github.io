@@ -2,8 +2,8 @@
 // Copyright © 2023 Bryan Rauen.
 // All rights reserved. https://bprcode.github.io/
 
-import { beginClarityTransition, setGrabStyle, logError, animationSet }
-  from "./tesseract-controller.js"
+import { beginClarityTransition, setGrabStyle, logError, animationSet,
+  shuffleUpcoming, beginFadeIn } from "./tesseract-controller.js"
 
 const log = console.log.bind(console)
 const el = document.getElementById.bind(document)
@@ -16,7 +16,6 @@ console.warn('debug -- n.b. canvas disappears if shrunk to literally zero')
 console.warn('debug -- add close box, add fallback behavior for Safari/non dvh height issue')
 console.warn('debug -- Safari not registering click transitions between pages consistently')
 console.warn('debug -- cloud texture burn / Safari + ember iris?')
-console.warn('debug -- sticky close button misalignment on Chrome')
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initialize)
@@ -29,6 +28,8 @@ function initialize () {
   let lastMove = 'left'
   let bounds = { left: 0, right: 0, top: 0, bottom: 0 }
   let lastHoveredBox = select('.link-box')
+
+  beginFadeIn(3000)
 
   buildAnimationList()
   updateContainerBounds()
@@ -247,7 +248,36 @@ function buildAnimationList () {
   const ul = select('.ul-animations')
   for (const a of animationSet) {
     const li = document.createElement('li')
-    li.textContent = a.title
+    const label = document.createElement('label')
+    const checkbox = document.createElement('input')
+
+    checkbox.type = 'checkbox'
+    checkbox.checked = true
+    checkbox.dataset.title = a.title
+    checkbox.addEventListener('input', updateAnimationPreferences)
+
+    label.append(checkbox)
+    label.append(a.title)
+    li.append(label)
     ul.append(li)
   }
+}
+
+function updateAnimationPreferences () {
+  const checkboxes = all('.ul-animations input[type="checkbox"]')
+
+  // Ensure at least one animation is selected:
+  let count = 0
+  for (const b of checkboxes) {
+    if (b.checked) { count++ }
+  }
+  if (count === 0) { this.checked = true }
+
+  // Update the active animation list:
+  for (const c of checkboxes) {
+    animationSet.find(a => a.title === c.dataset.title)
+      .active = c.checked
+  }
+
+  shuffleUpcoming()
 }
