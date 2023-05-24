@@ -2,7 +2,7 @@
 // Copyright © 2023 Bryan Rauen.
 // All rights reserved. https://bprcode.github.io/
 
-import { beginClarityTransition, setGrabStyle, logError }
+import { beginClarityTransition, setGrabStyle, logError, animationSet }
   from "./tesseract-controller.js"
 
 const log = console.log.bind(console)
@@ -16,6 +16,7 @@ console.warn('debug -- n.b. canvas disappears if shrunk to literally zero')
 console.warn('debug -- add close box, add fallback behavior for Safari/non dvh height issue')
 console.warn('debug -- Safari not registering click transitions between pages consistently')
 console.warn('debug -- cloud texture burn / Safari + ember iris?')
+console.warn('debug -- sticky close button misalignment on Chrome')
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initialize)
@@ -29,6 +30,7 @@ function initialize () {
   let bounds = { left: 0, right: 0, top: 0, bottom: 0 }
   let lastHoveredBox = select('.link-box')
 
+  buildAnimationList()
   updateContainerBounds()
   const links = all('.link-box a')
   underline.style['right'] = bounds.right - links[links.length - 1]
@@ -233,5 +235,19 @@ function initialize () {
       select('.link-box-container').classList.remove('fade-out')
       select('.gear').classList.remove('mostly-hidden')
     }
+  }
+}
+
+function buildAnimationList () {
+  if (!animationSet.length) {
+    logError('Animation data not yet available.')
+    return
+  }
+  
+  const ul = select('.ul-animations')
+  for (const a of animationSet) {
+    const li = document.createElement('li')
+    li.textContent = a.title
+    ul.append(li)
   }
 }

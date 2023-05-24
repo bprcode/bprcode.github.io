@@ -138,17 +138,29 @@ html {
 }
 
 .close {
-  position: absolute;
-  right: 5px;
-  top: 5px;
+  position: sticky;
+  margin-left: calc(100% - 24px);
+  top: 8px;
   width: 36px;
   height: 36px;
   background-color: transparent;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='gainsboro' class='bi bi-x' viewBox='0 0 16 16'%3E%3Cpath d='M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-size: cover;
-  border: none;
+  background-color: #0006;
+  border: 1px solid #dcdcdc60;
+  border-radius: 20%;
   opacity: 0.5;
+  box-shadow: 0px 0px 15px #000 inset;
+}
+
+.close:hover {
+  filter: brightness(150%);
+}
+
+/* Compensate for sticky close box */
+.content h1 {
+  margin-top: -22px;
 }
 
 .frosted {
@@ -161,7 +173,7 @@ html {
 
   background-image: linear-gradient(138deg, #aaf4 -70%, #a0a0f005 110%);
   box-shadow:
-    0px 0px 1px var(--accent-color) inset,
+    0px 0px 1px 1px #0af8 inset,
     9px 9px 24px -6px #0004;
 
   transition: opacity ease-in-out 0.35s;
@@ -343,6 +355,7 @@ footer:hover .mostly-hidden {
                     temporarily override on reveal. */
   pointer-events: none;
   position: sticky;
+  /* position: absolute; */
   top: 0px;
   width: 100vw; width: 100lvw;
   /*  This ensures the overlaid animation covers at least the entire visible

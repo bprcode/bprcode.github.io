@@ -54,6 +54,8 @@ export const state = {
   countdowns: []
 }
 
+export const animationSet = state.animationSet
+
 export function logError (message) {
   document.querySelector('.feedback').style['visibility'] = 'visible'
   document.querySelector('.feedback').textContent += message + '\n'
