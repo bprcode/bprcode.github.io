@@ -262,7 +262,7 @@ void main (void) {
       0.30,   0.15,   0.20,   0.00, // R  Input
       0.40,   0.05,   0.20,   0.00, // G
       0.10,   0.25,   0.30,   0.00, // B
-      0.00,   0.00,   0.00,   1.00  // α
+      0.00,   0.00,   0.00,   0.00  // α
   );
 
   // Weight the cloud color components to favor red light:

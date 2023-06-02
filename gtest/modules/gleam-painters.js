@@ -599,6 +599,7 @@ export class Lighting {
     ]
 
     this.glow = new Lighting.Light
+    this.glow.rgba[3] = 0.05 // Avoid clipping in Chrome's alpha compositor
     this.membrane = new Lighting.Light
 
     this.nearFrameColor = [0,0,0,0]

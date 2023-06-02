@@ -970,9 +970,9 @@ function initListeners () {
           state.viewL.premultiply([Math.sin(tx*.75), 0, 0, Math.cos(tx*.75)])
           state.viewR.postmultiply([Math.sin(tx*.75), 0, 0, Math.cos(tx*.75)])
 
-          // Global rotation in ZW:
-          state.viewL.premultiply([0, 0, Math.sin(ty*.75), Math.cos(ty*.75)])
-          state.viewR.postmultiply([0, 0, Math.sin(ty*.75), Math.cos(ty*.75)])
+          // Global rotation in YW:
+          state.viewL.premultiply([0, Math.sin(-ty*.75), 0, Math.cos(-ty*.75)])
+          state.viewR.postmultiply([0, Math.sin(-ty*.75), 0, Math.cos(-ty*.75)])
         break
       }
 

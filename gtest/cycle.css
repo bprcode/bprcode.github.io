@@ -7,15 +7,15 @@ html {
 }
 
 * {
-  /* box-shadow: 0px 0px 2px #f0a8 inset; */
+  /* box-shadow: 0px 0px 2px rgba(100, 100, 100, 0.533) inset; */
 }
 
 :root {
-  --light-text: rgb(221, 199, 235);
-  --brighter-text: rgb(241, 225, 252);
+  --light-text: rgb(233, 194, 237);
+  --brighter-text: rgb(255, 230, 250);
   --content-top-margin: 0.6rem;
-  --content-bottom-margin: 0.8rem;
-  --content-padding: 1.35rem;
+  --content-bottom-margin: 0.9rem;
+  --content-padding: 1.1em;
   --cover-dimension: 283vmax; /* 2√2 to cover the entire viewport at a 45° angle */
   --cover-dimension: 283lvmax;
   --scrollbar-background: transparent;
@@ -27,6 +27,8 @@ html {
 
   --interface-edge: 0px 0px 1px #0afc inset;
   --accent-color: #0af;
+
+  --landscape-padding: 0.3rem;
 }
 
 .hidden {
@@ -48,7 +50,7 @@ body {
   background-repeat: no-repeat;
 
   font-family: 'Catamaran', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-size: 1rem; /* Minimum to display name tag without overflow at vw = 250px. */
+  font-size: 1.0rem;
   color: var(--light-text);
 
   margin: 0px auto;
@@ -110,7 +112,11 @@ html {
 .render-canvas {
   touch-action: none;
   cursor: grab;
-  height: min(var(--max-canvas-resolution), 95vmin, calc(100vh - var(--name-container-height) - var(--nav-container-height)));
+  height: min(
+    var(--max-canvas-resolution),
+    95vmin,
+    calc(100vh - var(--name-container-height) - var(--nav-container-height))
+  );
   margin-left: auto;
   margin-right: auto;
 }
@@ -121,7 +127,7 @@ html {
   grid-area: name-container / name-container / canvas-container / canvas-container;
   overflow-y: auto;
   overflow-x: hidden;
-  width:min(85vw, 50rem); width:min(85lvw, 50rem);
+  width:min(95vw, 50rem); width:min(95lvw, 50rem);
   max-height: calc(100%
     - var(--content-top-margin)
     - var(--content-bottom-margin));
@@ -129,7 +135,7 @@ html {
   padding-right: var(--content-padding);
   font-family: 'Catamaran', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-weight: 400;
-  font-size: 1.2rem;
+  font-size: 1.0em;
 }
 
 .content h1 {
@@ -148,7 +154,7 @@ html {
   background-repeat: no-repeat;
   background-size: cover;
   background-color: #0006;
-  border: 1px solid #dcdcdc60;
+  border: 1px solid #dacaca60;
   border-radius: 20%;
   opacity: 0.5;
   box-shadow: 0px 0px 15px #000 inset;
@@ -169,7 +175,7 @@ html {
      delegated to the shaders running the background animation. */
   border-radius: 10px;
   color: #f000;
-  background-color: #0009;
+  background-color: #000b;
 
   background-image: linear-gradient(138deg, #aaf4 -70%, #a0a0f005 110%);
   box-shadow:
@@ -238,21 +244,43 @@ footer {
   white-space: nowrap;
   display: flex;
   justify-content: space-between;
-  padding-left: 0.9rem;
-  padding-right: 0.59rem;
   transition: opacity 0.25s ease-out;
+  margin-top: 5px;
 }
 
 .name-tag {
-  color: rgb(191, 188, 247);
+  color: #98b6fb;
+  position: relative;
   
   font-weight: 400;
   letter-spacing: 0.065rem;
+  padding-left: 0.7em;
+  text-shadow: 0px 0px 10px #000;
+}
+
+.name-tag::before {
+  content: "";
+  position: absolute;
+  border: 2px #8aadff40 solid;
+  border-radius: 2px;
+  padding: 4px;
+  z-index: -1;
+  top: -0.1em;
+  left: 0.0em;
+  width: 1.6em;
+  height: 1.6em;
+  font-weight: bolder;
+  transform: rotate(45deg);
+}
+
+.name-container:hover .name-tag::before {
+  transform: rotate(405deg);
+  transition: transform 1s ease-in-out;
 }
 
 .small-title {
-  color: #9bacf0;
-  margin-left:0.5rem;
+  color: #8aadff;
+  margin-left:0.7rem;
   letter-spacing: 0.05rem;
   font-weight: 100;
 }
@@ -293,8 +321,9 @@ footer {
 
 .gear {
   cursor: pointer;
-  width: 3.75em;
+  width: 3.5em;
   height: 100%;
+  padding: 0px;
   border: none;
   background-color: transparent;
   color: var(--light-text);
@@ -410,7 +439,23 @@ input {
   accent-color: var(--accent-color);
 }
 
-.grab-style {
+.settings > label,
+.settings > details {
+  margin-top: 0.7em;
+  margin-bottom: 0.7em;
+}
+
+.settings > fieldset {
+  margin-bottom: 0.7em;
+}
+
+.settings > .view-title,
+.settings > .feedback {
+  margin-left: 0.5em;
+}
+
+.grab-style,
+.ul-animations {
   border: none;
   background-color: #0004;
   box-shadow: var(--interface-edge);
@@ -418,10 +463,20 @@ input {
   display: flex;
   flex-direction: column;
   width: fit-content;
+  padding-left: 0.7em;
+  padding-right: 1.2em;
+  padding-top: 0.7em;
+  padding-bottom: 0.7em;
+  margin-left: 0.5em;
 }
 
 .ul-animations {
+  margin-top: 0px;
   list-style: none;
+}
+
+.grab-style input {
+  margin-left: 0px;
 }
 
 @media (orientation: landscape) {
@@ -433,12 +488,13 @@ input {
     grid-template-columns: fit-content(0px) auto;
   }
 
-  /* .render-canvas {
-    height: min(var(--max-canvas-resolution), 95vmin,
-      calc(100vh - var(--nav-container-height)));
-    height: min(var(--max-canvas-resolution), 95svmin,
-      calc(100svh - var(--nav-container-height)));
-  } */
+  .render-canvas {
+    height: min(
+      var(--max-canvas-resolution),
+      95vmin,
+      calc(100vh - var(--nav-container-height))
+    );
+  }
 
   .content {
     grid-area: canvas-container;
@@ -451,5 +507,56 @@ input {
 
   footer {
     justify-content: end;
+  }
+
+  .name-container {
+    padding: 0px calc(0.5*var(--landscape-padding));
+    justify-self: start;
+    margin-top: 0px;
+  }
+
+  .name-tag {
+    padding-left: 1.1em;
+  }
+  
+  .name-tag::before {
+    left: 0.4em;
+  }
+
+  .gear {
+    width: calc(2 * var(--landscape-padding) + 1.45em);
+  }
+}
+
+@media (orientation: landscape) and (min-width: 650px) {
+  :root {
+    --landscape-padding: 1.35rem;
+  }
+
+  .small-title {
+    margin-left: 1.3rem;
+  }
+}
+
+@media (min-width: 320px) {
+  body {
+    font-size: 1.1rem;
+  }
+}
+
+@media (min-width: 370px) {
+  .content {
+    width:min(85vw, 50rem); width:min(85lvw, 50rem);
+  }
+
+  body {
+    font-size: 1.15rem;
+  }
+}
+
+/* Really tiny landscape escape hatch: */
+@media (orientation: landscape) and (max-width: 550px) {
+  .small-title {
+    display: none;
   }
 }
