@@ -29,7 +29,7 @@ html {
   --interface-edge: 0px 0px 1px #0afc inset;
   --accent-color: #0af;
 
-  --landscape-padding: 0.3rem;
+  --landscape-padding: 0.7rem;
 }
 
 .hidden {
@@ -37,7 +37,7 @@ html {
 }
 
 body {
-  box-shadow: 0px 0px 2px rgba(18, 222, 59, 0.845) inset;
+  box-shadow: 0px 0px 2px rgba(222, 222, 18, 0.845) inset;
   background-color: #000;
   background-image:
     radial-gradient(230vw 30vh at 55vw 112vh, #000 45%, transparent),
@@ -492,8 +492,7 @@ input {
     grid-template-areas:
       'canvas-container canvas-container'
       'name-container nav-links';
-    grid-template-rows: 1fr var(--nav-container-height);
-    /* grid-template-rows: 1fr fit-content(0px); */
+    grid-template-rows: 1fr fit-content(0px);
     grid-template-columns: fit-content(0px) auto;
   }
 
@@ -501,7 +500,9 @@ input {
     height: min(
       var(--max-canvas-resolution),
       95vmin,
-      calc(100vh - var(--nav-container-height) - 80px)
+      calc(100vh - var(--nav-container-height) - 70px)
+      /*  Fallback to compensate for mobile address bar, to be overwritten
+          by a more accurate dvh-unit calculation where supported. */
     );
   }
 
