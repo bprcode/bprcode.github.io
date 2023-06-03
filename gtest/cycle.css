@@ -501,10 +501,6 @@ input {
   }
 
   @supports (height: 100dvh) {
-    .name-tag {
-      color: rgb(205, 50, 202) !important;
-    }
-
     .render-canvas {
       height: min(
         var(--max-canvas-resolution),

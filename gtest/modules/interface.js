@@ -16,6 +16,7 @@ console.warn('debug -- n.b. canvas disappears if shrunk to literally zero')
 console.warn('debug -- add close box, add fallback behavior for Safari/non dvh height issue')
 console.warn('debug -- Safari not registering click transitions between pages consistently')
 console.warn('debug -- cloud texture burn / Safari + ember iris?')
+console.warn('suggestion: add 1px overflow to enable address bar hiding on mobile?')
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initialize)
@@ -224,6 +225,15 @@ function initialize () {
       shinyElement.classList.add('shine-reveal')
     }, 200)
   }
+
+  select('.toggle-fullscreen').addEventListener('click', event => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen()
+
+    } else {
+      document.exitFullscreen()
+    }
+  })
 
   function applyTheaterSetting () {
     if (select('.theater-checkbox:checked')) {
