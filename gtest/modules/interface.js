@@ -291,12 +291,22 @@ function initialize () {
         if (document.exitFullscreen && document.fullscreenElement) {
           document.exitFullscreen()
         }
+        if (document.webkitCancelFullScreen) {
+          document.webkitCancelFullScreen()
+        }
       }
     }
   }
 
   document.addEventListener('fullscreenchange', event => {
     logError('Fullscreen change.')
+    if (document.fullscreenElement) { theaterMode = true }
+    else { theaterMode = false }
+    applyTheater(document.fullscreenElement) // Use type to distinguish origin
+  })
+
+  document.addEventListener('webkitfullscreenchange', event => {
+    logError('Webkit fullscreen change.')
     if (document.fullscreenElement) { theaterMode = true }
     else { theaterMode = false }
     applyTheater(document.fullscreenElement) // Use type to distinguish origin
