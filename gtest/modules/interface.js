@@ -265,7 +265,6 @@ function initialize () {
       select('.link-box-container').classList.add('fade-out')
       select('.gear').classList.add('mostly-hidden')
       select('.fullscreen').classList.add('mostly-hidden')
-      select('.render-canvas').focus()
 
       if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen()

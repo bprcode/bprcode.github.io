@@ -344,10 +344,12 @@ footer {
   filter: brightness(120%);
 }
 
-footer:hover .fade-out,
-footer:hover .mostly-hidden {
-  opacity: 1 !important;
-  transition: opacity ease-out 0.15s !important;
+@media (hover: hover) {
+  footer:hover .fade-out,
+  footer:hover .mostly-hidden {
+    opacity: 1 !important;
+    transition: opacity ease-out 0.15s !important;
+  }
 }
 
 .mostly-hidden {
