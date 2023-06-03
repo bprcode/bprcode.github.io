@@ -29,6 +29,7 @@ function initialize () {
   let lastMove = 'left'
   let bounds = { left: 0, right: 0, top: 0, bottom: 0 }
   let lastHoveredBox = select('.link-box')
+  let theaterMode = false
 
   beginFadeIn(3000)
 
@@ -40,14 +41,11 @@ function initialize () {
 
   // Apply initial input states:
   setGrabStyle(select('input[name="grab-type"]:checked').value)
-  applyTheaterSetting()
 
   // Add settings pane listeners:
   select('.grab-style').addEventListener('input', event => {
     setGrabStyle(event.target.value)
   })
-
-  select('.theater-checkbox').addEventListener('input', applyTheaterSetting)
 
   // Underline animation control:
   for (const box of all('.link-box')) {
@@ -226,7 +224,17 @@ function initialize () {
     }, 200)
   }
 
+  select('.fullscreen').addEventListener('click', event => {
+    theaterMode = !theaterMode
+    applyTheater(theaterMode)
+  })
+
   select('.toggle-fullscreen').addEventListener('click', event => {
+    if (!document.documentElement.requestFullscreen) {
+      logError('❌ requestFullscreen not available')
+    } else {
+      logError('✅ requestFullscreen available')
+    }
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen()
 
@@ -235,16 +243,35 @@ function initialize () {
     }
   })
 
-  function applyTheaterSetting () {
-    if (select('.theater-checkbox:checked')) {
+  select('.test-webkit-fullscreen').addEventListener('click', event => {
+    if (!document.documentElement.webkitRequestFullscreen) {
+      logError('❌ webkitRequestFullscreen not available')
+    } else {
+      logError('✅ webkitRequestFullscreen available')
+    }
+
+    document.documentElement.webkitRequestFullscreen()
+
+    // if (!document.fullscreenElement) {
+    //   document.documentElement.requestFullscreen()
+
+    // } else {
+    //   document.exitFullscreen()
+    // }
+  })
+
+  function applyTheater (theaterMode) {
+    if (theaterMode) {
       select('.name-container').classList.add('fade-out')
       select('.link-box-container').classList.add('fade-out')
       select('.gear').classList.add('mostly-hidden')
+      select('.fullscreen').classList.add('mostly-hidden')
 
     } else {
       select('.name-container').classList.remove('fade-out')
       select('.link-box-container').classList.remove('fade-out')
       select('.gear').classList.remove('mostly-hidden')
+      select('.fullscreen').classList.remove('mostly-hidden')
     }
   }
 }
