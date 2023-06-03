@@ -352,6 +352,12 @@ footer {
   }
 }
 
+@media not (hover: hover) {
+  .fade-out {
+    pointer-events: none;
+  }
+}
+
 .mostly-hidden {
   opacity: 0.2;
   transition: opacity ease-out 0.95s;

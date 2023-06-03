@@ -259,18 +259,26 @@ function initialize () {
     // }
   })
 
-  function applyTheater (theaterMode) {
-    if (theaterMode) {
+  /**
+   * Activate or deactivate theater mode -- the type of the argument is used
+   * to distinguish between user-events (which provide boolean arguments) or
+   * onfullscreenchange events (which provide non-boolean arguments, and which
+   * should not attempt to make further fullscreen requests).
+   */
+  function applyTheater (activate) {
+    if (activate) {
       select('.name-container').classList.add('fade-out')
       select('.link-box-container').classList.add('fade-out')
       select('.gear').classList.add('mostly-hidden')
       select('.fullscreen').classList.add('mostly-hidden')
 
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen()
+      if (typeof activate === 'boolean') {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen()
 
-      } else if (document.documentElement.webkitRequestFullscreen) {
-        document.documentElement.webkitRequestFullscreen()
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          document.documentElement.webkitRequestFullscreen()
+        }
       }
 
     } else {
@@ -279,9 +287,19 @@ function initialize () {
       select('.gear').classList.remove('mostly-hidden')
       select('.fullscreen').classList.remove('mostly-hidden')
 
-      if (document.exitFullscreen) { document.exitFullscreen() }
+      if (typeof activate === 'boolean') {
+        if (document.exitFullscreen && document.fullscreenElement) {
+          document.exitFullscreen()
+        }
+      }
     }
   }
+
+  document.addEventListener('fullscreenchange', event => {
+    if (document.fullscreenElement) { theaterMode = true }
+    else { theaterMode = false }
+    applyTheater(document.fullscreenElement) // Use type to distinguish origin
+  })
 }
 
 function buildAnimationList () {
