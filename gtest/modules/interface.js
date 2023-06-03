@@ -16,7 +16,6 @@ console.warn('debug -- n.b. canvas disappears if shrunk to literally zero')
 console.warn('debug -- add close box, add fallback behavior for Safari/non dvh height issue')
 console.warn('debug -- Safari not registering click transitions between pages consistently')
 console.warn('debug -- cloud texture burn / Safari + ember iris?')
-console.warn('suggestion: add 1px overflow to enable address bar hiding on mobile?')
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initialize)
@@ -266,6 +265,7 @@ function initialize () {
       select('.link-box-container').classList.add('fade-out')
       select('.gear').classList.add('mostly-hidden')
       select('.fullscreen').classList.add('mostly-hidden')
+      document.activeElement.blur()
 
       if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen()
