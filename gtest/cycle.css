@@ -37,7 +37,7 @@ html {
 }
 
 body {
-  box-shadow: 0px 0px 2px rgba(222, 222, 18, 0.845) inset;
+  box-shadow: 0px 0px 2px rgba(222, 96, 18, 0.845) inset;
   background-color: #000;
   background-image:
     radial-gradient(230vw 30vh at 55vw 112vh, #000 45%, transparent),
@@ -481,12 +481,6 @@ input {
   margin-left: 0px;
 }
 
-@supports (height: 100dvh) {
-  .name-tag {
-    color: limegreen !important;
-  }
-}
-
 @media (orientation: landscape) {
   body {
     grid-template-areas:
@@ -501,9 +495,23 @@ input {
       var(--max-canvas-resolution),
       95vmin,
       calc(100vh - var(--nav-container-height) - 70px)
-      /*  Fallback to compensate for mobile address bar, to be overwritten
+      /*  Fallback to compensate for mobile address bar, overwritten below
           by a more accurate dvh-unit calculation where supported. */
     );
+  }
+
+  @supports (height: 100dvh) {
+    .name-tag {
+      color: rgb(205, 50, 202) !important;
+    }
+
+    .render-canvas {
+      height: min(
+        var(--max-canvas-resolution),
+        95vmin,
+        calc(100dvh - var(--nav-container-height))
+      );
+    }
   }
 
   .content {
@@ -516,12 +524,12 @@ input {
   }
 
   footer {
-    justify-content: end;
+    justify-content: flex-end;
   }
 
   .name-container {
     padding: 0px calc(0.5*var(--landscape-padding));
-    justify-self: start;
+    justify-self: flex-start;
     margin-top: 0px;
   }
 
