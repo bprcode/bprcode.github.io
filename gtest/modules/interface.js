@@ -267,11 +267,20 @@ function initialize () {
       select('.gear').classList.add('mostly-hidden')
       select('.fullscreen').classList.add('mostly-hidden')
 
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen()
+
+      } else if (document.documentElement.webkitRequestFullscreen) {
+        document.documentElement.webkitRequestFullscreen()
+      }
+
     } else {
       select('.name-container').classList.remove('fade-out')
       select('.link-box-container').classList.remove('fade-out')
       select('.gear').classList.remove('mostly-hidden')
       select('.fullscreen').classList.remove('mostly-hidden')
+
+      if (document.exitFullscreen) { document.exitFullscreen() }
     }
   }
 }

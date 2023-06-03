@@ -324,7 +324,7 @@ footer {
 .gear,
 .fullscreen {
   cursor: pointer;
-  width: 3.5em;
+  width: 3em;
   height: 100%;
   padding: 0px;
   border: none;
@@ -336,6 +336,7 @@ footer {
 .fullscreen svg {
   width: 1.45em;
   height: 1.45em;
+  border: 1px solid red;
 }
 
 .gear:hover,
@@ -350,7 +351,7 @@ footer:hover .mostly-hidden {
 }
 
 .mostly-hidden {
-  opacity: 0.15;
+  opacity: 0.2;
   transition: opacity ease-out 0.95s;
 }
 
@@ -559,6 +560,11 @@ input {
 @media (min-width: 320px) {
   body {
     font-size: 1.1rem;
+  }
+
+  .gear,
+  .fullscreen {
+    width: 4em;
   }
 }
 
