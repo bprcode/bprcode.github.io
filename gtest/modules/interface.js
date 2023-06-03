@@ -296,6 +296,7 @@ function initialize () {
   }
 
   document.addEventListener('fullscreenchange', event => {
+    logError('Fullscreen change.')
     if (document.fullscreenElement) { theaterMode = true }
     else { theaterMode = false }
     applyTheater(document.fullscreenElement) // Use type to distinguish origin
