@@ -557,7 +557,7 @@ input {
   .name-container::before {
     content: "";
     position: absolute;
-    border: 1.5px #8aceff80 solid;
+    border: 1.5px #8aceff60 solid;
     background-color: #000f;
     border-radius: 1px;
     padding: 4px;
@@ -573,7 +573,7 @@ input {
   .name-container::after {
     content: "";
     position: absolute;
-    border: 1.5px #8eb4ff60 solid;
+    border: 1.5px #8eb4ff50 solid;
     background-color: #35447d45;
     border-radius: 1px;
     padding: 4px;
