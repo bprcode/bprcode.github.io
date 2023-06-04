@@ -248,7 +248,8 @@ footer {
   position: relative;
   justify-content: space-between;
   transition: opacity 0.25s ease-out;
-  text-shadow: 0px 0px 8px #000;
+  text-shadow:  0px 0px 10px #000,
+                0px 0px 6px #000;
 }
 
 .name-container::before {
@@ -340,7 +341,6 @@ footer {
 .line-link {
   color: var(--light-text);
   text-decoration: none;
-  text-shadow: 0px 0px 3px #0000;
 }
 
 .gear,
