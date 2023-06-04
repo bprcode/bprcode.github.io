@@ -22,14 +22,14 @@ html {
   --scrollbar-background: transparent;
   --ff-scrollbar-thumb: #557;
 
-  --name-container-height: 50px;
-  --nav-container-height: 60px; /* N.B. when adjusting check for y-scrollbar */
+  --name-container-height: 70px;
+  --nav-container-height: 65px; /* N.B. when adjusting check for y-scrollbar */
   --max-canvas-resolution: 500px;
 
   --interface-edge: 0px 0px 1px #0afc inset;
   --accent-color: #0af;
 
-  --landscape-padding: 0.7rem;
+  --landscape-padding: 1.35rem;
 }
 
 .hidden {
@@ -245,9 +245,50 @@ footer {
   grid-area: name-container;
   white-space: nowrap;
   display: flex;
+  position: relative;
   justify-content: space-between;
   transition: opacity 0.25s ease-out;
-  margin-top: 5px;
+  text-shadow: 0px 0px 8px #000;
+}
+
+.name-container::before {
+  content: "";
+  position: absolute;
+  border: 1.5px #8aceff40 solid;
+  border-radius: 1px;
+  padding: 4px;
+  z-index: -1;
+  top: calc(-0.05em - 0.0em);
+  left: calc(50% - 0.5 * 1.6em);
+  width: 1.6em;
+  height: 1.6em;
+  font-weight: bolder;
+  transform: rotate(45deg);
+}
+
+.name-container::after {
+  content: "";
+  position: absolute;
+  border: 1.5px #8eb4ff30 solid;
+  border-radius: 1px;
+  padding: 4px;
+  z-index: -2;
+  top: calc(0.2596em + 1.0em);
+  left: calc(50% - 0.5 * 1.0em);
+  width: 1.0em;
+  height: 1.0em;
+  font-weight: bolder;
+  transform: rotate(45deg);
+}
+
+.name-container:hover::before {
+  transform: rotate(405deg);
+  transition: transform 1s ease-in-out;
+}
+
+.name-container:hover::after {
+  transform: rotate(-315deg);
+  transition: transform 1s ease-in-out;
 }
 
 .name-tag {
@@ -257,27 +298,6 @@ footer {
   font-weight: 400;
   letter-spacing: 0.065rem;
   padding-left: 0.7em;
-  text-shadow: 0px 0px 10px #000;
-}
-
-.name-tag::before {
-  content: "";
-  position: absolute;
-  border: 2px #8aadff40 solid;
-  border-radius: 2px;
-  padding: 4px;
-  z-index: -1;
-  top: -0.1em;
-  left: 0.0em;
-  width: 1.6em;
-  height: 1.6em;
-  font-weight: bolder;
-  transform: rotate(45deg);
-}
-
-.name-container:hover .name-tag::before {
-  transform: rotate(405deg);
-  transition: transform 1s ease-in-out;
 }
 
 .small-title {
@@ -530,6 +550,42 @@ input {
     opacity: 1;
   }
 
+  .name-container {
+    margin-left: 0.5em;
+  }
+
+  .name-container::before {
+    content: "";
+    position: absolute;
+    border: 1.5px #8aceff80 solid;
+    background-color: #000f;
+    border-radius: 1px;
+    padding: 4px;
+    z-index: -1;
+    top: -0.05em;
+    left: 1.15em;
+    width: 1.6em;
+    height: 1.6em;
+    font-weight: bolder;
+    transform: rotate(45deg);
+  }
+  
+  .name-container::after {
+    content: "";
+    position: absolute;
+    border: 1.5px #8eb4ff60 solid;
+    background-color: #35447d45;
+    border-radius: 1px;
+    padding: 4px;
+    z-index: -2;
+    top: 0.2596em;
+    left: 0.44em;
+    width: 1.0em;
+    height: 1.0em;
+    font-weight: bolder;
+    transform: rotate(45deg);
+  }
+
   footer {
     justify-content: flex-end;
   }
@@ -555,10 +611,6 @@ input {
 }
 
 @media (orientation: landscape) and (min-width: 650px) {
-  :root {
-    --landscape-padding: 1.35rem;
-  }
-
   .small-title {
     margin-left: 1.3rem;
   }
@@ -586,7 +638,7 @@ input {
 }
 
 /* Really tiny landscape escape hatch: */
-@media (orientation: landscape) and (max-width: 550px) {
+@media (orientation: landscape) and (max-width: 600px) {
   .small-title {
     display: none;
   }

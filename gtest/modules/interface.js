@@ -228,37 +228,6 @@ function initialize () {
     applyTheater(theaterMode)
   })
 
-  select('.toggle-fullscreen').addEventListener('click', event => {
-    if (!document.documentElement.requestFullscreen) {
-      logError('❌ requestFullscreen not available')
-    } else {
-      logError('✅ requestFullscreen available')
-    }
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen()
-
-    } else {
-      document.exitFullscreen()
-    }
-  })
-
-  select('.test-webkit-fullscreen').addEventListener('click', event => {
-    if (!document.documentElement.webkitRequestFullscreen) {
-      logError('❌ webkitRequestFullscreen not available')
-    } else {
-      logError('✅ webkitRequestFullscreen available')
-    }
-
-    document.documentElement.webkitRequestFullscreen()
-
-    // if (!document.fullscreenElement) {
-    //   document.documentElement.requestFullscreen()
-
-    // } else {
-    //   document.exitFullscreen()
-    // }
-  })
-
   /**
    * Activate or deactivate theater mode -- the type of the argument is used
    * to distinguish between user-events (which provide boolean arguments) or
