@@ -254,7 +254,9 @@ footer {
 .name-container::before {
   content: "";
   position: absolute;
-  border: 1.5px #8aceff40 solid;
+  border: 1.5px #c48aff30 solid;
+  box-shadow: 0px 0px 12px #0af4;
+  background-color: #0004;
   border-radius: 1px;
   padding: 4px;
   z-index: -1;
@@ -269,7 +271,8 @@ footer {
 .name-container::after {
   content: "";
   position: absolute;
-  border: 1.5px #8eb4ff30 solid;
+  border: 1.5px #e18eff20 solid;
+  box-shadow: 0px 0px 12px #0af4;
   border-radius: 1px;
   padding: 4px;
   z-index: -2;
@@ -557,8 +560,9 @@ input {
   .name-container::before {
     content: "";
     position: absolute;
-    border: 1.5px #8aceff60 solid;
+    border: 1.5px #8aceff70 solid;
     background-color: #000f;
+    box-shadow: 0px 0px 4px #0af8;
     border-radius: 1px;
     padding: 4px;
     z-index: -1;
@@ -573,8 +577,9 @@ input {
   .name-container::after {
     content: "";
     position: absolute;
-    border: 1.5px #8eb4ff50 solid;
+    border: 1.5px #8eb4ff60 solid;
     background-color: #35447d45;
+    box-shadow: 0px 0px 4px #0af8;
     border-radius: 1px;
     padding: 4px;
     z-index: -2;
