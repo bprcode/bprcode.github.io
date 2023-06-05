@@ -241,7 +241,7 @@ function initialize () {
       }
 
     } else {
-      if (document.exitFullscreen && document.fullscreenElement) {
+      if (document.exitFullscreen) {
         document.exitFullscreen()
 
       } else if (document.webkitCancelFullScreen) {
@@ -266,8 +266,12 @@ function initialize () {
   }
 
   function handleFullscreenChange () {
-    // debug: can't do this; Safari updates fullscreenElement late
-    if (document.fullscreenElement) { theaterMode = true; logError('fsC -> fsE = true') }
+    // debug: Safari does not set fullscreenElement flag
+    if (document.webkitFullscreenElement) { logError('wk fs = true') }
+    else { logError('wk fs = false') }
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      theaterMode = true; logError('fsC -> fsE = true')
+    }
     else { theaterMode = false; logError('fsC -> fsE = false') }
     applyTheater(document.fullscreenElement)
   }
