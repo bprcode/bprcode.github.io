@@ -143,6 +143,23 @@ html {
   margin: 0px;
   margin-top: 1.35rem;
   font-weight: 400;
+  font-size: 1.7em;
+}
+
+.content h2 {
+  font-weight: 400;
+  font-size: 1.4em;
+}
+
+.content img {
+  width: min(70vw, 100%, 400px);
+  margin: 0px auto;
+  display: block;
+}
+
+.content section {
+  clear: both;
+  margin-bottom: 4em;
 }
 
 .close {
@@ -619,6 +636,14 @@ input {
 @media (orientation: landscape) and (min-width: 650px) {
   .small-title {
     margin-left: 1.1rem;
+  }
+}
+
+@media (orientation: landscape) and (min-width: 900px) {
+  .content img {
+    display: block;
+    margin: 0px 1em;
+    float: right;
   }
 }
 
