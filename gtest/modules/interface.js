@@ -12,6 +12,7 @@ const all = document.querySelectorAll.bind(document)
 
 console.warn('debug -- n.b. canvas disappears if shrunk to literally zero')
 console.warn('debug -- Safari not registering click transitions between pages consistently')
+console.warn('debug -- fix theater flag logic, Safari issue')
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initialize)
@@ -250,7 +251,6 @@ function initialize () {
   }
 
   function applyTheater (activate) {
-    logError('turning theater classes ' + (activate ? 'on' : 'off'))
     if (activate) {
       select('.name-container').classList.add('fade-out')
       select('.link-box-container').classList.add('fade-out')
@@ -266,8 +266,9 @@ function initialize () {
   }
 
   function handleFullscreenChange () {
-    if (document.fullscreenElement) { theaterMode = true }
-    else { theaterMode = false }
+    // debug: can't do this; Safari updates fullscreenElement late
+    if (document.fullscreenElement) { theaterMode = true; logError('fsC -> fsE = true') }
+    else { theaterMode = false; logError('fsC -> fsE = false') }
     applyTheater(document.fullscreenElement)
   }
 
