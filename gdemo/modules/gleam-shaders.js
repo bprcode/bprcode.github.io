@@ -209,7 +209,7 @@ void main (void) {
 // the blurry and clear textures, overlaid with a cloud texture.
 shaders.texturedCompositorFrag =
 /* glsl */`
-precision mediump float;
+precision highp float;
 uniform sampler2D blurTex;
 uniform sampler2D clearTex;
 uniform sampler2D lensTex;

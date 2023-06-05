@@ -23,7 +23,7 @@ html {
   --ff-scrollbar-thumb: #557;
 
   --name-container-height: 70px;
-  --nav-container-height: 65px; /* N.B. when adjusting check for y-scrollbar */
+  --nav-container-height: 68px; /* N.B. when adjusting check for y-scrollbar */
   --max-canvas-resolution: 500px;
 
   --interface-edge: 0px 0px 1px #0afc inset;
@@ -135,14 +135,14 @@ html {
     - var(--content-bottom-margin));
   padding-left: var(--content-padding);
   padding-right: var(--content-padding);
-  font-family: 'Catamaran', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-weight: 400;
+  font-weight: 300;
   font-size: 1.0em;
 }
 
 .content h1 {
   margin: 0px;
   margin-top: 1.35rem;
+  font-weight: 400;
 }
 
 .close {
@@ -177,7 +177,7 @@ html {
      delegated to the shaders running the background animation. */
   border-radius: 10px;
   color: #f000;
-  background-color: #000b;
+  background-color: #000c;
 
   background-image: linear-gradient(138deg, #aaf4 -70%, #a0a0f005 110%);
   box-shadow:
@@ -248,36 +248,39 @@ footer {
   position: relative;
   justify-content: space-between;
   transition: opacity 0.25s ease-out;
-  text-shadow: 0px 0px 8px #000;
+  text-shadow:  0px 0px 10px #000,
+                0px 0px 6px #000;
 }
 
 .name-container::before {
   content: "";
   position: absolute;
-  border: 1.5px #8aceff40 solid;
+  border: 1.5px #8aceff30 solid;
+  background-color: #111f;
+  box-shadow: 0px 0px 12px rgba(119, 0, 255, 0.207);
   border-radius: 1px;
   padding: 4px;
   z-index: -1;
-  top: calc(-0.05em - 0.0em);
-  left: calc(50% - 0.5 * 1.6em);
-  width: 1.6em;
-  height: 1.6em;
-  font-weight: bolder;
+  top: -0.35em;
+  left: calc(50% - 0.5 * 2em);
+  width: 2em;
+  height: 2em;
   transform: rotate(45deg);
 }
 
 .name-container::after {
   content: "";
   position: absolute;
-  border: 1.5px #8eb4ff30 solid;
+  border: 1.5px #8aceff20 solid;
+  background-color: rgb(14, 11, 18);
+  box-shadow: 0px 0px 12px rgba(119, 0, 255, 0.207);
   border-radius: 1px;
   padding: 4px;
   z-index: -2;
-  top: calc(0.2596em + 1.0em);
-  left: calc(50% - 0.5 * 1.0em);
-  width: 1.0em;
-  height: 1.0em;
-  font-weight: bolder;
+  top: 1.45em;
+  left: calc(50% - 0.5 * 1.25em);
+  width: 1.25em;
+  height: 1.25em;
   transform: rotate(45deg);
 }
 
@@ -338,13 +341,12 @@ footer {
 .line-link {
   color: var(--light-text);
   text-decoration: none;
-  text-shadow: 0px 0px 3px #0000;
 }
 
 .gear,
 .fullscreen {
   cursor: pointer;
-  width: 3em;
+  width: 2.5em;
   height: 100%;
   padding: 0px;
   border: none;
@@ -386,9 +388,9 @@ footer {
   position: absolute;
   right: 0px;
   left: 100%;
-  top: 5ex;
+  top: 5.4ex;
   height: 1px;
-  background-color: var(--light-text);
+  border-bottom: 1px solid var(--light-text);
 }
 
 .bright-underline {
@@ -508,6 +510,10 @@ input {
   list-style: none;
 }
 
+.ul-animations li input {
+  margin-right: 0.7em;
+}
+
 .grab-style input {
   margin-left: 0px;
 }
@@ -551,14 +557,15 @@ input {
   }
 
   .name-container {
-    margin-left: 0.5em;
+    margin-left: 0.6em;
   }
 
   .name-container::before {
     content: "";
     position: absolute;
-    border: 1.5px #8aceff60 solid;
+    border: 1.5px #8aceff70 solid;
     background-color: #000f;
+    box-shadow: 0px 0px 4px #0af8;
     border-radius: 1px;
     padding: 4px;
     z-index: -1;
@@ -566,15 +573,15 @@ input {
     left: 1.15em;
     width: 1.6em;
     height: 1.6em;
-    font-weight: bolder;
     transform: rotate(45deg);
   }
   
   .name-container::after {
     content: "";
     position: absolute;
-    border: 1.5px #8eb4ff50 solid;
+    border: 1.5px #8eb4ff60 solid;
     background-color: #35447d45;
+    box-shadow: 0px 0px 4px #0af8;
     border-radius: 1px;
     padding: 4px;
     z-index: -2;
@@ -582,7 +589,6 @@ input {
     left: 0.44em;
     width: 1.0em;
     height: 1.0em;
-    font-weight: bolder;
     transform: rotate(45deg);
   }
 
@@ -612,7 +618,7 @@ input {
 
 @media (orientation: landscape) and (min-width: 650px) {
   .small-title {
-    margin-left: 1.3rem;
+    margin-left: 1.1rem;
   }
 }
 
@@ -621,9 +627,13 @@ input {
     font-size: 1.1rem;
   }
 
+  .underline {
+    top: 5ex;
+  }
+
   .gear,
   .fullscreen {
-    width: 4em;
+    width: 3.5em;
   }
 }
 
@@ -634,6 +644,11 @@ input {
 
   body {
     font-size: 1.15rem;
+  }
+
+  .gear,
+  .fullscreen {
+    width: 4em;
   }
 }
 
