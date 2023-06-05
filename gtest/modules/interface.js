@@ -273,7 +273,7 @@ function initialize () {
       theaterMode = true; logError('fsC -> fsE = true')
     }
     else { theaterMode = false; logError('fsC -> fsE = false') }
-    applyTheater(document.fullscreenElement)
+    applyTheater(theaterMode)
   }
 
   document.addEventListener('fullscreenchange', handleFullscreenChange)
