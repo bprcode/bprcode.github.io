@@ -10,8 +10,6 @@ const el = document.getElementById.bind(document)
 const select = document.querySelector.bind(document)
 const all = document.querySelectorAll.bind(document)
 
-console.warn('debug -- check for pixel-off underline in Chrome mobile on link click')
-console.warn('debug -- occasional cloud opacity issue? Possibly resize-related? Or just a weird moment in a transition?')
 console.warn('debug -- n.b. canvas disappears if shrunk to literally zero')
 console.warn('debug -- add close box, add fallback behavior for Safari/non dvh height issue')
 console.warn('debug -- Safari not registering click transitions between pages consistently')
@@ -223,17 +221,34 @@ function initialize () {
     }, 200)
   }
 
+  // Toggle theater mode on click:
   select('.fullscreen').addEventListener('click', event => {
     theaterMode = !theaterMode
+    applyFullscreen(theaterMode)
+    // In case the platform does not support fullscreen,
+    // directly apply the theater mode classes:
     applyTheater(theaterMode)
   })
 
-  /**
-   * Activate or deactivate theater mode -- the type of the argument is used
-   * to distinguish between user-events (which provide boolean arguments) or
-   * onfullscreenchange events (which provide non-boolean arguments, and which
-   * should not attempt to make further fullscreen requests).
-   */
+  function applyFullscreen (activate) {
+    if (activate) {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen()
+
+      } else if (document.documentElement.webkitRequestFullscreen) {
+        document.documentElement.webkitRequestFullscreen()
+      }
+
+    } else {
+      if (document.exitFullscreen && document.fullscreenElement) {
+        document.exitFullscreen()
+
+      } else if (document.webkitCancelFullScreen) {
+        document.webkitCancelFullScreen()
+      }
+    }
+  }
+
   function applyTheater (activate) {
     if (activate) {
       select('.name-container').classList.add('fade-out')
@@ -241,45 +256,22 @@ function initialize () {
       select('.gear').classList.add('mostly-hidden')
       select('.fullscreen').classList.add('mostly-hidden')
 
-      if (typeof activate === 'boolean') {
-        if (document.documentElement.requestFullscreen) {
-          document.documentElement.requestFullscreen()
-
-        } else if (document.documentElement.webkitRequestFullscreen) {
-          document.documentElement.webkitRequestFullscreen()
-        }
-      }
-
     } else {
       select('.name-container').classList.remove('fade-out')
       select('.link-box-container').classList.remove('fade-out')
       select('.gear').classList.remove('mostly-hidden')
       select('.fullscreen').classList.remove('mostly-hidden')
-
-      if (typeof activate === 'boolean') {
-        if (document.exitFullscreen && document.fullscreenElement) {
-          document.exitFullscreen()
-        }
-        if (document.webkitCancelFullScreen) {
-          document.webkitCancelFullScreen()
-        }
-      }
     }
   }
 
-  document.addEventListener('fullscreenchange', event => {
-    logError('Fullscreen change.')
+  function handleFullscreenChange () {
     if (document.fullscreenElement) { theaterMode = true }
     else { theaterMode = false }
-    applyTheater(document.fullscreenElement) // Use type to distinguish origin
-  })
+    applyTheater(document.fullscreenElement)
+  }
 
-  document.addEventListener('webkitfullscreenchange', event => {
-    logError('Webkit fullscreen change.')
-    if (document.fullscreenElement) { theaterMode = true }
-    else { theaterMode = false }
-    applyTheater(document.fullscreenElement) // Use type to distinguish origin
-  })
+  document.addEventListener('fullscreenchange', handleFullscreenChange)
+  document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
 }
 
 function buildAnimationList () {
