@@ -227,7 +227,8 @@ float diminish (float x) {
 // https://www.desmos.com/calculator/mxoykritdy
 float smoothDrop (float bound, float exponent, float x) {
   float w = x / bound;
-  float smoothed = clamp(w*w*w* (6.*w*w - 15.*w + 10.), 0., 1.);
+  float smoothed = w*w*w* (6.*w*w - 15.*w + 10.);
+  // float smoothed = clamp(w*w*w* (6.*w*w - 15.*w + 10.), 0., 1.);
   return clamp(
       1. - pow(smoothed, exponent),
     0., 1.);
