@@ -227,7 +227,7 @@ float diminish (float x) {
 // https://www.desmos.com/calculator/mxoykritdy
 float smoothDrop (float bound, float exponent, float x) {
   float w = x / bound;
-  float smoothed = w*w*w* (6.*w*w - 15.*w + 10.);
+  float smoothed = clamp(w*w*w* (6.*w*w - 15.*w + 10.), 0., 1.);
   return clamp(
       1. - pow(smoothed, exponent),
     0., 1.);
@@ -268,7 +268,7 @@ void main (void) {
   // Weight the cloud color components to favor red light:
   gl_FragColor =
     mixed
-    + colorTransform * clamp(mixed * signal * boost * cloud, 0., 1.);
+    + colorTransform * mixed * signal * boost * cloud, 0., 1.;
 }
 `
 
