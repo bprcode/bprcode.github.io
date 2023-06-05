@@ -268,7 +268,7 @@ void main (void) {
   // Weight the cloud color components to favor red light:
   gl_FragColor =
     mixed
-    + colorTransform * mixed * signal * boost * cloud, 0., 1.;
+    + colorTransform * mixed * signal * boost * cloud;
 }
 `
 

@@ -11,9 +11,7 @@ const select = document.querySelector.bind(document)
 const all = document.querySelectorAll.bind(document)
 
 console.warn('debug -- n.b. canvas disappears if shrunk to literally zero')
-console.warn('debug -- add close box, add fallback behavior for Safari/non dvh height issue')
 console.warn('debug -- Safari not registering click transitions between pages consistently')
-console.warn('debug -- cloud texture burn / Safari + ember iris?')
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initialize)
@@ -224,6 +222,7 @@ function initialize () {
   // Toggle theater mode on click:
   select('.fullscreen').addEventListener('click', event => {
     theaterMode = !theaterMode
+    logError('fs click received, theaterMode is now: ' + theaterMode)
     applyFullscreen(theaterMode)
     // In case the platform does not support fullscreen,
     // directly apply the theater mode classes:
@@ -231,6 +230,7 @@ function initialize () {
   })
 
   function applyFullscreen (activate) {
+    logError('turning fullscreen ' + (activate ? 'on' : 'off'))
     if (activate) {
       if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen()
@@ -250,6 +250,7 @@ function initialize () {
   }
 
   function applyTheater (activate) {
+    logError('turning theater classes ' + (activate ? 'on' : 'off'))
     if (activate) {
       select('.name-container').classList.add('fade-out')
       select('.link-box-container').classList.add('fade-out')
