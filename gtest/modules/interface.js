@@ -12,7 +12,6 @@ const all = document.querySelectorAll.bind(document)
 
 console.warn('debug -- n.b. canvas disappears if shrunk to literally zero')
 console.warn('debug -- Safari not registering click transitions between pages consistently')
-console.warn('debug -- fix theater flag logic, Safari issue')
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initialize)
@@ -223,7 +222,6 @@ function initialize () {
   // Toggle theater mode on click:
   select('.fullscreen').addEventListener('click', event => {
     theaterMode = !theaterMode
-    logError('fs click received, theaterMode is now: ' + theaterMode)
     applyFullscreen(theaterMode)
     // In case the platform does not support fullscreen,
     // directly apply the theater mode classes:
@@ -231,7 +229,6 @@ function initialize () {
   })
 
   function applyFullscreen (activate) {
-    logError('turning fullscreen ' + (activate ? 'on' : 'off'))
     if (activate) {
       if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen()
@@ -266,13 +263,13 @@ function initialize () {
   }
 
   function handleFullscreenChange () {
-    // debug: Safari does not set fullscreenElement flag
-    if (document.webkitFullscreenElement) { logError('wk fs = true') }
-    else { logError('wk fs = false') }
     if (document.fullscreenElement || document.webkitFullscreenElement) {
-      theaterMode = true; logError('fsC -> fsE = true')
+      theaterMode = true;
     }
-    else { theaterMode = false; logError('fsC -> fsE = false') }
+    else {
+      theaterMode = false;
+    }
+
     applyTheater(theaterMode)
   }
 

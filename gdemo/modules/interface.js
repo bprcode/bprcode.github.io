@@ -222,7 +222,6 @@ function initialize () {
   // Toggle theater mode on click:
   select('.fullscreen').addEventListener('click', event => {
     theaterMode = !theaterMode
-    logError('fs click received, theaterMode is now: ' + theaterMode)
     applyFullscreen(theaterMode)
     // In case the platform does not support fullscreen,
     // directly apply the theater mode classes:
@@ -230,7 +229,6 @@ function initialize () {
   })
 
   function applyFullscreen (activate) {
-    logError('turning fullscreen ' + (activate ? 'on' : 'off'))
     if (activate) {
       if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen()
@@ -240,7 +238,7 @@ function initialize () {
       }
 
     } else {
-      if (document.exitFullscreen && document.fullscreenElement) {
+      if (document.exitFullscreen) {
         document.exitFullscreen()
 
       } else if (document.webkitCancelFullScreen) {
@@ -250,7 +248,6 @@ function initialize () {
   }
 
   function applyTheater (activate) {
-    logError('turning theater classes ' + (activate ? 'on' : 'off'))
     if (activate) {
       select('.name-container').classList.add('fade-out')
       select('.link-box-container').classList.add('fade-out')
@@ -266,9 +263,14 @@ function initialize () {
   }
 
   function handleFullscreenChange () {
-    if (document.fullscreenElement) { theaterMode = true }
-    else { theaterMode = false }
-    applyTheater(document.fullscreenElement)
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      theaterMode = true;
+    }
+    else {
+      theaterMode = false;
+    }
+
+    applyTheater(theaterMode)
   }
 
   document.addEventListener('fullscreenchange', handleFullscreenChange)
