@@ -22,7 +22,7 @@ html {
   --scrollbar-background: transparent;
   --ff-scrollbar-thumb: #557;
 
-  --name-container-height: 70px;
+  --name-container-height: 78px;
   --nav-container-height: 68px; /* N.B. when adjusting check for y-scrollbar */
   --max-canvas-resolution: 500px;
 

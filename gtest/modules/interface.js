@@ -10,9 +10,6 @@ const el = document.getElementById.bind(document)
 const select = document.querySelector.bind(document)
 const all = document.querySelectorAll.bind(document)
 
-console.warn('debug -- n.b. canvas disappears if shrunk to literally zero')
-console.warn('debug -- Safari not registering click transitions between pages consistently')
-
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initialize)
 } else {
