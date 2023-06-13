@@ -1,0 +1,12 @@
+{
+  "name": "fractal-sea",
+  "version": "0.0.1",
+  "description": "Precursor project for fractal set explorer web app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "live": "browser-sync start --server --browser chrome --files ."
+  },
+  "author": "Bryan Rauen",
+  "license": "UNLICENSED"
+}
