@@ -1,1 +1,0 @@
-code . & npm run live
