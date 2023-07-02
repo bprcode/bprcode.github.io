@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sticky Test</title>
+</head>
+<body>
+  <h1>Sticky Test</h1>
+  <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Dolorum, rerum natus? Qui dolor debitis numquam.</p>
+
+  <div class="first"><h2>Here is some text.</h2><p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Eum voluptatem vel iure rem ipsam cupiditate sapiente ullam. Tenetur, non veritatis.</p></div>
+  <div class="buffer">Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur nemo fugit similique ducimus tenetur deleniti cumque explicabo! Explicabo, deserunt, porro eligendi eius debitis velit minima alias blanditiis, consectetur quibusdam vero?</div>
+  <div class="second"><h2>More text here.</h2><p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Et distinctio, blanditiis neque vel atque quaerat nesciunt quae eos obcaecati voluptatibus magni fuga deserunt optio reprehenderit!</p></div>
+  <div class="buffer">Lorem ipsum dolor sit amet consectetur adipisicing elit. Eaque aliquam aut eius, quod ipsa numquam repudiandae nemo reiciendis minima odio voluptate expedita explicabo, excepturi quo quibusdam provident fuga quam nesciunt.</div>
+  <div class="third"><h2>Third block of text.</h2><p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatem in dicta numquam quidem eaque praesentium voluptates culpa quisquam similique delectus?</p></div>
+  <div class="buffer">Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus assumenda, qui libero amet voluptatibus suscipit, sequi et, porro dolor voluptatem tenetur dolorum id vitae repellendus. Veritatis eveniet aliquam error debitis?</div>
+
+</body>
+</html>
+
+<style>
+body {
+  margin: 0 auto;
+  max-width: 40rem;
+  background-color: #ddd;
+  color: #333;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 1.3rem;
+}
+
+.buffer {
+  background-color: #ddd;
+  position: relative;
+  padding: 1rem;
+  height: 10rem;
+}
+
+.first, .second, .third {
+  padding: 1rem;
+  color: #ddd;
+  height: 100vh;
+  box-shadow: 0px 0px 30px #ddd inset;
+  background-attachment: fixed;
+  background-size: 100vh;
+  background-position-x: 50%;
+
+  position: sticky;
+  top: 0;
+
+  text-shadow: 0px 0px 1.5rem #204;
+}
+
+.first h2, .second h2, .third h2 {
+  margin: 0;
+  letter-spacing: -0.03rem;
+}
+
+.first p, .second p, .third p {
+  font-weight: 400;
+  font-size: 1.1rem;
+  max-width: 60%;
+}
+
+
+
+.first {
+  background-image: url(./raster/thunderbolts-topright.png);
+}
+.second {
+  background-image: url(./raster/snowflake.png);
+}
+.third {
+  background-image: url(./raster/swirl-left.png);
+}
+</style>
