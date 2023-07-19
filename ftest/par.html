@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parallax Test</title>
+</head>
+<body>
+  <h1>Parallax test</h1>
+  <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nobis, alias atque illo eveniet id ad libero quasi placeat corporis, voluptates deserunt impedit cumque qui earum neque aspernatur, enim commodi quae.</p>
+
+  <div class="first">Here is some text.</div>
+  <div class="buffer">I'm just a buffer element.</div>
+  <div class="second">More text here.</div>
+  <div class="buffer">I'm just a buffer element.</div>
+  <div class="third">A third section of text.</div>
+
+</body>
+</html>
+
+<style>
+body {
+  margin: 0 auto;
+  max-width: 40rem;
+  background-color: #ddd;
+  color: #333;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 1.3rem;
+}
+
+.buffer {
+  padding: 1rem;
+  height: 10rem;
+}
+
+.first, .second, .third {
+  padding: 1rem;
+  color: #ddd;
+  height: 60vh;
+  box-shadow: 0px 0px 30px #ddd inset;
+  background-attachment: fixed;
+  background-size: 100vh;
+  background-position-x: 50%;
+}
+
+.first {
+  background-image: url(./raster/thunderbolts-topright.png);
+}
+.second {
+  background-image: url(./raster/snowflake.png);
+}
+.third {
+  background-image: url(./raster/swirl-left.png);
+}
+</style>

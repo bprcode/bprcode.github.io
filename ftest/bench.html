@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<!-- Copyright © 2023 Bryan Rauen. All rights reserved. https://bprcode.github.io/ -->
+
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./splash.css">
+  <link rel="stylesheet" href="./bench.css">
+
+  <title>FractalSea Benchmarking</title>
+
+  <script type="module" src="./modules/benchmark.js"></script>
+
+  <link rel="icon" href="./vector/isolated-logo-light.svg">
+</head>
+<body>
+  <div class="logger display-none"></div>
+  <!-- First vertical page -->
+  <div class="fullwidth-container background-1">
+    <div class="page first-page">
+      <div class="heading">
+        <h1>Render&nbsp;Benchmark</h1>
+      </div>
+
+      <div class="rendering-container">
+        <canvas class="benchmark-canvas canvas-a"></canvas>
+        <canvas class="benchmark-canvas canvas-b"></canvas>
+      </div>
+
+      <div class="benchmark-panel">
+        <div class="controls">
+
+          <label class="benchmark-label">
+            <span>
+              <input type="checkbox" id="check-benchmark">
+              Benchmark
+            </span>
+            <span class="fps"></span>
+          </label>
+
+          <div class="resolution-display">
+            Unspecified resolution
+          </div>
+  
+          <!-- <div class="resolution-options">
+  
+            <label class="lofi-label">
+              <span>
+                <input type="checkbox" id="check-lofi">
+                Lower resolution
+              </span>
+            </label>
+  
+            <label class="jumbo-res">
+              <input type="checkbox" id="check-jumbo">
+              Jumbo size
+            </label>
+  
+            <label class="giga-res">
+              <input type="checkbox" id="check-giga">
+              Giga-size
+            </label>
+  
+          </div>
+  
+          <div class="precision-container">
+            Precision:
+            <label>
+              <input type="radio" name="precision" value="single">
+              single
+            </label>
+            <label>
+              <input type="radio" name="precision" value="double" checked>
+              double
+            </label>
+          </div>
+  
+          <label class="zoom-label">
+            <span class="zoom-slider-container">
+              Zoom:
+              <input type="range" name="" id="zoom-slider" min="-1" max="13" step="0.01">
+            </span>
+            <span class="zoom-level"></span>
+          </label>
+  
+          <label>
+            <span>
+              Iterations:
+              <input type="range" name="" id="iteration-slider" min="50" max="700" step="1" value="600">
+            </span>
+            <span class="iteration-count"></span>
+          </label>
+        </div> -->
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
