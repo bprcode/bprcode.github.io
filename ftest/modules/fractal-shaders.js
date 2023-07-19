@@ -351,19 +351,19 @@ vec2 mul22 (vec2 a, vec2 b) {
 }
 
 float times_frc(float a, float b) {
-  return a * b * overOne;
+  return a * b * oneA;
   // return mix(0.0, a * b, b != 0.0 ? 1.0 : 0.0);
 }
 
 float plus_frc(float a, float b) {
-  return a * alsoOne + b * underOne;
+  return a * oneB + b * oneC;
   // return mix(a, a + b, b != 0.0 ? 1.0 : 0.0);
 }
 
 float minus_frc(float a, float b) {
   // Debug -- throwing a lot of stuff out here to see if anything
   // forces Safari/iDevices to work:
-  return (a * overOne - b * one);
+  return (a * oneD - b * one);
   // return mix(a, a - b, b != 0.0 ? 1.0 : 0.0);
 }
 `
@@ -386,7 +386,10 @@ uniform vec2 offsetY;
 uniform vec2 viewportResolution;
 uniform vec2 zoomedReciprocal;
 uniform float one;
-uniform float alsoOne;
+uniform float oneA;
+uniform float oneB;
+uniform float oneC;
+uniform float oneD;
 uniform float overOne;
 uniform float underOne;
 uniform float osc;

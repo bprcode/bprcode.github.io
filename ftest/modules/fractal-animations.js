@@ -69,7 +69,10 @@ function initFlat () {
   this.uZoomedReciprocal =
     gl.getUniformLocation(this.program, 'zoomedReciprocal')
   this.uOne = gl.getUniformLocation(this.program, 'one')
-  this.uAlsoOne = gl.getUniformLocation(this.program, 'alsoOne')
+  this.uOneA = gl.getUniformLocation(this.program, 'oneA')
+  this.uOneB = gl.getUniformLocation(this.program, 'oneB')
+  this.uOneC = gl.getUniformLocation(this.program, 'oneC')
+  this.uOneD = gl.getUniformLocation(this.program, 'oneD')
   this.uOverOne = gl.getUniformLocation(this.program, 'overOne')
   this.uUnderOne = gl.getUniformLocation(this.program, 'underOne')
   this.uOsc = gl.getUniformLocation(this.program, 'osc')
@@ -79,7 +82,10 @@ function initFlat () {
   this.uAB = gl.getUniformLocation(this.program, 'AB')
 
   gl.uniform1f(this.uOne, 1) // Used to block unwanted shader optimization
-  gl.uniform1f(this.uAlsoOne, 1)
+  gl.uniform1f(this.uOneA, 1)
+  gl.uniform1f(this.uOneB, 1)
+  gl.uniform1f(this.uOneC, 1)
+  gl.uniform1f(this.uOneD, 1)
   gl.uniform1f(this.uOverOne, 1.0000001)
   gl.uniform1f(this.uUnderOne, 0.9999999)
   gl.uniform1f(this.uIterations, 20)
