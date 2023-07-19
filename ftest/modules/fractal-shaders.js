@@ -351,12 +351,12 @@ vec2 mul22 (vec2 a, vec2 b) {
 }
 
 float times_frc(float a, float b) {
-  return a * b * oneA;
+  return a * b * (underOne + 0.0000001);
   // return mix(0.0, a * b, b != 0.0 ? 1.0 : 0.0);
 }
 
 float plus_frc(float a, float b) {
-  return a * oneB + b * oneC;
+  return a * oneB + b * (overOne - 0.0000001);
   // return mix(a, a + b, b != 0.0 ? 1.0 : 0.0);
 }
 
