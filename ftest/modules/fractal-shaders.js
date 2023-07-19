@@ -356,7 +356,7 @@ float times_frc(float a, float b) {
 }
 
 float plus_frc(float a, float b) {
-  return a * alsoOne + b * one;
+  return (a + b) * overOne * underOne;
   // return mix(a, a + b, b != 0.0 ? 1.0 : 0.0);
 }
 
