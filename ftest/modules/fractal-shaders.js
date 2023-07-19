@@ -351,21 +351,21 @@ vec2 mul22 (vec2 a, vec2 b) {
 }
 
 float times_frc(float a, float b) {
-  return a * b;
-  //return mix(0.0, a * b, b != 0.0 ? 1.0 : 0.0);
+  // return a * b;
+  return mix(0.0, a * b, b != 0.0 ? 1.0 : 0.0);
 }
 
 float plus_frc(float a, float b) {
-  return a + b;
-  //return mix(a, a + b, b != 0.0 ? 1.0 : 0.0);
+  // return a + b;
+  return mix(a, a + b, b != 0.0 ? 1.0 : 0.0);
 }
 
 float minus_frc(float a, float b) {
   // Here we multiply by 1, provided as a uniform, to block the compiler
   // from performing an optimization which otherwise ruins the floating-
   // point emulation entirely. Modify with care only:
-  return a - b * one;
-  //return mix(a, a - b, b != 0.0 ? 1.0 : 0.0);
+  // return a - b * one;
+  return mix(a, a - b, b != 0.0 ? 1.0 : 0.0);
 }
 `
 
