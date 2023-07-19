@@ -351,7 +351,7 @@ vec2 mul22 (vec2 a, vec2 b) {
 }
 
 float times_frc(float a, float b) {
-  return a * b * (underOne + 0.0000001);
+  return a * b * underOne * overOne;
   // return mix(0.0, a * b, b != 0.0 ? 1.0 : 0.0);
 }
 
