@@ -351,12 +351,12 @@ vec2 mul22 (vec2 a, vec2 b) {
 }
 
 float times_frc(float a, float b) {
-  return a * b * underOne * overOne;
+  return a * b * underOne;
   // return mix(0.0, a * b, b != 0.0 ? 1.0 : 0.0);
 }
 
 float plus_frc(float a, float b) {
-  return a * oneB + b * (overOne - 0.0000001);
+  return a * oneB + b * oneC;
   // return mix(a, a + b, b != 0.0 ? 1.0 : 0.0);
 }
 
@@ -457,21 +457,21 @@ vec2 mul (vec2 dsa, vec2 dsb) {
   float c11, c21, c2, e, t1, t2;
   float a1, a2, b1, b2, cona, conb, split = 8193.;
 
-  cona = times_frc(dsa.x, split);
-  conb = times_frc(dsb.x, split);
+  cona = overOne * times_frc(dsa.x, split);
+  conb = overOne * times_frc(dsb.x, split);
   a1 = minus_frc(cona, minus_frc(cona, dsa.x));
   b1 = minus_frc(conb, minus_frc(conb, dsb.x));
   a2 = minus_frc(dsa.x, a1);
   b2 = minus_frc(dsb.x, b1);
 
-  c11 = times_frc(dsa.x, dsb.x);
-  c21 = plus_frc(times_frc(a2, b2), plus_frc(times_frc(a2, b1), plus_frc(times_frc(a1, b2), minus_frc(times_frc(a1, b1), c11))));
+  c11 = overOne * times_frc(dsa.x, dsb.x);
+  c21 = plus_frc(overOne * times_frc(a2, b2), plus_frc(overOne * times_frc(a2, b1), plus_frc(overOne * times_frc(a1, b2), minus_frc(overOne * times_frc(a1, b1), c11))));
 
-  c2 = plus_frc(times_frc(dsa.x, dsb.y), times_frc(dsa.y, dsb.x));
+  c2 = plus_frc(overOne * times_frc(dsa.x, dsb.y), overOne * times_frc(dsa.y, dsb.x));
 
   t1 = plus_frc(c11, c2);
   e = minus_frc(t1, c11);
-  t2 = plus_frc(plus_frc(times_frc(dsa.y, dsb.y), plus_frc(minus_frc(c2, e), minus_frc(c11, minus_frc(t1, e)))), c21);
+  t2 = plus_frc(plus_frc(overOne * times_frc(dsa.y, dsb.y), plus_frc(minus_frc(c2, e), minus_frc(c11, minus_frc(t1, e)))), c21);
 
   dsc.x = plus_frc(t1, t2);
   dsc.y = minus_frc(t2, minus_frc(dsc.x, t1));

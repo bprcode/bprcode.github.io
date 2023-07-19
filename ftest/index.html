@@ -4,108 +4,102 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;700&family=Montagu+Slab:wght@600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./sea.css">
-  <title>Front-End Sea</title>
+  <link rel="stylesheet" href="./splash.css">
+  <link rel="stylesheet" href="./bench.css">
 
-  <link rel="icon" href="./code-slash.svg">
-  <script type="module" src="./modules/index.js"></script>
+  <title>FractalSea Benchmarking</title>
+
+  <script type="module" src="./modules/benchmark.js"></script>
+
+  <link rel="icon" href="./vector/isolated-logo-light.svg">
 </head>
-
 <body>
-  <header class="header-stripe">
-    <div class="header-content">
-      <div class="logo-container">
-        <!-- <img class="composite-logo" src="./gb.svg" alt="Fractal Sea, logo with a ship coursing through waves"> -->
-        <h1 class="logo">FractalSea</h1>
-        <img class="ship-1" src="./ex2.svg" alt="a sloop at full sail, coursing forward">
+  <div class="logger display-none"></div>
+  <!-- First vertical page -->
+  <div class="fullwidth-container background-1">
+    <div class="page first-page">
+      <div class="heading">
+        <h1>Render&nbsp;Benchmark -- many ones -- 4</h1>
       </div>
-      <nav class="button-container">
-        <a href="#">Explore</a>
-        <a href="#">Create</a>
-        <button>Join</button>
-      </nav>
-    </div>
-  </header>
 
-  <div class="main-content">
-    <section>
-      <h1>Latest Expeditions</h1>
-      <canvas class="fractal-canvas" id="canvas-1"></canvas>
-      
-      <div class="controls">
+      <div class="rendering-container">
+        <canvas class="benchmark-canvas canvas-a"></canvas>
+        <canvas class="benchmark-canvas canvas-b"></canvas>
+      </div>
 
-        <label class="benchmark-label">
-          <span>
-            <input type="checkbox" id="check-benchmark">
-            Benchmark
-          </span>
-          <span class="fps"></span>
-        </label>
+      <div class="benchmark-panel">
+        <div class="controls">
 
-        <div class="resolution-options">
-
-          <label class="lofi-label">
+          <label class="benchmark-label">
             <span>
-              <input type="checkbox" id="check-lofi">
-              Lower resolution
+              <input type="checkbox" id="check-benchmark">
+              Benchmark
             </span>
+            <span class="fps"></span>
           </label>
 
-          <label class="jumbo-res">
-            <input type="checkbox" id="check-jumbo">
-            Jumbo size
+          <div class="resolution-display">
+            Unspecified resolution
+          </div>
+  
+          <!-- <div class="resolution-options">
+  
+            <label class="lofi-label">
+              <span>
+                <input type="checkbox" id="check-lofi">
+                Lower resolution
+              </span>
+            </label>
+  
+            <label class="jumbo-res">
+              <input type="checkbox" id="check-jumbo">
+              Jumbo size
+            </label>
+  
+            <label class="giga-res">
+              <input type="checkbox" id="check-giga">
+              Giga-size
+            </label>
+  
+          </div>
+  
+          <div class="precision-container">
+            Precision:
+            <label>
+              <input type="radio" name="precision" value="single">
+              single
+            </label>
+            <label>
+              <input type="radio" name="precision" value="double" checked>
+              double
+            </label>
+          </div>
+  
+          <label class="zoom-label">
+            <span class="zoom-slider-container">
+              Zoom:
+              <input type="range" name="" id="zoom-slider" min="-1" max="13" step="0.01">
+            </span>
+            <span class="zoom-level"></span>
           </label>
-
-          <label class="giga-res">
-            <input type="checkbox" id="check-giga">
-            Giga-size
-          </label>
-
-        </div>
-
-        <div class="precision-container">
-          Precision:
+  
           <label>
-            <input type="radio" name="precision" value="single">
-            single
+            <span>
+              Iterations:
+              <input type="range" name="" id="iteration-slider" min="50" max="700" step="1" value="600">
+            </span>
+            <span class="iteration-count"></span>
           </label>
-          <label>
-            <input type="radio" name="precision" value="double" checked>
-            double
-          </label>
-        </div>
-
-        <label class="zoom-label">
-          <span class="zoom-slider-container">
-            Zoom:
-            <input type="range" name="" id="zoom-slider" min="-1" max="13" step="0.01">
-          </span>
-          <span class="zoom-level"></span>
-        </label>
-
-        <label>
-          <span>
-            Iterations:
-            <input type="range" name="" id="iteration-slider" min="50" max="700" step="1" value="600">
-          </span>
-          <span class="iteration-count"></span>
-        </label>
-
-        <details>
-          <summary>Technical Details</summary>
-          <p class="shader-precision">Shader precision info goes here</p>
-        </details>
+        </div> -->
       </div>
-      
-    </section>
-    <div class="logger display-none"></div>
-  </div>
 
+    </div>
+  </div>
 </body>
 </html>
