@@ -351,21 +351,20 @@ vec2 mul22 (vec2 a, vec2 b) {
 }
 
 float times_frc(float a, float b) {
-  // return a * b;
-  return mix(0.0, a * b, b != 0.0 ? 1.0 : 0.0);
+  return a * b * overOne * underOne;
+  // return mix(0.0, a * b, b != 0.0 ? 1.0 : 0.0);
 }
 
 float plus_frc(float a, float b) {
-  // return a + b;
-  return mix(a, a + b, b != 0.0 ? 1.0 : 0.0);
+  return a * alsoOne + b * one;
+  // return mix(a, a + b, b != 0.0 ? 1.0 : 0.0);
 }
 
 float minus_frc(float a, float b) {
-  // Here we multiply by 1, provided as a uniform, to block the compiler
-  // from performing an optimization which otherwise ruins the floating-
-  // point emulation entirely. Modify with care only:
-  // return a - b * one;
-  return mix(a, a - b, b != 0.0 ? 1.0 : 0.0);
+  // Debug -- throwing a lot of stuff out here to see if anything
+  // forces Safari/iDevices to work:
+  return (a * overOne - b * overOne) * underOne;
+  // return mix(a, a - b, b != 0.0 ? 1.0 : 0.0);
 }
 `
 
@@ -387,6 +386,9 @@ uniform vec2 offsetY;
 uniform vec2 viewportResolution;
 uniform vec2 zoomedReciprocal;
 uniform float one;
+uniform float alsoOne;
+uniform float overOne;
+uniform float underOne;
 uniform float osc;
 uniform float iterations;
 uniform bool useDoublePrecision;
