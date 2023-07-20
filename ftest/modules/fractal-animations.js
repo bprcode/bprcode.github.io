@@ -86,14 +86,14 @@ function initFlat () {
   this.uAB = gl.getUniformLocation(this.program, 'AB')
 
   gl.uniform1f(this.uOne, 1) // Used to block unwanted shader optimization
-  gl.uniform1f(this.uOneA, 1)
-  gl.uniform1f(this.uOneB, 1)
-  gl.uniform1f(this.uOneC, 1)
-  gl.uniform1f(this.uOneD, 1)
-  gl.uniform1f(this.uOneE, 1)
-  gl.uniform1f(this.uOneF, 1)
-  gl.uniform1f(this.uOneG, 1)
-  gl.uniform1f(this.uOneH, 1)
+  gl.uniform1f(this.uOneA, 1.0000001)
+  gl.uniform1f(this.uOneB, 1.0000002)
+  gl.uniform1f(this.uOneC, 1.0000003)
+  gl.uniform1f(this.uOneD, 1.0000004)
+  gl.uniform1f(this.uOneE, 1.0000005)
+  gl.uniform1f(this.uOneF, 1.0000006)
+  gl.uniform1f(this.uOneG, 1.0000007)
+  gl.uniform1f(this.uOneH, 1.0000008)
   gl.uniform1f(this.uOverOne, 1.0000001)
   gl.uniform1f(this.uUnderOne, 0.9999999)
   gl.uniform1f(this.uIterations, 20)
@@ -114,6 +114,19 @@ function drawFlat () {
   if (!controller.width) {
     throw Error('Dimensions not specified for animation.')
   }
+
+
+  // debug -- really struggling with the compiler here
+  gl.uniform1f(this.uOne, 1) // Used to block unwanted shader optimization
+  gl.uniform1f(this.uOneA, 1.0000001)
+  gl.uniform1f(this.uOneB, 1.0000002)
+  gl.uniform1f(this.uOneC, 1.0000003)
+  gl.uniform1f(this.uOneD, 1.0000004)
+  gl.uniform1f(this.uOneE, 1.0000005)
+  gl.uniform1f(this.uOneF, 1.0000006)
+  gl.uniform1f(this.uOneG, 1.0000007)
+  gl.uniform1f(this.uOneH, 1.0000008)
+  //
 
   gl.viewport(0, 0,
     controller.width,
