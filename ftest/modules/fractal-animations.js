@@ -121,7 +121,7 @@ function drawFlat () {
 
   const key = Math.random()
   gl.uniform1f(this.uKey1, key)
-  gl.uniform1f(this.uKey2, 1 - key)
+  gl.uniform1f(this.uKey2, 1 / (1 + key))
 
   gl.viewport(0, 0,
     controller.width,
