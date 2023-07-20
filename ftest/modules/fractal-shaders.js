@@ -366,6 +366,26 @@ float minus_frc(float a, float b) {
   return (a - b) * oneF;
   // return mix(a, a - b, b != 0.0 ? 1.0 : 0.0);
 }
+
+//
+// B version ###
+//
+float times_frcB(float a, float b) {
+  return a * b * oneE;
+  // return mix(0.0, a * b, b != 0.0 ? 1.0 : 0.0);
+}
+
+float plus_frcB(float a, float b) {
+  return a * oneB + b * oneC;
+  // return mix(a, a + b, b != 0.0 ? 1.0 : 0.0);
+}
+
+float minus_frcB(float a, float b) {
+  // Debug -- throwing a lot of stuff out here to see if anything
+  // forces Safari/iDevices to work:
+  return (a - b) * oneF;
+  // return mix(a, a - b, b != 0.0 ? 1.0 : 0.0);
+}
 `
 
 shaders.passthrough2dVert =
@@ -609,21 +629,7 @@ void main (void) {
   float n;
   
   // debug: mul22 behavior slightly different, add22 behavior pathological:
-  if (AB) {
-    real = mul22(x, zoomedReciprocal);
-    imaginary = mul22(y, zoomedReciprocal);
-
-    real = add22(real, offsetX);
-    imaginary = add22(imaginary, offsetY);
-
-    if (useDoublePrecision) {
-      n = doublePrecisionMandelbrotB(real, imaginary);
-  
-    } else {
-      n = singlePrecisionMandelbrot(vec2(real.x, imaginary.x));
-    }
-
-  } else {
+  if (!AB) {
     // Normalize the pixel coordinates to the range (-.5, -.5) to (.5, .5):
     real = mul(x, zoomedReciprocal);
     imaginary = mul(y, zoomedReciprocal);
@@ -637,6 +643,22 @@ void main (void) {
     } else {
       n = singlePrecisionMandelbrot(vec2(real.x, imaginary.x));
     }
+  }
+
+  if (AB) {
+    real = mul(x, zoomedReciprocal);
+    imaginary = mul(y, zoomedReciprocal);
+
+    real = add(real, offsetX);
+    imaginary = add(imaginary, offsetY);
+
+    if (useDoublePrecision) {
+      n = doublePrecisionMandelbrotB(real, imaginary);
+  
+    } else {
+      n = singlePrecisionMandelbrot(vec2(real.x, imaginary.x));
+    }
+
   }
 
   vec3 lch1 = LChFromSRGB(vec3(0.97, 0.3, 0.5));
