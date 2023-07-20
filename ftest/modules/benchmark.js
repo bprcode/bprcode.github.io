@@ -98,6 +98,7 @@ function initialize () {
     // state.benchmark = event.target.checked
     if (event.target.checked) {
       fractalControllers[0].play()
+      fractalControllers[1].play()
       fractalControllers[0].showFPS = () => {
         select('.fps').textContent =
           fractalControllers[0].lastFPS.toFixed(1)
@@ -106,6 +107,7 @@ function initialize () {
 
     } else {
       fractalControllers[0].pause()
+      fractalControllers[1].pause()
       fractalControllers[0].showFPS = null
       select('.fps').textContent = ''
     }

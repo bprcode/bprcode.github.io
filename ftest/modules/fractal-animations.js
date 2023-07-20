@@ -119,9 +119,9 @@ function drawFlat () {
     throw Error('Dimensions not specified for animation.')
   }
 
-  const key = Math.random()
+  const key = 1 + (Math.random() - 0.5) / 10000000
   gl.uniform1f(this.uKey1, key)
-  gl.uniform1f(this.uKey2, 1 / (1 + key))
+  gl.uniform1f(this.uKey2, 1 / (key))
 
   gl.viewport(0, 0,
     controller.width,
