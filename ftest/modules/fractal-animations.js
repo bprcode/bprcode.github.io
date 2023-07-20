@@ -115,19 +115,6 @@ function drawFlat () {
     throw Error('Dimensions not specified for animation.')
   }
 
-
-  // debug -- really struggling with the compiler here
-  gl.uniform1f(this.uOne, 1) // Used to block unwanted shader optimization
-  gl.uniform1f(this.uOneA, 1.0000001)
-  gl.uniform1f(this.uOneB, 1.0000002)
-  gl.uniform1f(this.uOneC, 1.0000003)
-  gl.uniform1f(this.uOneD, 1.0000004)
-  gl.uniform1f(this.uOneE, 1.0000005)
-  gl.uniform1f(this.uOneF, 1.0000006)
-  gl.uniform1f(this.uOneG, 1.0000007)
-  gl.uniform1f(this.uOneH, 1.0000008)
-  //
-
   gl.viewport(0, 0,
     controller.width,
     controller.height)
@@ -142,11 +129,11 @@ function drawFlat () {
   gl.uniform1f(this.uIterations, controller.iterations)
   if (controller.AB) {
     gl.uniform1i(this.uAB, true)
-    // log('setting uAB true')
+    log('setting uAB true')
     
   } else {
     gl.uniform1i(this.uAB, false)
-    // log('setting uAB false')
+    log('setting uAB false')
   }
 
   gl.uniform1i(this.uUseDoublePrecision,
