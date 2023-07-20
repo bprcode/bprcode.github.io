@@ -316,15 +316,6 @@ vec2 mul12 (float a, float b) {
   return vec2(product, roundoff);
 }
 
-// debug -- Guessing this is needed?
-// float compare22 (vec2 a, vec2 b) {
-//   float bigResult = step(abs(b.x), abs(a.x));
-//   float littleResult = step(abs(b.y), abs(a.y));
-//   float same = step(abs(b.x), abs(a.x)) * step(abs(a.x), abs(b.x));
-
-//   return same * littleResult + (1. - same) * bigResult;
-// }
-
 // two paired operands -> one paired result
 vec2 add22 (vec2 a, vec2 b) {
   float r = a.x + one * b.x;
@@ -461,20 +452,6 @@ vec2 add (vec2 dsa, vec2 dsb) {
   return dsc;
 }
 
-// Substract: res = ds_sub(a, b) => res = a - b
-vec2 sub (vec2 dsa, vec2 dsb) {
-  vec2 dsc;
-  float e, t1, t2;
-
-  t1 = minus_frc(dsa.x, dsb.x);
-  e = minus_frc(t1, dsa.x);
-  t2 = minus_frc(plus_frc(plus_frc(minus_frc(minus_frc(0.0, dsb.x), e), minus_frc(dsa.x, minus_frc(t1, e))), dsa.y), dsb.y);
-
-  dsc.x = plus_frc(t1, t2);
-  dsc.y = minus_frc(t2, minus_frc(dsc.x, t1));
-  return dsc;
-}
-
 // Multiply: res = ds_mul(a, b) => res = a * b
 vec2 mul (vec2 dsa, vec2 dsb) {
   vec2 dsc;
@@ -503,17 +480,54 @@ vec2 mul (vec2 dsa, vec2 dsb) {
   return dsc;
 }
 
+vec2 addB (vec2 dsa, vec2 dsb) {
+  vec2 dsc;
+  float t1, t2, e;
+
+  t1 = plus_frcB(dsa.x, dsb.x);
+  e = minus_frcB(t1, dsa.x);
+  t2 = plus_frcB(
+    plus_frcB(
+      plus_frcB(minus_frcB(dsb.x, e), minus_frcB(dsa.x, minus_frcB(t1, e))),
+      dsa.y),
+    dsb.y);
+  dsc.x = plus_frcB(t1, t2);
+  dsc.y = minus_frcB(t2, minus_frcB(dsc.x, t1));
+  return dsc;
+}
+
+// Multiply: res = ds_mul(a, b) => res = a * b
+vec2 mulB (vec2 dsa, vec2 dsb) {
+  vec2 dsc;
+  float c11, c21, c2, e, t1, t2;
+  float a1, a2, b1, b2, cona, conb, split = 8193.;
+
+  cona = times_frcB(dsa.x, split);
+  conb = times_frcB(dsb.x, split);
+  a1 = minus_frcB(cona, minus_frcB(cona, dsa.x));
+  b1 = minus_frcB(conb, minus_frcB(conb, dsb.x));
+  a2 = minus_frcB(dsa.x, a1);
+  b2 = minus_frcB(dsb.x, b1);
+
+  c11 = times_frcB(dsa.x, dsb.x);
+  c21 = plus_frcB(times_frcB(a2, b2), plus_frcB(times_frcB(a2, b1), plus_frcB(times_frcB(a1, b2), minus_frcB(times_frcB(a1, b1), c11))));
+
+  c2 = plus_frcB(times_frcB(dsa.x, dsb.y), times_frcB(dsa.y, dsb.x));
+
+  t1 = plus_frcB(c11, c2);
+  e = minus_frcB(t1, c11);
+  t2 = plus_frcB(plus_frcB(times_frcB(dsa.y, dsb.y), plus_frcB(minus_frcB(c2, e), minus_frcB(c11, minus_frcB(t1, e)))), c21);
+
+  dsc.x = plus_frcB(t1, t2);
+  dsc.y = minus_frcB(t2, minus_frcB(dsc.x, t1));
+
+  return dsc;
+}
+
 vec2 set(float a) {
   return vec2(a, 0.0);
 }
 
-vec4 dcAdd(vec4 a, vec4 b) {
-  return vec4(add(a.xy,b.xy),add(a.zw,b.zw));
-}
-
-vec4 dcSub(vec4 a, vec4 b) {
-  return vec4(sub(a.xy,b.xy),sub(a.zw,b.zw));
-}
 // *** REFACTOR THE PRECEDING SECTION OUT
 
 float singlePrecisionMandelbrot (vec2 c) {
@@ -596,22 +610,22 @@ float doublePrecisionMandelbrotB (vec2 real, vec2 imaginary) {
   vec2 im;
 
   for (float n = 1.; n <= iterations; n++) {
-    im = addDouble(addDouble(addDouble(product, -xx), -yy), imaginary);
+    im = addB(addB(addB(product, -xx), -yy), imaginary);
     // w.y = product - xx - yy + c.y;
-    re = addDouble(addDouble(xx, -yy), real);
+    re = addB(addB(xx, -yy), real);
     // w.x = xx - yy + c.x;
 
-    xx = mul(re, re);
+    xx = mulB(re, re);
     // xx = w.x * w.x;
-    yy = mul(im, im);
+    yy = mulB(im, im);
     // yy = w.y * w.y;
 
-    sum = addDouble(re, im);
+    sum = addB(re, im);
     // sum = w.x + w.y;
-    product = mul(sum, sum);
+    product = mulB(sum, sum);
     // product = sum * sum;
 
-    result += step(result, 0.) * step(4., addDouble(xx, yy)[0]) * n;
+    result += step(result, 0.) * step(4., addB(xx, yy)[0]) * n;
     // result += step(result, 0.) * step(4., xx[0] + yy[0]) * n;
   }
 
@@ -646,11 +660,11 @@ void main (void) {
   }
 
   if (AB) {
-    real = mul(x, zoomedReciprocal);
-    imaginary = mul(y, zoomedReciprocal);
+    real = mulB(x, zoomedReciprocal);
+    imaginary = mulB(y, zoomedReciprocal);
 
-    real = add(real, offsetX);
-    imaginary = add(imaginary, offsetY);
+    real = addB(real, offsetX);
+    imaginary = addB(imaginary, offsetY);
 
     if (useDoublePrecision) {
       n = doublePrecisionMandelbrotB(real, imaginary);
