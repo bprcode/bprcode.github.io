@@ -4,6 +4,10 @@
 
 export const shaders = {}
 
+console.log('debug -- still trying to reconcile pathological shader optimizations')
+console.log('however, idea for next time: encrypt the calculation every frame')
+console.log('to prevent the compiler from optimizing away the algorithm')
+console.log('also, test a set/reset to see if it triggers the degradation-after-some-frames behavior')
 const colorFunctions =
 /* glsl */`
 #define pi 3.14159265359
@@ -354,7 +358,7 @@ float plus_frc(float a, float b) {
 float minus_frc(float a, float b) {
   // Debug -- throwing a lot of stuff out here to see if anything
   // forces Safari/iDevices to work:
-  return (a - b) * oneF;
+  return (a - b * (key1 + key2)) * oneF;
   // return mix(a, a - b, b != 0.0 ? 1.0 : 0.0);
 }
 
@@ -374,7 +378,8 @@ float plus_frcB(float a, float b) {
 float minus_frcB(float a, float b) {
   // Debug -- throwing a lot of stuff out here to see if anything
   // forces Safari/iDevices to work:
-  return (a - b) * oneF;
+  return float(a + float(b * dot(vec2(key1, 1.), -vec2(1., key2))));
+  // return float(a - b * (key1 + key2));
   // return mix(a, a - b, b != 0.0 ? 1.0 : 0.0);
 }
 `
@@ -407,6 +412,8 @@ uniform float oneG;
 uniform float oneH;
 uniform float overOne;
 uniform float underOne;
+uniform float key1;
+uniform float key2;
 uniform float osc;
 uniform float iterations;
 uniform bool useDoublePrecision;
