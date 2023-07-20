@@ -354,7 +354,7 @@ float plus_frc(float a, float b) {
 float minus_frc(float a, float b) {
   // Debug -- throwing a lot of stuff out here to see if anything
   // forces Safari/iDevices to work:
-  return (a - b * oneG) * oneF;
+  return (a - b * underOne) * oneF;
   // return mix(a, a - b, b != 0.0 ? 1.0 : 0.0);
 }
 
@@ -374,7 +374,7 @@ float plus_frcB(float a, float b) {
 float minus_frcB(float a, float b) {
   // Debug -- throwing a lot of stuff out here to see if anything
   // forces Safari/iDevices to work:
-  return (a - b * oneH);
+  return (a - b) * overOne;
   // return mix(a, a - b, b != 0.0 ? 1.0 : 0.0);
 }
 `

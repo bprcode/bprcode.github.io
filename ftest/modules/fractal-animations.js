@@ -129,11 +129,11 @@ function drawFlat () {
   gl.uniform1f(this.uIterations, controller.iterations)
   if (controller.AB) {
     gl.uniform1i(this.uAB, true)
-    log('setting uAB true')
+    // log('setting uAB true')
     
   } else {
     gl.uniform1i(this.uAB, false)
-    log('setting uAB false')
+    // log('setting uAB false')
   }
 
   gl.uniform1i(this.uUseDoublePrecision,
