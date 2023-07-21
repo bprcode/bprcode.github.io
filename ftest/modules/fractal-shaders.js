@@ -461,16 +461,16 @@ vec2 mul12 (float a, float b) {
 
 // two paired operands -> one paired result
 vec2 add22 (vec2 a, vec2 b) {
-  float r = a.x + one * b.x;
+  float r = a.x + oneA * b.x;
   float comparison = step(abs(b.x), abs(a.x));
   float s =
     comparison * // If a hi >= b hi...
-      (((a.x - one * r) + one * b.x) + one * b.y) + one * a.y
+      (((a.x - (2.-key1*key2) * r) + oneC * b.x) + oneD * b.y) + oneE * a.y
 
     + (1. - one * comparison) * // else...
       // Warning: The "one *" is necessary to avoid a pathological
       // compiler optimization which otherwise ruins the double precision:
-      (((b.x - one * r) + one * a.x) + one * a.y) + one * b.y;
+      (((b.x - (2.-key3*key4) * r) + oneG * a.x) + oneH * a.y) + one * b.y;
 
   return add12(r, s);
 }
@@ -506,21 +506,26 @@ float minus_frc(float a, float b) {
 // B version ###
 //
 float times_frcB(float a, float b) {
-  return a * b * oneE;
-  // return mix(0.0, a * b, b != 0.0 ? 1.0 : 0.0);
+  //return a * b * oneE;
+  // bad: return mix(0.0, a * b, b != 0.0 ? 1.0 : 0.0);
+  // better:
+  return mix(0., a * b, a != 0.);
 }
 
 float plus_frcB(float a, float b) {
-  return a * oneB + b * oneC;
-  // return mix(a, a + b, b != 0.0 ? 1.0 : 0.0);
+  //return a * oneB + b * oneC;
+  // bad: return mix(a, a + b, b != 0.0 ? 1.0 : 0.0);
+  // better:
+  return mix(a, a + b, b != 0.);
 }
 
 float minus_frcB(float a, float b) {
   // Debug -- throwing a lot of stuff out here to see if anything
   // forces Safari/iDevices to work:
-  return (a - b ) * (2. - key1 * key2);
-  // return float(a - b * (key1 + key2));
-  // return mix(a, a - b, b != 0.0 ? 1.0 : 0.0);
+  //return (a - b ) * (2. - key1 * key2);
+  // bad: return mix(a, a - b, b != 0.0 ? 1.0 : 0.0);
+  // better:
+  return mix(a, a - b, b != 0.);
 }
 
 `
