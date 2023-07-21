@@ -485,19 +485,19 @@ vec2 mul22 (vec2 a, vec2 b) {
 }
 
 float times_frc(float a, float b) {
-  return a * b * oneE;
+  return a * b;
   // return mix(0.0, a * b, b != 0.0 ? 1.0 : 0.0);
 }
 
 float plus_frc(float a, float b) {
-  return a * oneB + b * oneC;
+  return a + b;
   // return mix(a, a + b, b != 0.0 ? 1.0 : 0.0);
 }
 
 float minus_frc(float a, float b) {
   // Debug -- throwing a lot of stuff out here to see if anything
   // forces Safari/iDevices to work:
-  return (a - b ) * (2. - key1 * key2) ;
+  return (a - b * oneD) * (2. - key1 * key2);
   // return mix(a, a - b, b != 0.0 ? 1.0 : 0.0);
 }
 
@@ -517,7 +517,7 @@ float plus_frcB(float a, float b) {
 float minus_frcB(float a, float b) {
   // Debug -- throwing a lot of stuff out here to see if anything
   // forces Safari/iDevices to work:
-  return a - b * one;
+  return (a - b ) * (2. - key1 * key2);
   // return float(a - b * (key1 + key2));
   // return mix(a, a - b, b != 0.0 ? 1.0 : 0.0);
 }
