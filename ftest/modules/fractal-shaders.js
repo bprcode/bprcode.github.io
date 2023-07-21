@@ -497,7 +497,7 @@ float plus_frc(float a, float b) {
 float minus_frc(float a, float b) {
   // Debug -- throwing a lot of stuff out here to see if anything
   // forces Safari/iDevices to work:
-  return (a - b ) * (2. - key1 * key2);
+  return (a - b * (2. - key1 * key2)) * (2. - key1 * key2);
   // return (a - b * (2. - key3 * key4)) * (2. - key1 * key2);
   // return mix(a, a - b, b != 0.0 ? 1.0 : 0.0);
 }
