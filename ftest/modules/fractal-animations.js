@@ -79,6 +79,8 @@ function initFlat () {
   this.uOneH = gl.getUniformLocation(this.program, 'oneH')
   this.uKey1 = gl.getUniformLocation(this.program, 'key1')
   this.uKey2 = gl.getUniformLocation(this.program, 'key2')
+  this.uKey3 = gl.getUniformLocation(this.program, 'key3')
+  this.uKey4 = gl.getUniformLocation(this.program, 'key4')
   this.uOverOne = gl.getUniformLocation(this.program, 'overOne')
   this.uUnderOne = gl.getUniformLocation(this.program, 'underOne')
   this.uOsc = gl.getUniformLocation(this.program, 'osc')
@@ -98,6 +100,8 @@ function initFlat () {
   gl.uniform1f(this.uOneH, 1.000000)
   gl.uniform1f(this.uKey1, 1.000000)
   gl.uniform1f(this.uKey2, 1.000000)
+  gl.uniform1f(this.uKey3, 1.000000)
+  gl.uniform1f(this.uKey4, 1.000000)
   gl.uniform1f(this.uOverOne, 1.0000001)
   gl.uniform1f(this.uUnderOne, 0.9999999)
   gl.uniform1f(this.uIterations, 20)
@@ -122,6 +126,9 @@ function drawFlat () {
   const key = 1 + (Math.random() - 0.5) / 10000000
   gl.uniform1f(this.uKey1, key)
   gl.uniform1f(this.uKey2, 1 / (key))
+  const otherKey = 1 + (Math.random() - 0.5) / 10000000
+  gl.uniform1f(this.uKey3, otherKey)
+  gl.uniform1f(this.uKey4, 1 / (otherKey))
 
   gl.viewport(0, 0,
     controller.width,
