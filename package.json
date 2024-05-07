@@ -1,7 +1,7 @@
 {
-  "name": "hello-matrix",
+  "name": "bprcode-pages",
   "version": "1.0.0",
-  "description": "",
+  "description": "Personal project portfolio for bprcode",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -9,5 +9,10 @@
   },
   "keywords": [],
   "author": "bprcode <bprcode@gmail.com>",
-  "license": "MIT"
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bprcode/bprcode.github.io.git"
+  },
+  "homepage": "https://scintilla.dev"
 }
