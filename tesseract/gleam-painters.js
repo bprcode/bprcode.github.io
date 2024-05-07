@@ -454,7 +454,7 @@ painters.initTexturedCompositor = function () {
   })
   
   // Begin load:
-  lensImage.src = '../cloud-1.png'
+  lensImage.src = '/tesseract/cloud-1.png'
 }
 
 painters.drawTexturedCompositor = function () {
