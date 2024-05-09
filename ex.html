@@ -6,11 +6,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@100;300;400&display=swap" rel="stylesheet">
 
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  
+
+  <script type="module" src="/tesseract/tesseract-controller.js"></script>
+  <script type="module" src="/tesseract/interface.js"></script>
 
   <meta name="description" content="Full-stack web developer. Stylish styles, reliable React, and backend to boot.">
   <meta property="og:title" content="scintilla.dev">
@@ -24,15 +30,47 @@
   <meta property="og:description" content="Full-stack web developer. Stylish styles, reliable React, and backend to boot.">
   <meta property="og:site_name" content="scintilla.dev">
 
+  <meta name="theme-color" content="#024" />
+
   <title>scroll ex</title>
 
 </head>
 
 <body>
-  <header>
-    <span>header content 1</span>
-    <span>header content 2</span>
-  </header>
+  
+  <div class="header-footer-overlay">
+    <header>
+      <span class="name-tag">Bryan Rauen</span>
+      <span class="small-title">Web Developer</span>
+    </header>
+    <h1 class="noscript-notice">Initializing scripts...</h1>
+    <footer>
+      <span class="link-box-container">
+        <div class="underline no-delay"></div>
+        <span class="link-box" data-section="about">
+          <a href="#" class="line-link">About</a>
+        </span>
+        <span class="link-box" data-section="portfolio">
+          <a href="#" class="line-link">Portfolio</a>
+        </span>
+        <span class="link-box" data-section="contact">
+          <a href="#" class="line-link">Contact</a>
+        </span>
+      </span>
+  
+      <button class="fullscreen">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-fullscreen" viewBox="0 0 17 17">
+          <path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/>
+        </svg>
+      </button>
+      <button class="gear" data-section="settings">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear-wide" viewBox="0 0 17 17">
+          <path d="M8.932.727c-.243-.97-1.62-.97-1.864 0l-.071.286a.96.96 0 0 1-1.622.434l-.205-.211c-.695-.719-1.888-.03-1.613.931l.08.284a.96.96 0 0 1-1.186 1.187l-.284-.081c-.96-.275-1.65.918-.931 1.613l.211.205a.96.96 0 0 1-.434 1.622l-.286.071c-.97.243-.97 1.62 0 1.864l.286.071a.96.96 0 0 1 .434 1.622l-.211.205c-.719.695-.03 1.888.931 1.613l.284-.08a.96.96 0 0 1 1.187 1.187l-.081.283c-.275.96.918 1.65 1.613.931l.205-.211a.96.96 0 0 1 1.622.434l.071.286c.243.97 1.62.97 1.864 0l.071-.286a.96.96 0 0 1 1.622-.434l.205.211c.695.719 1.888.03 1.613-.931l-.08-.284a.96.96 0 0 1 1.187-1.187l.283.081c.96.275 1.65-.918.931-1.613l-.211-.205a.96.96 0 0 1 .434-1.622l.286-.071c.97-.243.97-1.62 0-1.864l-.286-.071a.96.96 0 0 1-.434-1.622l.211-.205c.719-.695.03-1.888-.931-1.613l-.284.08a.96.96 0 0 1-1.187-1.186l.081-.284c.275-.96-.918-1.65-1.613-.931l-.205.211a.96.96 0 0 1-1.622-.434L8.932.727zM8 12.997a4.998 4.998 0 1 1 0-9.995 4.998 4.998 0 0 1 0 9.996z"/>
+        </svg>
+      </button>
+    </footer>
+  </div>
+  
   <main>
     <div class="backdrop"></div>
     <canvas width="300" height="300" id="main-canvas" class="render-canvas"></canvas>
@@ -40,14 +78,41 @@
   </main>
   <div class="mobile-overscroll"></div>
 
-  <footer>
-      <span>1</span>
-      <span>2</span>
-      <span>3</span>
-  </footer>
+  <section class="content settings frosted concealed">
+    <button class="close"></button>
+    <h1>Settings</h1>
+
+    <fieldset class="grab-style">
+      <label>
+        <input type="radio" name="grab-type" value="3d">
+        Grab in 3D
+      </label>
+      <label>
+        <input type="radio" name="grab-type" value="4d" checked>
+        Grab in 4D
+      </label>
+    </fieldset>
+
+    <details>
+      <summary>Animations</summary>
+      <ul class="ul-animations"></ul>
+    </details>
+
+    <details>
+      <summary>Technical Details</summary>
+      <span class="view-title" id="first-title">
+        <div><span id="fps-1">&nbsp;</span></div>
+        <div class="view-label">Initializing WebGL...</div>
+      </span>
+
+      <pre class="feedback"></pre>
+    </details>
+    
+  </section>
+
+  
 </body>
 </html>
-
 
 <style>
 
@@ -71,9 +136,35 @@ html {
   --footer-height: 10rem;
 }
 
+.header-footer-overlay {
+  position: fixed;
+  display: grid;
+  top: 0;
+  box-shadow: inset 0 0 2rem cyan;
+  height: 100%;
+  width: 100%;
+
+  grid-template-areas:
+    'nametag'
+    'fill'
+    'footer';
+  grid-template-rows: fit-content(0px) 1fr fit-content(0px);
+}
+
+.header-footer-overlay * {
+  box-shadow: inset 0 0 1rem orange;
+}
+
 body {
   background-color: #000;
-  color: #eee;
+  -webkit-font-smoothing: antialiased;
+  font-family: 'Catamaran', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.noscript-notice {
+  grid-area: fill;
+  margin: auto;
+  color: rgb(172, 172, 180);
 }
 
 main {
@@ -86,7 +177,6 @@ main {
 }
 
 .mobile-overscroll {
-  background-color: #411;
   width: 100%;
   height: 10vh; /* fallback value for older browsers */
 }
@@ -100,12 +190,10 @@ main {
 }
 
 .render-canvas {
+  background-color: #035;
   position: fixed;
   touch-action: none;
   cursor: grab;
-
-  background-color: #035;
-  box-shadow: 1rem 1rem 1rem #0004;
 
   /* default for older browsers, approximate correction for address bar: */
   height: min(
@@ -134,16 +222,42 @@ main {
   }
 }
 
-header {
-  box-shadow: inset 0 0 1rem red;
-  width: 100%;
-  position: fixed;
+.content {
+  position: relative;
+  z-index: 1; /* Stack atop canvas. */
+  grid-area: name-container / name-container / canvas-container / canvas-container;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width:min(95vw, 50rem); width:min(95lvw, 50rem);
+  max-height: calc(100%
+    - var(--content-top-margin)
+    - var(--content-bottom-margin));
+  padding-left: var(--content-padding);
+  padding-right: var(--content-padding);
+  font-weight: 300;
+  font-size: 1.0em;
+}
+
+.concealed {
+  position: absolute;
   top: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hidden {
+  display: none;
+}
+
+header {
+  grid-area: nametag;
+  box-shadow: inset 0 0 1rem red !important;
+  width: 100%;
+  max-width: 60ch;
   height: var(--header-height);
 
-  max-width: 60ch;
-  left: 50%;
-  transform: translateX(-50%);
+  margin-left: auto;
+  margin-right: auto;
     
   display: flex;
   justify-content: space-between;
@@ -158,17 +272,31 @@ footer * {
 }
 
 footer {
+  grid-area: footer;
   box-shadow: inset 0 0 1rem green;
   width: 100%;
-  position: fixed;
-  bottom: 0;
+  max-width: 60ch;
   height: var(--footer-height);
   
-  max-width: 60ch;
-  left: 50%;
-  transform: translateX(-50%);
+  margin-left: auto;
+  margin-right: auto;
 
   display: flex;
   justify-content: space-between;
 }
+
+@media (orientation: landscape) {
+  :root {
+    --header-height: 0px;
+  }
+
+  .header-footer-overlay {
+    grid-template-areas:
+    'fill fill'
+    'nametag footer';
+
+    grid-template-rows: 1fr fit-content(0px);
+  }
+}
+
 </style>
