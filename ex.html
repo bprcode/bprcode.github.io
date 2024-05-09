@@ -81,12 +81,8 @@ main {
   height: 100vh;
   height: 100dvh;
   
-  transition: height 0.2s ease-out;
   background-color: #333;
   box-shadow: inset 0 0 3rem black;
-
-display: grid;
-place-content: center;
 }
 
 .mobile-overscroll {
@@ -105,30 +101,19 @@ place-content: center;
 
 .render-canvas {
   position: fixed;
-
   touch-action: none;
   cursor: grab;
+
+  background-color: #035;
+  box-shadow: 1rem 1rem 1rem #0004;
+
+  /* default for older browsers, approximate correction for address bar: */
   height: min(
     var(--max-canvas-resolution),
     95vmin,
-    calc(100vh - var(--name-container-height) - var(--nav-container-height))
-  );
-
-  /* DEBUG -- RESTORE MAX RESOLUTION LIMIT */
-  /* REVISION: */
-  /* default for older browsers, approximate correction for address bar: */
-  height: min(
-    95vmin,
     calc(100vh - var(--header-height) - var(--footer-height) - 70px)
   );
-  
-
-  margin-left: auto;
-  margin-right: auto;
-
-  background-color: #555;
-  box-shadow: 1rem 1rem 1rem #0004;
-  
+    
   left: 50%;
   transform: translate(-50%, -50%);
   
@@ -139,6 +124,7 @@ place-content: center;
 @supports(height: 100dvh) {
   .render-canvas {
     height: min(
+      var(--max-canvas-resolution),
       95dvmin,
       calc(100dvh - var(--header-height) - var(--footer-height))
     );
@@ -147,27 +133,6 @@ place-content: center;
     );
   }
 }
-
-/* @media (orientation: landscape) {
-  .render-canvas {
-    height: min(
-      var(--max-canvas-resolution),
-      95vmin,
-      calc(100vh - var(--nav-container-height) - 70px)
-      
-    );
-  }
-
-  @supports (height: 100dvh) {
-    .render-canvas {
-      height: min(
-        var(--max-canvas-resolution),
-        95vmin,
-        calc(100dvh - var(--nav-container-height))
-      );
-    }
-  }
-} */
 
 header {
   box-shadow: inset 0 0 1rem red;
@@ -207,27 +172,3 @@ footer {
   justify-content: space-between;
 }
 </style>
-
-<script>
-  // setTimeout(() => {
-  //  window.scrollTo(0, 999999999)
-  // }, 2000)
-  // function bounceBack(entries, observer) {
-  //   entries.forEach(entry => {
-  //     console.log(entry)
-  //     document.querySelector('p').innerText = entry.intersectionRatio
-  //     + ' isIntersecting?' + entry.isIntersecting
-
-  //     if(entry.isIntersecting) {
-  //       setTimeout(() => {
-  //         window.scrollTo(0, 0)
-  //       }, 2000)
-
-  //     }
-  //   })
-  // }
-  // const observer = new IntersectionObserver(bounceBack, {threshold: 0.5})
-
-  // observer.observe(document.querySelector('.mobile-overscroll'))
-
-</script>
