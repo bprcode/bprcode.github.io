@@ -1,0 +1,233 @@
+<!doctype html>
+<!-- Copyright © 2023 Bryan Rauen. All rights reserved. https://bprcode.github.io/ -->
+
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  
+
+  <meta name="description" content="Full-stack web developer. Stylish styles, reliable React, and backend to boot.">
+  <meta property="og:title" content="scintilla.dev">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="/meta-preview.webp">
+  <meta property="og:image:width" content="608">
+  <meta property="og:image:height" content="608">
+  <meta property="og:image:type" content="image/webp">
+  <meta property="og:image:alt" content="A tesseract rendered from luminous planes">
+  <meta property="og:url" content="https://scintilla.dev">
+  <meta property="og:description" content="Full-stack web developer. Stylish styles, reliable React, and backend to boot.">
+  <meta property="og:site_name" content="scintilla.dev">
+
+  <title>scroll ex</title>
+
+</head>
+
+<body>
+  <header>
+    <span>header content 1</span>
+    <span>header content 2</span>
+  </header>
+  <main>
+    <div class="backdrop"></div>
+    <canvas width="300" height="300" id="main-canvas" class="render-canvas"></canvas>
+    
+  </main>
+  <div class="mobile-overscroll"></div>
+
+  <footer>
+      <span>1</span>
+      <span>2</span>
+      <span>3</span>
+  </footer>
+</body>
+</html>
+
+
+<style>
+
+html {
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  /* box-shadow: 0px 0px 2px rgba(100, 100, 100, 0.533) inset; */
+}
+
+:root {
+  --max-canvas-resolution: 500px;
+  --header-height: 6rem;
+  --footer-height: 12rem;
+}
+
+body {
+  background-color: #000;
+  color: #eee;
+}
+
+main {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  
+  transition: height 0.2s ease-out;
+  background-color: #333;
+  box-shadow: inset 0 0 3rem black;
+
+display: grid;
+place-content: center;
+}
+
+.mobile-overscroll {
+  background-color: #411;
+  width: 100%;
+  height: 10vh; /* fallback value for older browsers */
+}
+
+@supports (height: 100svh) {
+  .mobile-overscroll {
+    height: calc(110lvh - 110svh); /*  On desktop, this element
+      has zero height, but on mobile, it provides a slight overflow
+      enabling the user to hide the address bar by drag-scrolling. */
+  }
+}
+
+.render-canvas {
+  position: fixed;
+
+  touch-action: none;
+  cursor: grab;
+  height: min(
+    var(--max-canvas-resolution),
+    95vmin,
+    calc(100vh - var(--name-container-height) - var(--nav-container-height))
+  );
+
+  /* DEBUG -- RESTORE MAX RESOLUTION LIMIT */
+  /* REVISION: */
+  /* default for older browsers, approximate correction for address bar: */
+  height: min(
+    95vmin,
+    calc(100vh - var(--header-height) - var(--footer-height) - 70px)
+  );
+  
+
+  margin-left: auto;
+  margin-right: auto;
+
+  background-color: #555;
+  box-shadow: 1rem 1rem 1rem #0004;
+  
+  left: 50%;
+  transform: translate(-50%, -50%);
+  
+  top: calc(var(--header-height)
+    + 0.5 * (100vh - var(--header-height) - var(--footer-height) - 60px));
+}
+
+@supports(height: 100dvh) {
+  .render-canvas {
+    height: min(
+      95dvmin,
+      calc(100dvh - var(--header-height) - var(--footer-height))
+    );
+    top: calc(var(--header-height) +
+      0.5 * (100dvh - var(--header-height) - var(--footer-height))
+    );
+  }
+}
+
+/* @media (orientation: landscape) {
+  .render-canvas {
+    height: min(
+      var(--max-canvas-resolution),
+      95vmin,
+      calc(100vh - var(--nav-container-height) - 70px)
+      
+    );
+  }
+
+  @supports (height: 100dvh) {
+    .render-canvas {
+      height: min(
+        var(--max-canvas-resolution),
+        95vmin,
+        calc(100dvh - var(--nav-container-height))
+      );
+    }
+  }
+} */
+
+header {
+  box-shadow: inset 0 0 1rem red;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  height: var(--header-height);
+
+  max-width: 60ch;
+  left: 50%;
+  transform: translateX(-50%);
+    
+  display: flex;
+  justify-content: space-between;
+}
+
+header * {
+  box-shadow: inset 0 0 1rem maroon;
+}
+
+footer * {
+  box-shadow: inset 0 0 1rem darkgreen;
+}
+
+footer {
+  box-shadow: inset 0 0 1rem green;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  height: var(--footer-height);
+  
+  max-width: 60ch;
+  left: 50%;
+  transform: translateX(-50%);
+
+  display: flex;
+  justify-content: space-between;
+}
+</style>
+
+<script>
+  // setTimeout(() => {
+  //  window.scrollTo(0, 999999999)
+  // }, 2000)
+  // function bounceBack(entries, observer) {
+  //   entries.forEach(entry => {
+  //     console.log(entry)
+  //     document.querySelector('p').innerText = entry.intersectionRatio
+  //     + ' isIntersecting?' + entry.isIntersecting
+
+  //     if(entry.isIntersecting) {
+  //       setTimeout(() => {
+  //         window.scrollTo(0, 0)
+  //       }, 2000)
+
+  //     }
+  //   })
+  // }
+  // const observer = new IntersectionObserver(bounceBack, {threshold: 0.5})
+
+  // observer.observe(document.querySelector('.mobile-overscroll'))
+
+</script>
