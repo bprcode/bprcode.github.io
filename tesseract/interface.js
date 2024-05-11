@@ -111,10 +111,16 @@ function initialize () {
     [select('.gear'), ...all('.link-box')]) {
 
     clickable.addEventListener('click', event => {
+
       const shineAnimationTime = 1100
       const selector = clickable.dataset.section
       const section = select('.' + selector)
       const shineContainer = section.querySelector('.shine-container')
+
+      // Just close the pane if it's already open:
+      if(section.classList.contains('opaque')){
+        return closeAllPanes()
+      }
 
       section.classList.remove('concealed')
       section.classList.add('opaque')
