@@ -392,6 +392,16 @@ main {
   filter: brightness(120%);
 }
 
+.opaque {
+  color: var(--brighter-text);
+  opacity: 1;
+}
+
+.opaque ~ .name-container {
+  /* Fade out name tag when popping up a section in portrait orientation: */
+  opacity: 0;
+}
+
 .concealed {
   position: absolute;
   top: 0;
@@ -416,6 +426,35 @@ main {
 .fade-out {
   opacity: 0 !important;
   transition: opacity ease-in-out 1.35s !important;
+}
+
+.underline {
+  position: absolute;
+  right: 0px;
+  left: 100%;
+  top: 5ex;
+  height: 1px;
+  border-bottom: 1px solid var(--light-text);
+}
+
+.bright-underline {
+  filter: brightness(120%); 
+}
+
+.delay-left {
+  transition: left 0.2s ease-in-out 0.1s, right 0.2s ease-in-out;
+}
+
+.delay-right {
+  transition: left 0.2s ease-in-out, right 0.2s ease-in-out 0.1s;
+}
+
+.no-delay {
+  transition: left 0.4s ease-in-out, right 0.4s ease-in-out;
+}
+
+.display-block {
+  display: block !important;
 }
 
 header {
@@ -468,6 +507,11 @@ footer {
 
     grid-template-rows: 1fr fit-content(0px);
     grid-template-columns: fit-content(0px) 1fr;
+  }
+
+  .opaque ~ .name-container {
+    /* Override fade-out in landscape orientation: */
+    opacity: 1;
   }
 
   header {
