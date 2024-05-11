@@ -112,7 +112,7 @@ function initialize () {
 
     clickable.addEventListener('click', event => {
 
-      const shineAnimationTime = 1100
+      const shineAnimationTime = 3100
       const selector = clickable.dataset.section
       const section = select('.' + selector)
       const shineContainer = section.querySelector('.shine-container')
@@ -126,12 +126,16 @@ function initialize () {
       section.classList.add('opaque')
       section.scrollTop = 0
 
-      if (shineContainer) {
-        shineContainer.classList.add('display-block')
-        setTimeout(() => {
-          shineContainer.classList.remove('display-block')
-        }, shineAnimationTime)
-      }
+      section.classList.add('play-glint')
+      setTimeout(() => {
+        section.classList.remove('play-glint')
+      }, shineAnimationTime)
+      // if (shineContainer) {
+      //   shineContainer.classList.add('display-block')
+      //   setTimeout(() => {
+      //     shineContainer.classList.remove('display-block')
+      //   }, shineAnimationTime)
+      // }
 
       for (const c of all('.content')) {
         if (!c.classList.contains(selector)) {
