@@ -141,6 +141,31 @@ html {
   --light-text: rgb(233, 194, 237);
 }
 
+/* WebKit scrollbar styles */
+html::-webkit-scrollbar,
+.content::-webkit-scrollbar {
+  background-color: var(--scrollbar-background);
+  width: 6px;
+}
+
+html::-webkit-scrollbar-thumb,
+.content::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #44447c, #335 35%);
+  border-radius: 3px;
+  border: 1px solid var(--scrollbar-background);
+  background-clip: content-box;
+}
+
+.content::-webkit-scrollbar-thumb:vertical:hover {
+  background: unset;
+  background-color: #77a;
+}
+
+/* Firefox scrollbar styles */
+html {
+  scrollbar-color: var(--ff-scrollbar-thumb) var(--scrollbar-background);
+}
+
 body {
   min-width: 300px;
 
@@ -378,6 +403,21 @@ main {
   display: none;
 }
 
+.mostly-hidden {
+  opacity: 0.2;
+  transition: opacity ease-out 0.95s;
+}
+
+.opaque {
+  color: var(--brighter-text);
+  opacity: 1;
+}
+
+.fade-out {
+  opacity: 0 !important;
+  transition: opacity ease-in-out 1.35s !important;
+}
+
 header {
   grid-area: nametag;
   width: fit-content;
@@ -394,6 +434,20 @@ footer {
   
   display: flex;
   justify-content: center;
+}
+
+@media (hover: hover) {
+  footer:hover .fade-out,
+  footer:hover .mostly-hidden {
+    opacity: 1 !important;
+    transition: opacity ease-out 0.15s !important;
+  }
+}
+
+@media not (hover: hover) {
+  .fade-out {
+    pointer-events: none;
+  }
 }
 
 @media (orientation: landscape) and (min-width: 650px) {
