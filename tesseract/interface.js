@@ -10,12 +10,7 @@ const el = document.getElementById.bind(document)
 const select = document.querySelector.bind(document)
 const all = document.querySelectorAll.bind(document)
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initialize)
-} else {
-  queueMicrotask(initialize)
-}
-
+initialize()
 function initialize () {
   const underline = select('.underline')
   let lastMove = 'left'

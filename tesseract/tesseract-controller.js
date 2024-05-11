@@ -70,12 +70,7 @@ function handleGlobalError (event, source, line, column, error) {
   logError(error)
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initialize)
-} else {
-  queueMicrotask(initialize)
-}
-
+initialize()
 function initialize () {
 try {
   logError('Script loaded.')
