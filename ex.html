@@ -322,7 +322,7 @@ main {
 
 @supports (height: 100svh) {
   .mobile-overscroll {
-    height: calc(110lvh - 110svh); /*  On desktop, this element
+    height: calc(120lvh - 120svh); /*  On desktop, this element
       has zero height, but on mobile, it provides a slight overflow
       enabling the user to hide the address bar by drag-scrolling. */
   }
@@ -488,7 +488,7 @@ main {
 .content {
   /* position: relative; */
   position: fixed;
-  z-index: 22; /* Stack atop canvas. */
+  z-index: 2; /* Stack atop canvas. */
   grid-area: nametag / nametag / fill / fill;
   overflow-y: auto;
   overflow-x: hidden;
