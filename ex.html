@@ -71,47 +71,116 @@
         </svg>
       </button>
     </footer>
+
+    <section class="content about frosted concealed">
+      <button class="close"></button>
+      <div class="shine-container">
+        <div class="shine"></div>
+      </div>
+      <h1>About</h1>
+      <p>(v.dis2) Lorem ipsum dolor, sit amet consectetur adipisicing elit. Qui culpa aliquid tenetur saepe voluptatibus exercitationem ad. Impedit eum assumenda expedita itaque. Quidem dolores libero nulla neque iure laboriosam tempore sint!
+      Lorem ipsum, dolor sit amet consectetur adipisicing elit. Animi labore fugit repudiandae, voluptate atque ab facilis ea accusantium dolores fuga hic aut, quasi incidunt? Sed aliquid voluptates minima quis reiciendis.
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus in reprehenderit quae ea, amet blanditiis voluptate molestiae quas eligendi deserunt nam, tempora voluptas ad soluta, illo excepturi numquam inventore odit!
+      </p>
+      
+      <div class="copyright-notice">© 2023&nbsp;<a href="https://bprcode.github.io" style="text-decoration:none;"><span style="text-decoration: underline;">bprcode</span> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg></a>
+      </div>
+    </section>
+  
+    <section class="content portfolio frosted concealed">
+      <button class="close"></button>
+      <div class="shine-container">
+        <div class="shine"></div>
+      </div>
+      <h1>Portfolio</h1>
+  
+      <section>
+        <h2>First Project</h2>
+        <img src="./tesseract/placeholder.png" alt="Image placeholder">
+        <p>Brief description of first project</p>
+        <ul>
+          <li>Key point 1</li>
+          <li>Key point 2</li>
+          <li>Key point 3</li>
+        </ul>
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Officiis sequi quod quisquam illo odio! Ad, ex! Totam beatae excepturi repellat velit, temporibus aliquam, adipisci in ratione quo, tempore magnam necessitatibus consequuntur ex? Voluptatum rem cumque ad recusandae blanditiis nobis animi aliquam ratione omnis fugiat, corrupti vero tempore sit voluptate voluptatibus!</p>
+      </section>
+  
+      <section>
+        <h2>Second Project</h2>
+        <img src="./tesseract/placeholder.png" alt="Image placeholder">
+        <p>Brief description of second project</p>
+        <ul>
+          <li>Key point 1</li>
+          <li>Key point 2</li>
+          <li>Key point 3</li>
+          <li>Key point 4</li>
+          <li>Key point 5</li>
+          <li>Key point 6</li>
+        </ul>
+      </section>
+  
+      <section>
+        <h2>Third Project</h2>
+        <img src="./tesseract/placeholder.png" alt="Image placeholder">
+        <p>Brief description of third project. Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore cum obcaecati delectus! Repudiandae quisquam officia, explicabo quae eveniet nam veritatis modi magni, excepturi, atque ducimus! Eaque praesentium officiis alias autem?</p>
+        <ul>
+          <li>Key point 1</li>
+          <li>Key point 2</li>
+          <li>Key point 3</li>
+        </ul>
+      </section>
+  
+    </section>
+  
+    <section class="content contact frosted concealed">
+      <button class="close"></button>
+      <div class="shine-container">
+        <div class="shine"></div>
+      </div>
+      <h1>Contact</h1>
+      <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Fuga enim rerum sapiente maxime aliquam hic.
+      </p>
+    </section>
+  
+    <section class="content settings frosted concealed">
+      <button class="close"></button>
+      <h1>Settings</h1>
+  
+      <fieldset class="grab-style">
+        <label>
+          <input type="radio" name="grab-type" value="3d">
+          Grab in 3D
+        </label>
+        <label>
+          <input type="radio" name="grab-type" value="4d" checked>
+          Grab in 4D
+        </label>
+      </fieldset>
+  
+      <details>
+        <summary>Animations</summary>
+        <ul class="ul-animations"></ul>
+      </details>
+  
+      <details>
+        <summary>Technical Details</summary>
+        <span class="view-title" id="first-title">
+          <div><span id="fps-1">&nbsp;</span></div>
+          <div class="view-label">Initializing WebGL...</div>
+        </span>
+  
+        <pre class="feedback"></pre>
+      </details>
+      
+    </section>
+    <canvas width="300" height="300" id="main-canvas" class="render-canvas"></canvas>
   </div>
   
-  <main>
-    <div class="backdrop"></div>
-    <canvas width="300" height="300" id="main-canvas" class="render-canvas"></canvas>
-    
-  </main>
+  <main></main>
   <div class="mobile-overscroll"></div>
-
-  <section class="content settings frosted concealed">
-    <button class="close"></button>
-    <h1>Settings</h1>
-
-    <fieldset class="grab-style">
-      <label>
-        <input type="radio" name="grab-type" value="3d">
-        Grab in 3D
-      </label>
-      <label>
-        <input type="radio" name="grab-type" value="4d" checked>
-        Grab in 4D
-      </label>
-    </fieldset>
-
-    <details>
-      <summary>Animations</summary>
-      <ul class="ul-animations"></ul>
-    </details>
-
-    <details>
-      <summary>Technical Details</summary>
-      <span class="view-title" id="first-title">
-        <div><span id="fps-1">&nbsp;</span></div>
-        <div class="view-label">Initializing WebGL...</div>
-      </span>
-
-      <pre class="feedback"></pre>
-    </details>
-    
-  </section>
-
   
 </body>
 </html>
@@ -138,7 +207,16 @@ html {
   --footer-height: 68px;
   --landscape-padding: 1.35rem;
 
+  --content-top-margin: 2rem;
+  --content-bottom-margin: 0.9rem;
+  --content-padding: 1.1em;
+  --scrollbar-background: transparent;
+  --ff-scrollbar-thumb: #557;
+  --interface-edge: 0px 0px 1px #0afc inset;
+  --accent-color: #0af;
+
   --light-text: rgb(233, 194, 237);
+  --brighter-text: rgb(255, 230, 250);
 }
 
 /* WebKit scrollbar styles */
@@ -167,6 +245,8 @@ html {
 }
 
 body {
+  position: relative;
+  z-index: 1;
   min-width: 300px;
 
   background-color: #000;
@@ -176,6 +256,7 @@ body {
 }
 
 .overlay-grid {
+  z-index: 2;
   position: fixed;
   display: grid;
   top: 0;
@@ -218,6 +299,16 @@ body {
   color: rgb(172, 172, 180);
 }
 
+.copyright-notice {
+  margin-bottom: 3.5rem;
+  margin-top: 1rem;
+  font-size: 1.1rem;
+}
+
+.copyright-notice a {
+  color: rgb(138, 148, 255);
+}
+
 main {
   width: 100%;
   height: 100vh;
@@ -238,6 +329,7 @@ main {
 }
 
 .render-canvas {
+  z-index: 1;
   position: fixed;
   touch-action: none;
   cursor: grab;
@@ -393,6 +485,158 @@ main {
   filter: brightness(120%);
 }
 
+.content {
+  /* position: relative; */
+  position: fixed;
+  z-index: 22; /* Stack atop canvas. */
+  grid-area: nametag / nametag / fill / fill;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width:min(95vw, 50rem); width:min(95lvw, 50rem);
+  max-height: calc(100%
+    - var(--content-top-margin)
+    - var(--content-bottom-margin));
+  padding-left: var(--content-padding);
+  padding-right: var(--content-padding);
+  font-weight: 300;
+  font-size: 1.0em;
+}
+
+.content h1 {
+  margin: 0px;
+  margin-top: 1.35rem;
+  font-weight: 400;
+  font-size: 1.7em;
+}
+
+.content h2 {
+  font-weight: 400;
+  font-size: 1.4em;
+}
+
+.content img {
+  width: min(70vw, 100%, 400px);
+  margin: 0px auto;
+  display: block;
+}
+
+.content section {
+  clear: both;
+  margin-bottom: 4em;
+}
+
+.close {
+  position: sticky;
+  margin-left: calc(100% - 24px);
+  top: 8px;
+  width: 32px;
+  height: 32px;
+  background-color: transparent;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='gainsboro' class='bi bi-x' viewBox='0 0 16 16'%3E%3Cpath d='M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-color: #0006;
+  border: 1px solid #dacaca60;
+  border-radius: 20%;
+  opacity: 0.5;
+  box-shadow: 0px 0px 15px #000 inset;
+}
+
+.close:hover {
+  filter: brightness(150%);
+}
+
+/* Compensate for sticky close box */
+.content h1 {
+  margin-top: -22px;
+}
+
+.frosted {
+  /* Because filter:blur has a significant performance impact
+     on lower-spec devices running Gecko, that effect has been
+     delegated to the shaders running the background animation. */
+  border-radius: 10px;
+  color: #f000;
+  background-color: #000c;
+
+  background-image: linear-gradient(138deg, #aaf4 -70%, #a0a0f005 110%);
+  box-shadow:
+    0px 0px 1px 1px #0af8 inset,
+    9px 9px 24px -6px #0004;
+
+  transition: opacity ease-in-out 0.35s;
+}
+
+.view-title {
+  grid-area: environment-info;
+  margin-top: 15vh;
+  margin-top: 15lvh;
+  font-size: 1rem;
+  max-width: 400px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.feedback {
+  grid-area: feedback;
+  visibility: hidden;
+  max-width: 60rem;
+  padding: 0.5rem;
+  background-color: #111;
+  box-shadow: var(--interface-edge);
+  color: #abf;
+  border-radius: 6px;
+  font-size: 1rem;
+  white-space: pre-wrap;
+}
+
+input {
+  accent-color: var(--accent-color);
+}
+
+.settings > label,
+.settings > details {
+  margin-top: 0.7em;
+  margin-bottom: 0.7em;
+}
+
+.settings > fieldset {
+  margin-bottom: 0.7em;
+}
+
+.settings > .view-title,
+.settings > .feedback {
+  margin-left: 0.5em;
+}
+
+.grab-style,
+.ul-animations {
+  border: none;
+  background-color: #0004;
+  box-shadow: var(--interface-edge);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  padding-left: 0.7em;
+  padding-right: 1.2em;
+  padding-top: 0.7em;
+  padding-bottom: 0.7em;
+  margin-left: 0.5em;
+}
+
+.ul-animations {
+  margin-top: 0px;
+  list-style: none;
+}
+
+.ul-animations li input {
+  margin-right: 0.7em;
+}
+
+.grab-style input {
+  margin-left: 0px;
+}
+
 .opaque {
   color: var(--brighter-text);
   opacity: 1;
@@ -405,7 +649,6 @@ main {
 
 .concealed {
   position: absolute;
-  top: 0;
   opacity: 0;
   pointer-events: none;
 }
@@ -458,6 +701,58 @@ main {
   display: block !important;
 }
 
+.shine-container {
+  overflow: hidden;
+  display: none; /* For performance, avoid rendering when not in use,
+                    temporarily override on reveal. */
+  pointer-events: none;
+  position: sticky;
+  /* position: absolute; */
+  top: 0px;
+  width: 100vw; width: 100lvw;
+  /*  This ensures the overlaid animation covers at least the entire visible
+      area, while negative margin avoids taking up space in the layout. */
+  height: 100vh; height: 100lvh;
+  margin-top: -100vh; margin-top: -100lvh;
+  /* Nullify container's padding */
+  margin-left: calc(-1* var(--content-padding));
+  margin-right: calc(-1* var(--content-padding));
+}
+
+.shine {
+  position: absolute;
+  bottom: calc(-0.52 * var(--cover-dimension));
+  left: calc(-0.55 * var(--cover-dimension));
+  width: var(--cover-dimension);
+  height: var(--cover-dimension);
+  background-image: conic-gradient(
+    from 0deg at 50% 50%,
+    transparent,
+    transparent 25.5%,
+    /*  Color stops:
+        0-25%: Initial clear screen
+        25-50%: Fade-in
+        50-75%: Full-cover hold
+        75-100%: Fade-out
+    */
+    #ff792e20 29%,
+    #f44d6050 34%,
+    #ff6c5660 45%,
+    #ff984970 48%,
+    #ffa86690 50%,
+    #43c28460 72%,
+    #3699c440 87.5%,
+    transparent
+    );
+
+  transform: translateZ(0) rotate(0deg);
+}
+
+.shine-reveal {
+  transition: transform 1.1s cubic-bezier(0.215, 0.610, 0.355, 1.000);
+  transform: translateZ(0) rotate(-360deg);
+}
+
 header {
   grid-area: nametag;
   width: fit-content;
@@ -508,6 +803,10 @@ footer {
 
     grid-template-rows: 1fr fit-content(0px);
     grid-template-columns: fit-content(0px) 1fr;
+  }
+
+  .content {
+    grid-area: fill;
   }
 
   .opaque ~ .name-container {
