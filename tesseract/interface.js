@@ -29,6 +29,13 @@ function initialize () {
   // Apply initial input states:
   setGrabStyle(select('input[name="grab-type"]:checked').value)
 
+  // Prevent same-page links from triggering an address bar pop-up on Safari:
+  for (const link of all('.line-link')) {
+    link.addEventListener('click', event => {
+      event.preventDefault()
+    })
+  }
+
   // Add settings pane listeners:
   select('.grab-style').addEventListener('input', event => {
     setGrabStyle(event.target.value)
