@@ -195,7 +195,7 @@ function initialize () {
   })
 
   function glint(target) {
-    glint.duration ??= 1000
+    glint.duration ??= 700
     glint.canvas ??= document.querySelector('.grad-test')
     glint.ctx ??= glint.canvas.getContext('2d')
 
@@ -223,21 +223,22 @@ function initialize () {
     glintFrame.t0 ??= t
     const dt = Math.min((t - glintFrame.t0)/glint.duration, 1)
 
-    console.log('dt=',dt)
-  
-    const theta = -dt * Math.PI * 2 - Math.PI / 2
+    const eased = 1 - (1 - dt)**2
+    const alpha = 1 - dt**3
+
+    const theta = -eased * Math.PI * 2 - Math.PI / 2
     const gradient = glint.ctx.createConicGradient(
       theta, -0.4 * size, 1.5 * size)
-  
-    gradient.addColorStop(0, '#ff792e05')
-    gradient.addColorStop(0.29, '#ff792e20')
-    gradient.addColorStop(0.34, '#f44d6050')
-    gradient.addColorStop(0.45, '#ff6c5660')
-    gradient.addColorStop(0.48, '#ff984970')
-    gradient.addColorStop(0.50, '#ffa86690')
-    gradient.addColorStop(0.72, '#43c28460')
-    gradient.addColorStop(0.875, '#3699c440')
-    gradient.addColorStop(1, '#3699c405')
+     
+    gradient.addColorStop(0, `hsla(22, 100%, 59%, ${alpha*0.02})`)
+    gradient.addColorStop(0.29, `hsla(22, 100%, 59%, ${alpha*0.125})`)
+    gradient.addColorStop(0.34, `hsla(353, 88%, 63%, ${alpha*0.314})`)
+    gradient.addColorStop(0.45, `hsla(8, 100%, 67%, ${alpha*0.376})`)
+    gradient.addColorStop(0.48, `hsla(26, 100%, 65%, ${alpha*0.439})`)
+    gradient.addColorStop(0.50, `hsla(26, 100%, 70%, ${alpha*0.565})`)
+    gradient.addColorStop(0.72, `hsla(151, 51%, 51%, ${alpha*0.376})`)
+    gradient.addColorStop(0.875, `hsla(198, 57%, 49%, ${alpha*0.251})`)
+    gradient.addColorStop(1, `hsla(198, 57%, 49%, ${alpha*0.02})`)
   
     glint.ctx.clearRect(0, 0, size, size);
     glint.ctx.fillStyle = gradient;
@@ -247,23 +248,6 @@ function initialize () {
       requestAnimationFrame(glintFrame)
     }
   }
-  // function glint (shinyElement) {
-  //   if (!shinyElement) { return }
-  //   if (glintLockout) { return }
-
-  //   glintLockout = true
-  //   setTimeout(() => {
-  //     glintLockout = false
-  //   }, 1000)
-
-  //   for (const e of all('.shine')) {
-  //     e.classList.remove('shine-reveal')
-  //   }
-
-  //   setTimeout(() => {
-  //     shinyElement.classList.add('shine-reveal')
-  //   }, 200)
-  // }
 
   // Toggle theater mode on click:
   select('.fullscreen').addEventListener('click', event => {
