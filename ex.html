@@ -217,16 +217,18 @@ setTimeout(() => {
 }, 1000)
 
 function drawTest(t) {
+  if(!ctx.createConicGradient) {
+    return
+  }
+
   drawTest.t0 ??= t
   const dt = t - drawTest.t0
 
   const theta = -t/1000 * Math.PI * 2 * 0.5
   const offsetX = -size/3
   const offsetY = size
-  const gradient = ctx.createLinearGradient(
-    offsetX + size*Math.cos(theta + Math.PI / 2), offsetY + size*Math.sin(theta + Math.PI / 2),
-    offsetX + size*Math.cos(theta), offsetY + size*Math.sin(theta),
-  )
+
+  const gradient = ctx.createConicGradient(theta, -0.2 * size, 1.2 * size)
 
   gradient.addColorStop(0, '#ff792e05')
   gradient.addColorStop(0.29, '#ff792e20')
