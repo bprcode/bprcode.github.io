@@ -129,7 +129,9 @@ function initialize () {
         }
       }
 
-      glint(section)
+      if(selector !== 'settings') {
+        glint(section)
+      }
 
       // Blur the tesseract rendering to improve text overlay legibility:
       beginClarityTransition(0, 500)
