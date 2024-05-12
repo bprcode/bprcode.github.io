@@ -5,8 +5,6 @@
 import { beginClarityTransition, setGrabStyle, logError, animationSet,
   shuffleUpcoming, beginFadeIn } from "./tesseract-controller.js"
 
-const log = console.log.bind(console)
-const el = document.getElementById.bind(document)
 const select = document.querySelector.bind(document)
 const all = document.querySelectorAll.bind(document)
 
@@ -112,10 +110,8 @@ function initialize () {
 
     clickable.addEventListener('click', event => {
 
-      const shineAnimationTime = 2100
       const selector = clickable.dataset.section
       const section = select('.' + selector)
-      const shineContainer = section.querySelector('.shine-container')
 
       // Just close the pane if it's already open:
       if(section.classList.contains('opaque')){
@@ -152,10 +148,6 @@ function initialize () {
     for (const e of all('.content')) {
       e.classList.remove('opaque')
       e.classList.add('concealed')
-    }
-
-    for (const e of all('.shine')) {
-      e.classList.remove('shine-reveal')
     }
 
     // Restore the rendering clarity factor to its normal value:
@@ -195,8 +187,8 @@ function initialize () {
   })
 
   function glint(target) {
-    glint.duration ??= 700
-    glint.canvas ??= document.querySelector('.grad-test')
+    glint.duration ??= 1100
+    glint.canvas ??= document.querySelector('.glint-canvas')
     glint.ctx ??= glint.canvas.getContext('2d')
 
     const bounds = target.getBoundingClientRect()
