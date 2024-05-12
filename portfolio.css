@@ -1,5 +1,6 @@
 html {
   box-sizing: border-box;
+  -webkit-text-size-adjust: 100%;
 }
 
 *, *:before, *:after {
@@ -317,7 +318,6 @@ body {
   padding-left: var(--content-padding);
   padding-right: var(--content-padding);
   font-weight: 300;
-  font-size: 1.0em;
 }
 
 .content h1 {
