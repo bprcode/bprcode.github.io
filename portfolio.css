@@ -9,7 +9,6 @@ html {
 
 * {
   margin: 0;
-  padding: 0;
   /* box-shadow: 0px 0px 2px rgba(100, 100, 100, 0.533) inset; */
 }
 
@@ -311,7 +310,7 @@ body {
   grid-area: nametag / nametag / fill / fill;
   overflow-y: auto;
   overflow-x: hidden;
-  width:min(95vw, 50rem); width:min(95lvw, 50rem);
+  width:max(320px, min(95vw, 75ch)); width:max(320px, min(95lvw, 75ch));
   max-height: calc(100%
     - var(--content-top-margin)
     - var(--content-bottom-margin));
