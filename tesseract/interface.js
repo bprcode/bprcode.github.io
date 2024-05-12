@@ -125,19 +125,7 @@ function initialize () {
       section.classList.remove('concealed')
       section.classList.add('opaque')
       section.scrollTop = 0
-      
-      console.log('applying glint to',section)
-      section.classList.add('play-glint')
-      setTimeout(() => {
-        section.classList.remove('play-glint')
-      }, shineAnimationTime)
-      // if (shineContainer) {
-      //   shineContainer.classList.add('display-block')
-      //   setTimeout(() => {
-      //     shineContainer.classList.remove('display-block')
-      //   }, shineAnimationTime)
-      // }
-
+            
       for (const c of all('.content')) {
         if (!c.classList.contains(selector)) {
           c.classList.remove('opaque')
@@ -145,7 +133,7 @@ function initialize () {
         }
       }
 
-      glint(section.querySelector('.shine'))
+      glint(section)
 
       // Blur the tesseract rendering to improve text overlay legibility:
       beginClarityTransition(0, 500)
@@ -199,35 +187,83 @@ function initialize () {
     if (event.target.classList.contains('link-box')
       || event.target.classList.contains('line-link')
       || select('.gear').contains(event.target)) {
-      const q =
-        select('.' + event.target.dataset.section
-                                + ' .shine')
-      // Respond by playing a glint animation
-      glint(q)
+      
       return
     }
 
     closeAllPanes()
   })
 
-  let glintLockout = false
-  function glint (shinyElement) {
-    if (!shinyElement) { return }
-    if (glintLockout) { return }
+  function glint(target) {
+    glint.duration ??= 1000
+    glint.canvas ??= document.querySelector('.grad-test')
+    glint.ctx ??= glint.canvas.getContext('2d')
 
-    glintLockout = true
-    setTimeout(() => {
-      glintLockout = false
-    }, 1000)
+    const bounds = target.getBoundingClientRect()
+    glint.canvas.style.width = bounds.width + 'px'
+    glint.canvas.style.height = bounds.height + 'px'
+    glint.canvas.style.top = bounds.top + 'px'
 
-    for (const e of all('.shine')) {
-      e.classList.remove('shine-reveal')
-    }
-
-    setTimeout(() => {
-      shinyElement.classList.add('shine-reveal')
-    }, 200)
+    clearTimeout(glint.tid)
+    glint.canvas.style.display = 'block'
+    glint.tid = setTimeout(
+      () => glint.canvas.style.display = 'none', glint.duration)
+      
+    delete glintFrame.t0
+    requestAnimationFrame(glintFrame)
   }
+
+  function glintFrame(t) {
+    if(!glint.ctx.createConicGradient) {
+      return
+    }
+  
+    const size = 80
+
+    glintFrame.t0 ??= t
+    const dt = Math.min((t - glintFrame.t0)/glint.duration, 1)
+
+    console.log('dt=',dt)
+  
+    const theta = -dt * Math.PI * 2 - Math.PI / 2
+    const gradient = glint.ctx.createConicGradient(
+      theta, -0.4 * size, 1.5 * size)
+  
+    gradient.addColorStop(0, '#ff792e05')
+    gradient.addColorStop(0.29, '#ff792e20')
+    gradient.addColorStop(0.34, '#f44d6050')
+    gradient.addColorStop(0.45, '#ff6c5660')
+    gradient.addColorStop(0.48, '#ff984970')
+    gradient.addColorStop(0.50, '#ffa86690')
+    gradient.addColorStop(0.72, '#43c28460')
+    gradient.addColorStop(0.875, '#3699c440')
+    gradient.addColorStop(1, '#3699c405')
+  
+    glint.ctx.clearRect(0, 0, size, size);
+    glint.ctx.fillStyle = gradient;
+    glint.ctx.fillRect(0, 0, size, size);
+  
+    if(dt < 1) {
+      requestAnimationFrame(glintFrame)
+    }
+  }
+  // function glint (shinyElement) {
+  //   if (!shinyElement) { return }
+  //   if (glintLockout) { return }
+
+  //   glintLockout = true
+  //   setTimeout(() => {
+  //     glintLockout = false
+  //   }, 1000)
+
+  //   for (const e of all('.shine')) {
+  //     e.classList.remove('shine-reveal')
+  //   }
+
+  //   setTimeout(() => {
+  //     shinyElement.classList.add('shine-reveal')
+  //   }, 200)
+  // }
 
   // Toggle theater mode on click:
   select('.fullscreen').addEventListener('click', event => {

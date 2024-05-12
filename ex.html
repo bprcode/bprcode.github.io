@@ -48,8 +48,7 @@
 
 
     <h1 class="noscript-notice">Initializing scripts...</h1>
-    <!-- <section class="content about frosted concealed"> -->
-    <section class="content about frosted opaque">
+    <section class="content about frosted concealed">
 
 
       <button class="close"></button>
@@ -203,55 +202,6 @@
 </body>
 </html>
 
-<script>
-const canvas = document.querySelector('.grad-test')
-const ctx = canvas.getContext('2d')
-const size = 80
-
-setTimeout(() => {
-
-  const refSize = document.querySelector('.content').getBoundingClientRect()
-  canvas.style.width = refSize.width + 'px'
-  canvas.style.height = refSize.height + 'px'
-  canvas.style.top = refSize.top + 'px'
-}, 1000)
-
-function drawTest(t) {
-  if(!ctx.createConicGradient) {
-    return
-  }
-
-  drawTest.t0 ??= t
-  const dt = t - drawTest.t0
-
-  const theta = -t/1000 * Math.PI * 2 * 0.5
-  const offsetX = -size/3
-  const offsetY = size
-
-  const gradient = ctx.createConicGradient(theta, -0.2 * size, 1.2 * size)
-
-  gradient.addColorStop(0, '#ff792e05')
-  gradient.addColorStop(0.29, '#ff792e20')
-  gradient.addColorStop(0.34, '#f44d6050')
-  gradient.addColorStop(0.45, '#ff6c5660')
-  gradient.addColorStop(0.48, '#ff984970')
-  gradient.addColorStop(0.50, '#ffa86690')
-  gradient.addColorStop(0.72, '#43c28460')
-  gradient.addColorStop(0.875, '#3699c440')
-  gradient.addColorStop(1, '#3699c405')
-
-  ctx.clearRect(0, 0, size, size);
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, size, size);
-
-  requestAnimationFrame(drawTest)
-}
-
-requestAnimationFrame(drawTest)
-
-
-</script>
-
 <style>
 
 .grad-test {
@@ -259,6 +209,8 @@ requestAnimationFrame(drawTest)
   position: fixed;
   z-index: 3;
   border-radius: 10px;
+  box-shadow: inset 0 0 1rem cyan;
+  display: none;
 }
 
 .content {
