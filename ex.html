@@ -41,12 +41,23 @@
 <body>
   
   <div class="overlay-grid">
+
+    <canvas class="grad-test" width="80" height="80"></canvas>
+
+
+
+
     <h1 class="noscript-notice">Initializing scripts...</h1>
-    <section class="content about frosted concealed">
+    <!-- <section class="content about frosted concealed"> -->
+    <section class="content about frosted opaque">
+
+
       <button class="close"></button>
       <div class="shine-container">
         <div class="shine"></div>
       </div>
+
+
       <h1>About</h1>
       <p>(v.dis2) Lorem ipsum dolor, sit amet consectetur adipisicing elit. Qui culpa aliquid tenetur saepe voluptatibus exercitationem ad. Impedit eum assumenda expedita itaque. Quidem dolores libero nulla neque iure laboriosam tempore sint!
       Lorem ipsum, dolor sit amet consectetur adipisicing elit. Animi labore fugit repudiandae, voluptate atque ab facilis ea accusantium dolores fuga hic aut, quasi incidunt? Sed aliquid voluptates minima quis reiciendis.
@@ -57,6 +68,8 @@
         <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
         </svg></a>
       </div>
+
+
     </section>
   
     <section class="content portfolio frosted concealed">
@@ -190,33 +203,150 @@
 </body>
 </html>
 
-<style>
-.content {
+<script>
+const canvas = document.querySelector('.grad-test')
+const ctx = canvas.getContext('2d')
+const size = 80
 
-  transition: box-shadow 1s ease;
+setTimeout(() => {
+
+  const refSize = document.querySelector('.content').getBoundingClientRect()
+  canvas.style.width = refSize.width + 'px'
+  canvas.style.height = refSize.height + 'px'
+  canvas.style.top = refSize.top + 'px'
+}, 1000)
+
+function drawTest(t) {
+  drawTest.t0 ??= t
+  const dt = t - drawTest.t0
+
+  const theta = -t/1000 * Math.PI * 2 * 0.5
+  const offsetX = -size/3
+  const offsetY = size
+  const gradient = ctx.createLinearGradient(
+    offsetX + size*Math.cos(theta + Math.PI / 2), offsetY + size*Math.sin(theta + Math.PI / 2),
+    offsetX + size*Math.cos(theta), offsetY + size*Math.sin(theta),
+  )
+
+  gradient.addColorStop(0, '#ff792e05')
+  gradient.addColorStop(0.29, '#ff792e20')
+  gradient.addColorStop(0.34, '#f44d6050')
+  gradient.addColorStop(0.45, '#ff6c5660')
+  gradient.addColorStop(0.48, '#ff984970')
+  gradient.addColorStop(0.50, '#ffa86690')
+  gradient.addColorStop(0.72, '#43c28460')
+  gradient.addColorStop(0.875, '#3699c440')
+  gradient.addColorStop(1, '#3699c405')
+
+  ctx.clearRect(0, 0, size, size);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+
+  requestAnimationFrame(drawTest)
 }
 
-@keyframes glint-in {
-  /* 0% {
-    box-shadow: inset 100vw 0 0rem red;
+requestAnimationFrame(drawTest)
 
-  } */
+
+</script>
+
+<style>
+
+.grad-test {
+  pointer-events: none;
+  position: fixed;
+  z-index: 3;
+  border-radius: 10px;
+}
+
+.content {
+
+  /* transition: box-shadow 1s ease; */
+  /* box-shadow:
+      inset 40vw 0 5rem red,
+      inset 80vw 0 5rem yellow,
+      inset 120vw 0 5rem green,
+      inset 160vw 0 5rem blue
+    ; */
+}
+
+/* #ff792e20 29%,
+    #f44d6050 34%,
+    #ff6c5660 45%,
+    #ff984970 48%,
+    #ffa86690 50%,
+    #43c28460 72%,
+    #3699c440 87.5%, */
+
+/* @keyframes glint-in {
   from {
-    box-shadow: inset 100vw 0 3rem red;
+    box-shadow: inset 100vw 0 3rem #ff792e20;
+    color: #ff792e20;
   }
-  
+
+  29% {
+    box-shadow: inset 100vw 0 3rem #ff792e20;
+  }
+  34% {
+    box-shadow: inset 100vw 0 3rem #f44d6050;
+  }
+  45% {
+    box-shadow: inset 100vw 0 3rem #ff6c5660;
+  }
+  48% {
+    box-shadow: inset 100vw 0 3rem #ff984970;
+  }
   50% {
-    box-shadow: inset 0vw 0 3rem blue;
+    box-shadow: inset 100vw 0 3rem #ffa86690;
+  }
+  72% {
+    box-shadow: inset 100vw 0 3rem #43c28460;
+  }
+  87.5% {
+    box-shadow: inset 100vw 0 3rem #3699c440;
   }
 
   to {
     box-shadow: 0px 0px 1px 1px #0af8 inset;
-
+    color: var(--brighter-text);
   }
+} */
+
+/* try: not translating the gradient, just changing its parameters? */
+@keyframes glint-in {
+  from {
+    
+  }
+  
+  to{
+    
+  }
+  
 }
 
 .play-glint {
-  animation: glint-in 2s ease forwards;
+  animation: glint-in 1s ease-out forwards;
+  background-size: 100vw 1px;
+  /* background-image: linear-gradient(
+    to right,
+  transparent 0%,
+  red 100%
+  ); */
+
+  /* background-size: 700vw 1px;
+  background-image: linear-gradient(to right,
+  transparent 0%,
+  transparent 14.3%,
+  red 28.6%,
+  yellow 42.9%,
+  green 57.1%,
+  blue 71.4%, 
+  transparent 85.7%,
+  transparent 100%
+  ); */
 }
+/* .play-glint > * {
+  display: none;
+} */
 
 </style>

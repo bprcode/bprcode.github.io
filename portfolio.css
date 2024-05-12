@@ -297,7 +297,6 @@ main {
 }
 
 .content {
-  /* position: relative; */
   position: fixed;
   z-index: 2; /* Stack atop canvas. */
   grid-area: nametag / nametag / fill / fill;
