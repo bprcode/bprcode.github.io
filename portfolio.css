@@ -120,19 +120,19 @@ body {
   color: rgb(138, 148, 255);
 }
 
-main {
+.body-spacer {
   width: 100%;
   height: 100vh;
   height: 100dvh;
 }
 
-.mobile-overscroll {
+.overscroll-margin {
   width: 100%;
   height: 10vh; /* fallback value for older browsers */
 }
 
 @supports (height: 100svh) {
-  .mobile-overscroll {
+  .overscroll-margin {
     height: calc(120lvh - 120svh); /*  On desktop, this element
       has zero height, but on mobile, it provides a slight overflow
       enabling the user to hide the address bar by drag-scrolling. */
