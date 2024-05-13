@@ -390,7 +390,12 @@ body {
 }
 
 .portfolio a {
-  color: var(--strong-color);
+  color: #82e8ff;
+  text-decoration: none;
+}
+
+.portfolio a:hover {
+  text-decoration: underline;
 }
 
 .portfolio h3 {
