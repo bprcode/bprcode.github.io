@@ -20,6 +20,7 @@ html {
 
   --content-top-margin: 2rem;
   --content-bottom-margin: 0.9rem;
+  --hr-margin: 1.5em;
   --content-padding: 1.1em;
   --scrollbar-background: transparent;
   --ff-scrollbar-thumb: #557;
@@ -323,6 +324,10 @@ body {
   font-weight: 300;
 }
 
+.content.portfolio {
+  width:max(320px, min(95vw, 70ch)); width:max(320px, min(95lvw, 70ch));
+}
+
 .content h1 {
   margin-bottom: 1.25rem;
   margin-top: -12px; /* compensate for sticky close box */
@@ -341,18 +346,17 @@ body {
 
 .content img {
   width: min(70vw, 100%, 400px);
-  /* margin: 0px auto; */
   margin-left: 1em;
+  margin: 0px auto 1.5em auto;
   display: block;
-  float:right;
 }
 
-.content section {
+.portfolio section {
   clear: both;
-  margin-bottom: 4em;
 }
 
 .close {
+  z-index: 1;
   position: sticky;
   margin-left: calc(100% - 24px);
   top: 8px;
@@ -387,6 +391,28 @@ body {
     9px 9px 24px -6px #0004;
 
   transition: opacity ease-in-out 0.35s;
+}
+
+.portfolio section {
+  position: relative;
+}
+
+.portfolio hr {
+  margin-bottom: var(--hr-margin);
+  color: #0af5;
+  width: calc(100% + 2 * var(--content-padding));
+  transform: translateX(calc(-1 * var(--content-padding)));
+}
+
+.portfolio section::before {
+  z-index: -1;
+  content: '';
+  width: calc(100% + 2 * var(--content-padding));
+  height: 32px;
+  position: absolute;
+  top: calc(-1 * var(--hr-margin));
+  left: calc(-1 * var(--content-padding));
+  background-image: linear-gradient(to bottom, #ffffff0a , #ffffff00);
 }
 
 .portfolio a {
@@ -614,6 +640,11 @@ footer {
   .opaque ~ header * {
     /* Override fade-out in landscape orientation: */
     opacity: 1;
+  }
+
+  .content img {
+    float:right;
+    margin: 0px 0px 0px 1.5em;
   }
 
   header {
