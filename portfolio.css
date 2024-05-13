@@ -25,6 +25,8 @@ html {
   --ff-scrollbar-thumb: #557;
   --interface-edge: 0px 0px 1px #0afc inset;
   --accent-color: #0af;
+  --strong-color: #98b6fb;
+  --soft-color: #8aadff;
 
   --light-text: rgb(233, 194, 237);
   --brighter-text: rgb(255, 230, 250);
@@ -183,7 +185,7 @@ body {
 }
 
 .name-tag {
-  color: #98b6fb;
+  color: var(--strong-color);
   position: relative;
   
   font-weight: 400;
@@ -192,7 +194,7 @@ body {
 }
 
 .small-title {
-  color: #8aadff;
+  color: var(--soft-color);
   margin-left:0.7rem;
   letter-spacing: 0.05rem;
   font-weight: 100;
@@ -339,8 +341,10 @@ body {
 
 .content img {
   width: min(70vw, 100%, 400px);
-  margin: 0px auto;
+  /* margin: 0px auto; */
+  margin-left: 1em;
   display: block;
+  float:right;
 }
 
 .content section {
@@ -383,6 +387,32 @@ body {
     9px 9px 24px -6px #0004;
 
   transition: opacity ease-in-out 0.35s;
+}
+
+.portfolio a {
+  color: var(--strong-color);
+}
+
+.portfolio h3 {
+  clear: right;
+}
+
+.feature-list {
+  margin-bottom: 2em;
+}
+
+.feature-list li {
+  margin-bottom: 1em;
+}
+
+.portfolio strong {
+  color: #fe9090;
+  font-weight: 500;
+}
+
+.built-list {
+  font-weight: 300;
+  color: #e38383;
 }
 
 .view-title {
