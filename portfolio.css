@@ -29,6 +29,7 @@ html {
   --strong-color: #98b6fb;
   --soft-color: #8aadff;
 
+  --dimmer-text: rgb(226, 167, 214);
   --light-text: rgb(233, 194, 237);
   --brighter-text: rgb(255, 230, 250);
 }
@@ -315,7 +316,7 @@ body {
   grid-area: nametag / nametag / fill / fill;
   overflow-y: auto;
   overflow-x: hidden;
-  width:max(320px, min(95vw, 65ch)); width:max(320px, min(95lvw, 65ch));
+  width:max(320px, min(95vw, 70ch)); width:max(320px, min(95lvw, 70ch));
   max-height: calc(100%
     - var(--content-top-margin)
     - var(--content-bottom-margin));
@@ -325,7 +326,7 @@ body {
 }
 
 .content.portfolio {
-  width:max(320px, min(95vw, 74ch)); width:max(320px, min(95lvw, 74ch));
+  width:max(320px, min(95vw, 78ch)); width:max(320px, min(95lvw, 78ch));
 }
 
 .content h1 {
@@ -342,7 +343,7 @@ body {
 }
 
 .content p {
-  margin-bottom: 3rem;
+  margin-bottom: 1.5em;
 }
 
 .content img {
@@ -416,8 +417,16 @@ body {
   transform: translateX(calc(-1 * var(--content-padding)));
 }
 
+.content.portfolio :not(section:last-of-type) p:last-of-type {
+  margin-bottom: 5em;
+}
+
+.content.portfolio section:last-of-type p:last-of-type {
+  margin-bottom: 2em;
+}
+
 .portfolio ul {
-  margin-right: 3em;
+  margin-right: 4em;
 }
 
 .portfolio a {
@@ -435,13 +444,13 @@ body {
 
 .portfolio strong {
   font-weight: 500;
-  color: #81b3f3;
+  /* color: #81b3f3; */
 }
 
-.built-list {
+.built-with {
   display: inline-block;
   font-weight: 300;
-  color: #7dafef;
+  color: var(--dimmer-text);
 }
 
 .feature-list {
