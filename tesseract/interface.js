@@ -5,6 +5,7 @@
 import { beginClarityTransition, setGrabStyle, logError, animationSet,
   shuffleUpcoming, beginFadeIn } from "./tesseract-controller.js"
 
+const log = console.log.bind(console)
 const select = document.querySelector.bind(document)
 const all = document.querySelectorAll.bind(document)
 
@@ -342,4 +343,27 @@ function updateAnimationPreferences () {
   }
 
   shuffleUpcoming()
+}
+
+initCarousel()
+function initCarousel() {
+  log('starting carousel...')
+  for(const carousel of all('.carousel')) {
+    let hue = 0
+    let delay = 0
+    for(const src of carousel.dataset.src.split(', ')) {
+      const slide = document.createElement('div')
+
+      slide.classList.add('carousel-slide')
+      slide.classList.add('carousel-live')
+      slide.textContent = src
+      slide.style.backgroundColor = `hsl(${hue} 50% 50%)`
+      slide.style.animation = `slideshow 5s ease infinite ${delay}s`
+      slide.style.zIndex = delay
+
+      carousel.append(slide)
+      hue += 60
+      delay += 5
+    }
+  }
 }

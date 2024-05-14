@@ -346,11 +346,46 @@ body {
   margin-bottom: 1.5em;
 }
 
-.content img {
-  width: min(70vw, 100%, 400px);
-  margin-left: 1em;
+.carousel {
+  position: relative;
+  width: min(100%, 400px);
+  height: 270px;
   margin: 0px auto 1.5em auto;
   display: block;
+  box-shadow: inset 0 0 3rem #000;
+  background-color: #1118;
+
+  overflow: hidden;
+}
+
+.carousel-slide {
+  animation-fill-mode: both;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform: translateX(100%);
+}
+
+.carousel-live {
+  /* animation: slideshow 5s ease infinite */
+}
+
+@keyframes slideshow {
+  from {
+    transform: translateX(100%);
+  }
+
+  10% {
+    transform: translateX(0%);
+  }
+
+  90% {
+    transform: translateX(0%);
+  }
+
+  to {
+    transform: translateX(-100%);
+  }
 }
 
 .portfolio section {
@@ -657,7 +692,7 @@ footer {
     opacity: 1;
   }
 
-  .content img {
+  .carousel {
     float:right;
     margin: 0px 0px 0px 1.5em;
   }
