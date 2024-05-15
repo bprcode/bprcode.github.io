@@ -359,33 +359,9 @@ body {
 }
 
 .carousel-slide {
-  animation-fill-mode: both;
   position: absolute;
   width: 100%;
   height: 100%;
-  transform: translateX(100%);
-}
-
-.carousel-live {
-  /* animation: slideshow 5s ease infinite */
-}
-
-@keyframes slideshow {
-  from {
-    transform: translateX(100%);
-  }
-
-  10% {
-    transform: translateX(0%);
-  }
-
-  90% {
-    transform: translateX(0%);
-  }
-
-  to {
-    transform: translateX(-100%);
-  }
 }
 
 .portfolio section {
@@ -461,7 +437,13 @@ body {
 }
 
 .portfolio ul {
-  margin-right: 4em;
+  margin-right: 1em;
+}
+
+@media (min-width: 600px) {
+  .portfolio ul {
+    margin-right: 4em;
+  }
 }
 
 .portfolio a {

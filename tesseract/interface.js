@@ -348,7 +348,43 @@ function updateAnimationPreferences () {
 initCarousel()
 function initCarousel() {
   log('starting carousel...')
-  for(const carousel of all('.carousel')) {
+
+  const animations = document.createElement('style')
+  document.head.append(animations)
+
+  for(const [index, carousel] of Object.entries(all('.carousel'))) {
+    const holdTime = 2
+    const slideTime = 1
+    const totalTime = holdTime + 2 * slideTime
+
+    const sources = carousel.dataset.src.split(', ')
+    const percentage = 100 / sources.length
+
+    const name = `carousel-${index}`
+    const keyframes = `@keyframes ${name} {
+      from {
+        transform: translateX(100%);
+      }
+      ${percentage * slideTime / totalTime} {
+        transform: translateX(0%);
+      }
+      ${percentage * (slideTime + holdTime) / totalTime}% {
+        transform: translateX(0%);
+      }
+      ${percentage}% {
+        transform: translateX(-100%);
+      }
+      to {
+        transform: translateX(-100%);
+      }
+    }`
+
+    log('registering animation:',keyframes)
+
+    animations.sheet.insertRule(keyframes)
+
+    log(animations.sheet)
+
     let hue = 0
     let delay = 0
     for(const src of carousel.dataset.src.split(', ')) {
@@ -358,12 +394,14 @@ function initCarousel() {
       slide.classList.add('carousel-live')
       slide.textContent = src
       slide.style.backgroundColor = `hsl(${hue} 50% 50%)`
-      slide.style.animation = `slideshow 5s ease infinite ${delay}s`
-      slide.style.zIndex = delay
+
+      slide.style.animation = `${name} ${totalTime * sources.length}s `
+        + `ease-out ${delay}s infinite none`
+
 
       carousel.append(slide)
       hue += 60
-      delay += 5
+      delay += totalTime
     }
   }
 }
