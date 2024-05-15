@@ -399,8 +399,9 @@ function initCarousel() {
 
       slide.classList.add('carousel-slide')
       slide.classList.add('carousel-live')
-      slide.textContent = src
-      slide.style.backgroundColor = `hsla(${hue}, 50%, 50%, 1)`
+      // slide.style.backgroundColor = `hsla(${hue}, 50%, 50%, 1)`
+      slide.style.backgroundColor = `#080808`
+      slide.style.backgroundImage = `url(${src})`
 
       if(sources.length > 1) {
         slide.style.animation = `${name} ${holdTime * sources.length}s `

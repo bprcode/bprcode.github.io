@@ -350,7 +350,7 @@ body {
   position: relative;
   z-index: -1;
   width: min(100%, 400px);
-  height: 270px;
+  height: 240px;
   margin: 0px auto 1.5em auto;
   display: block;
   box-shadow: inset 0 0 3rem #000;
@@ -364,6 +364,9 @@ body {
   width: 100%;
   height: 100%;
   transform: translateX(100%);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 .portfolio section {
