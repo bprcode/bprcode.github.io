@@ -348,6 +348,7 @@ body {
 
 .carousel {
   position: relative;
+  z-index: -1;
   width: min(100%, 400px);
   height: 270px;
   margin: 0px auto 1.5em auto;

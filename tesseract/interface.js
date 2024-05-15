@@ -364,6 +364,7 @@ function initCarousel() {
     const keyframes = `@keyframes ${name} {
       from {
         transform: translateX(100%);
+        z-index: 1;
       }
       ${percentage * moveTime / itemTime}% {
         transform: translateX(0%);
@@ -373,14 +374,17 @@ function initCarousel() {
       }
       ${percentage * (2 * moveTime + holdTime) / itemTime}% {
         transform: translateX(-100%);
+        z-index: 1;
       }
-      99.9%{
+      ${percentage * (3 * moveTime + holdTime) / itemTime}%{
         transform: translateX(-100%);
+        z-index: -1;
       }
       to {
         transform: translateX(100%);
+        z-index: -1;
       }
-    }`
+    }` // z-index transitions smooth out reset behavior on Firefox.
 
     log('registering animation:',keyframes)
 
@@ -396,7 +400,7 @@ function initCarousel() {
       slide.classList.add('carousel-slide')
       slide.classList.add('carousel-live')
       slide.textContent = src
-      slide.style.backgroundColor = `hsl(${hue} 50% 50%)`
+      slide.style.backgroundColor = `hsla(${hue}, 50%, 50%, 1)`
 
       if(sources.length > 1) {
         slide.style.animation = `${name} ${holdTime * sources.length}s `
