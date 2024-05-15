@@ -374,8 +374,11 @@ function initCarousel() {
       ${percentage * (2 * moveTime + holdTime) / itemTime}% {
         transform: translateX(-100%);
       }
-      to {
+      99.9%{
         transform: translateX(-100%);
+      }
+      to {
+        transform: translateX(100%);
       }
     }`
 

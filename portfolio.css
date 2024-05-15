@@ -423,8 +423,11 @@ body {
 }
 
 .portfolio hr {
+  border-top: none;
+  border-right: none;
+  border-left: none;
+  border-bottom: 1px solid #0af5;;
   margin-bottom: var(--hr-margin);
-  color: #0af5;
   width: calc(100% + 2 * var(--content-padding));
   transform: translateX(calc(-1 * var(--content-padding)));
 }
