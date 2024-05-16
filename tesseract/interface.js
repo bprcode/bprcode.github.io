@@ -347,29 +347,21 @@ function updateAnimationPreferences () {
 
 initCarousel()
 function initCarousel() {
-  log('starting carousel...')
-
-  const animations = document.createElement('style')
-  document.head.append(animations)
-
   for(const [index, carousel] of Object.entries(all('.carousel'))) {
     const clipping = document.createElement('div')
     clipping.classList.add('carousel-clipping')
     carousel.append(clipping)
 
+    carousel.dataset.current = 0
     carousel.addEventListener('rotate', rotateCarousel)
     carousel.addEventListener('click', event => {
+      
+
       carousel.dispatchEvent(new CustomEvent('rotate', {detail: 'next'}))
     })
-
-    const holdTime = 2
-    const moveTime = 1
-    const itemTime = holdTime + moveTime
     
     const sources = carousel.dataset.src.split(', ')
-    const percentage = 100 / sources.length
     
-    // debug -- WIP -- CSS cycle is inadvisable, trying different approach
     for(const [index, src] of Object.entries(sources)) {
       const centering = 32 * sources.length / -2
       const pip = document.createElement('div')
@@ -378,63 +370,43 @@ function initCarousel() {
       carousel.append(pip)
     }
 
+    carousel.querySelector('.carousel-pip').classList.add('current')
 
-    //
-
-    const name = `carousel-${index}`
-    const keyframes = `@keyframes ${name} {
-      from {
-        transform: translateX(100%);
-        visibility: hidden;
-      }
-      ${percentage * moveTime / itemTime}% {
-        transform: translateX(0%);
-      }
-      ${percentage * (moveTime + holdTime) / itemTime}% {
-        transform: translateX(0%);
-      }
-      ${percentage * (2 * moveTime + holdTime) / itemTime}% {
-        transform: translateX(-100%);
-        visibility: visible;
-      }
-      ${percentage * (3 * moveTime + holdTime) / itemTime}%{
-        transform: translateX(-100%);
-        visibility: hidden;
-      }
-      to {
-        transform: translateX(100%);
-        visibility: hidden;
-      }
-    }`
-
-    animations.sheet.insertRule(keyframes)
-
-    let hue = 0
-    let delay = -moveTime
-    for(const src of carousel.dataset.src.split(', ')) {
+    for(const [index, src] of
+      Object.entries(carousel.dataset.src.split(', '))) {
       const slide = document.createElement('div')
 
       slide.classList.add('carousel-slide')
-      slide.classList.add('carousel-live')
-      // slide.style.backgroundColor = `hsla(${hue}, 50%, 50%, 1)`
-      // slide.style.backgroundColor = `#080808`
       slide.style.backgroundImage = `url(${src})`
 
-      if(sources.length > 1) {
-        slide.style.animation = `${name} ${holdTime * sources.length}s `
-          + `ease ${delay}s infinite none`
-      } else {
-        slide.style.transform = 'unset'
+      if(index != 0) {
+        slide.classList.add('slide-right')
       }
 
       clipping.append(slide)
-      hue += 60
-      delay += holdTime
     }
   }
 }
 
 function rotateCarousel(event) {
-  log('rotateCarousel:',event)
+  const count = event.currentTarget.dataset.src.split(', ').length
 
+  const last = Number(event.currentTarget.dataset.current)
+  const current = (count + last + 1) % count
+  event.currentTarget.dataset.current = current
+
+  const slides = event.currentTarget.querySelectorAll('.carousel-slide')
+  slides[current].classList.remove('slide-right')
+  slides[current].classList.remove('slide-left')
+
+  if(current > last) {
+    slides[last].classList.add('slide-left')
+  } else {
+    slides[last].classList.add('slide-right')
+  }
+
+  const pips = event.currentTarget.querySelectorAll('.carousel-pip')
+  pips[current].classList.add('current')
+  pips[last].classList.remove('current')
+  
 }
