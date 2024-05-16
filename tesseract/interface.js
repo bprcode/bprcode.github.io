@@ -353,18 +353,39 @@ function initCarousel() {
   document.head.append(animations)
 
   for(const [index, carousel] of Object.entries(all('.carousel'))) {
+    const clipping = document.createElement('div')
+    clipping.classList.add('carousel-clipping')
+    carousel.append(clipping)
+
+    carousel.addEventListener('rotate', rotateCarousel)
+    carousel.addEventListener('click', event => {
+      carousel.dispatchEvent(new CustomEvent('rotate', {detail: 'next'}))
+    })
+
     const holdTime = 2
     const moveTime = 1
     const itemTime = holdTime + moveTime
-
+    
     const sources = carousel.dataset.src.split(', ')
     const percentage = 100 / sources.length
+    
+    // debug -- WIP -- CSS cycle is inadvisable, trying different approach
+    for(const [index, src] of Object.entries(sources)) {
+      const centering = 32 * sources.length / -2
+      const pip = document.createElement('div')
+      pip.classList.add('carousel-pip')
+      pip.style.left = `calc(50% + ${centering + index * 32}px)`
+      carousel.append(pip)
+    }
+
+
+    //
 
     const name = `carousel-${index}`
     const keyframes = `@keyframes ${name} {
       from {
         transform: translateX(100%);
-        z-index: 1;
+        visibility: hidden;
       }
       ${percentage * moveTime / itemTime}% {
         transform: translateX(0%);
@@ -374,23 +395,19 @@ function initCarousel() {
       }
       ${percentage * (2 * moveTime + holdTime) / itemTime}% {
         transform: translateX(-100%);
-        z-index: 1;
+        visibility: visible;
       }
       ${percentage * (3 * moveTime + holdTime) / itemTime}%{
         transform: translateX(-100%);
-        z-index: -1;
+        visibility: hidden;
       }
       to {
         transform: translateX(100%);
-        z-index: -1;
+        visibility: hidden;
       }
-    }` // z-index transitions smooth out reset behavior on Firefox.
-
-    log('registering animation:',keyframes)
+    }`
 
     animations.sheet.insertRule(keyframes)
-
-    log(animations.sheet)
 
     let hue = 0
     let delay = -moveTime
@@ -400,7 +417,7 @@ function initCarousel() {
       slide.classList.add('carousel-slide')
       slide.classList.add('carousel-live')
       // slide.style.backgroundColor = `hsla(${hue}, 50%, 50%, 1)`
-      slide.style.backgroundColor = `#080808`
+      // slide.style.backgroundColor = `#080808`
       slide.style.backgroundImage = `url(${src})`
 
       if(sources.length > 1) {
@@ -410,9 +427,14 @@ function initCarousel() {
         slide.style.transform = 'unset'
       }
 
-      carousel.append(slide)
+      clipping.append(slide)
       hue += 60
       delay += holdTime
     }
   }
+}
+
+function rotateCarousel(event) {
+  log('rotateCarousel:',event)
+
 }
