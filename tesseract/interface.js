@@ -359,7 +359,8 @@ function initCarousel() {
     })
     
     const sources = carousel.dataset.src.split(', ')
-    
+
+    // Attach pip indicators
     for(const [index, src] of Object.entries(sources)) {
       const centering = 32 * sources.length / -2
       const pip = document.createElement('div')
@@ -370,6 +371,7 @@ function initCarousel() {
 
     carousel.querySelector('.carousel-pip').classList.add('current')
 
+    // Attach image slides
     for(const src of carousel.dataset.src.split(', ')) {
       const slide = document.createElement('div')
 
@@ -381,29 +383,31 @@ function initCarousel() {
     }
 
     placeSlides(carousel)
+
+    // Attach navigation arrows
+    const leftArrow = document.createElement('button')
+    const rightArrow = document.createElement('button')
+    leftArrow.classList.add('spin-left-button')
+    rightArrow.classList.add('spin-right-button')
+
+    leftArrow.addEventListener('click', event => {
+      carousel.dispatchEvent(new CustomEvent('rotate', {detail: 'previous'}))
+      event.stopPropagation()
+    })
+    rightArrow.addEventListener('click', event => {
+      carousel.dispatchEvent(new CustomEvent('rotate', {detail: 'next'}))
+      event.stopPropagation()
+    })
+
+    carousel.append(leftArrow)
+    carousel.append(rightArrow)
   }
-}
-
-function rotateCarousel(event) {
-  const count = event.currentTarget.dataset.src.split(', ').length
-
-  const last = Number(event.currentTarget.dataset.current)
-  const current = (count + last + 1) % count
-  event.currentTarget.dataset.current = current
-
-  placeSlides(event.currentTarget)
-
-  const pips = event.currentTarget.querySelectorAll('.carousel-pip')
-  pips[current].classList.add('current')
-  pips[last].classList.remove('current')
 }
 
 function placeSlides(carousel) {
   const slides = carousel.querySelectorAll('.carousel-slide')
   const center = carousel.dataset.current
   const count = slides.length
-
-
 
   for(const [index, slide] of Object.entries(slides)) {
     slide.classList.remove('skip-slide')
@@ -438,4 +442,31 @@ function placeSlides(carousel) {
       slide.classList.add('slide-right')
     }
   }
+}
+
+function rotateCarousel(event) {
+  const action = event.detail
+  const count = event.currentTarget.dataset.src.split(', ').length
+
+  const last = Number(event.currentTarget.dataset.current)
+
+  let current
+  switch (action) {
+    case 'next':
+      current = (count + last + 1) % count
+      break
+      case 'previous':
+      current = (count + last - 1) % count
+      break
+    default:
+      current = action
+  }
+
+  event.currentTarget.dataset.current = current
+
+  placeSlides(event.currentTarget)
+
+  const pips = event.currentTarget.querySelectorAll('.carousel-pip')
+  pips[current].classList.add('current')
+  pips[last].classList.remove('current')
 }

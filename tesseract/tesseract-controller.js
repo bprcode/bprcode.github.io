@@ -9,7 +9,7 @@ import { Quaternion, frustum, π } from './sundry-matrix.js'
 import { tesseractAnimations } from './animation-data.js'
 
 window.onerror = handleGlobalError
-document.querySelector('.noscript-notice').classList.add('hidden')
+document.querySelector('.loading-notice').classList.add('hidden')
 
 export const log = console.log.bind(console)
 const el = document.getElementById.bind(document)
