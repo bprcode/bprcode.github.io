@@ -368,7 +368,6 @@ body {
   top: 0px;
   left: 0px;
   z-index: 9;
-  box-shadow: inset 0 0 1rem red;
   overflow-x: hidden;
 }
 
@@ -389,6 +388,10 @@ body {
 
 .slide-right {
   transform: translateX(100%);
+}
+
+.skip-slide {
+  transition: unset !important;
 }
 
 .carousel-pip {

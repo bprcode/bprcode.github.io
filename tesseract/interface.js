@@ -347,7 +347,7 @@ function updateAnimationPreferences () {
 
 initCarousel()
 function initCarousel() {
-  for(const [index, carousel] of Object.entries(all('.carousel'))) {
+  for(const carousel of all('.carousel')) {
     const clipping = document.createElement('div')
     clipping.classList.add('carousel-clipping')
     carousel.append(clipping)
@@ -355,8 +355,6 @@ function initCarousel() {
     carousel.dataset.current = 0
     carousel.addEventListener('rotate', rotateCarousel)
     carousel.addEventListener('click', event => {
-      
-
       carousel.dispatchEvent(new CustomEvent('rotate', {detail: 'next'}))
     })
     
@@ -372,19 +370,17 @@ function initCarousel() {
 
     carousel.querySelector('.carousel-pip').classList.add('current')
 
-    for(const [index, src] of
-      Object.entries(carousel.dataset.src.split(', '))) {
+    for(const src of carousel.dataset.src.split(', ')) {
       const slide = document.createElement('div')
 
       slide.classList.add('carousel-slide')
+      slide.classList.add('hide-slide')
       slide.style.backgroundImage = `url(${src})`
-
-      if(index != 0) {
-        slide.classList.add('slide-right')
-      }
 
       clipping.append(slide)
     }
+
+    placeSlides(carousel)
   }
 }
 
@@ -395,18 +391,51 @@ function rotateCarousel(event) {
   const current = (count + last + 1) % count
   event.currentTarget.dataset.current = current
 
-  const slides = event.currentTarget.querySelectorAll('.carousel-slide')
-  slides[current].classList.remove('slide-right')
-  slides[current].classList.remove('slide-left')
-
-  if(current > last) {
-    slides[last].classList.add('slide-left')
-  } else {
-    slides[last].classList.add('slide-right')
-  }
+  placeSlides(event.currentTarget)
 
   const pips = event.currentTarget.querySelectorAll('.carousel-pip')
   pips[current].classList.add('current')
   pips[last].classList.remove('current')
-  
+}
+
+function placeSlides(carousel) {
+  const slides = carousel.querySelectorAll('.carousel-slide')
+  const center = carousel.dataset.current
+  const count = slides.length
+
+
+
+  for(const [index, slide] of Object.entries(slides)) {
+    slide.classList.remove('skip-slide')
+
+    if(index === center) {
+      slide.classList.remove('slide-left')
+      slide.classList.remove('slide-right')
+      slide.classList.remove('hide-slide')
+      continue
+    }
+
+    const left = (center - index + count) % count
+    const right = (index - center + count) % count
+
+    if(left === 1 || right === 1){
+      slide.classList.remove('hide-slide')
+    } else {
+      slide.classList.add('hide-slide')
+    }
+
+    if(left < right) {
+      if(slide.classList.contains('slide-right')) {
+        slide.classList.remove('slide-right')
+        slide.classList.add('skip-slide')
+      }
+      slide.classList.add('slide-left')
+    } else {
+      if(slide.classList.contains('slide-left')) {
+        slide.classList.remove('slide-left')
+        slide.classList.add('skip-slide')
+      }
+      slide.classList.add('slide-right')
+    }
+  }
 }
