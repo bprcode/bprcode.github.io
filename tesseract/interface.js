@@ -347,6 +347,14 @@ function updateAnimationPreferences () {
 initCarousel()
 function initCarousel() {
   for(const carousel of all('.carousel')) {
+    carousel.addEventListener('click', () => {
+      if(carouselTouchStart.noClick) {
+        return
+      }
+
+      location = carousel.closest('.content').querySelector('a').href
+    })
+
     // Attach clipping
     const clipping = document.createElement('div')
     clipping.classList.add('carousel-clipping')
@@ -483,6 +491,7 @@ function rotateCarousel(event) {
 }
 
 function carouselTouchStart(event) {
+  carouselTouchStart.noClick = false
   carouselTouchStart.contact = {
     x0: event.changedTouches[0].screenX,
     y0: event.changedTouches[0].screenY,
@@ -508,19 +517,22 @@ function carouselTouchMove(event) {
   event.preventDefault()
   
   if(dy > 0.03 || dy < -0.03) {
+    carouselTouchStart.noClick = true
     delete carouselTouchStart.contact
     return
   }
-
+  
   if(dx > 0.02) {
     event.currentTarget.dispatchEvent(
       new CustomEvent('rotate', {detail: 'previous'}))
     delete carouselTouchStart.contact
+    carouselTouchStart.noClick = true
   }
   if(dx < -0.02) {
     event.currentTarget.dispatchEvent(
       new CustomEvent('rotate', {detail: 'next'}))
     delete carouselTouchStart.contact
+    carouselTouchStart.noClick = true
   }
 }
 

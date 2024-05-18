@@ -340,7 +340,7 @@ body {
 .content h2 {
   font-weight: 400;
   font-size: 1.4em;
-  margin-bottom: 0.25em;
+  /* margin-bottom: 0.25em; */
 }
 
 .content p {
@@ -478,6 +478,17 @@ body {
   clear: both;
 }
 
+.project-links {
+  display: flex;
+  margin-bottom: 1em;
+}
+
+.content .project-links a {
+  color: var(--soft-color);
+  margin-right: 1em;
+  font-size: 0.9em;
+}
+
 .close {
   z-index: 2;
   position: sticky;
@@ -562,6 +573,11 @@ body {
 .portfolio a {
   color: #82e8ff;
   text-decoration: none;
+}
+
+.portfolio a img {
+  height: 0.8em;
+  margin-left: 0.25em;
 }
 
 .portfolio a:hover {
