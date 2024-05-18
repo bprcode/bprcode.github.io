@@ -5,7 +5,6 @@
 import { beginClarityTransition, setGrabStyle, logError, animationSet,
   shuffleUpcoming, beginFadeIn } from "./tesseract-controller.js"
 
-const log = console.log.bind(console)
 const select = document.querySelector.bind(document)
 const all = document.querySelectorAll.bind(document)
 
@@ -348,6 +347,7 @@ function updateAnimationPreferences () {
 initCarousel()
 function initCarousel() {
   for(const carousel of all('.carousel')) {
+    // Attach clipping
     const clipping = document.createElement('div')
     clipping.classList.add('carousel-clipping')
     carousel.append(clipping)
@@ -500,10 +500,12 @@ function carouselTouchMove(event) {
   const dy = (event.changedTouches[0].screenY
     - carouselTouchStart.contact.y0) / size
 
-  // Ignore vertical swipes
-  if(Math.abs(dy/dx) > 1) {
+  // Ignore vertical swipes (over 30° to horizontal):
+  if(Math.abs(dy/dx) > 0.577) {
     return
   }
+
+  event.preventDefault()
   
   if(dy > 0.03 || dy < -0.03) {
     delete carouselTouchStart.contact

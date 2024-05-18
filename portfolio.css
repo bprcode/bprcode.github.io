@@ -356,6 +356,19 @@ body {
   display: block;
 }
 
+.carousel::before {
+  position: absolute;
+  content: '';
+  width: calc(100% + 32px);
+  height: calc(100% + 96px);
+  transform: translate(-16px, -24px);
+  background-image: radial-gradient(ellipse 34% 50%,
+    rgba(39, 114, 151, 0.15) 25%,
+    rgba(85, 198, 255, 0.06) 70%,
+    rgba(67, 192, 255, 0)
+  );
+}
+
 .carousel-clipping {
   position: absolute;
   width: 100%;
@@ -364,10 +377,6 @@ body {
   left: 0px;
   z-index: 1;
   overflow-x: hidden;
-  background-image: radial-gradient(closest-side,
-    rgba(67, 192, 255, 0.267),
-    rgba(67, 192, 255, 0)
-  );
 }
 
 .carousel-slide {
