@@ -354,19 +354,25 @@ function initCarousel() {
 
     carousel.dataset.current = 0
     carousel.addEventListener('rotate', rotateCarousel)
-    carousel.addEventListener('click', event => {
-      carousel.dispatchEvent(new CustomEvent('rotate', {detail: 'next'}))
-    })
     
     const sources = carousel.dataset.src.split(', ')
 
     // Attach pip indicators
+    const pipContainer = document.createElement('div')
+    pipContainer.classList.add('pip-container')
+    carousel.append(pipContainer)
+
     for(const [index, src] of Object.entries(sources)) {
       const centering = 32 * sources.length / -2
       const pip = document.createElement('div')
       pip.classList.add('carousel-pip')
-      pip.style.left = `calc(50% + ${centering + index * 32}px)`
-      carousel.append(pip)
+
+      pip.addEventListener('click', event => {
+        carousel.dispatchEvent(new CustomEvent('rotate', { detail: index }))
+        event.stopPropagation()
+      })
+
+      pipContainer.append(pip)
     }
 
     carousel.querySelector('.carousel-pip').classList.add('current')
@@ -391,16 +397,20 @@ function initCarousel() {
     rightArrow.classList.add('spin-right-button')
 
     leftArrow.addEventListener('click', event => {
-      carousel.dispatchEvent(new CustomEvent('rotate', {detail: 'previous'}))
+      carousel.dispatchEvent(new CustomEvent('rotate', { detail: 'previous' }))
       event.stopPropagation()
     })
     rightArrow.addEventListener('click', event => {
-      carousel.dispatchEvent(new CustomEvent('rotate', {detail: 'next'}))
+      carousel.dispatchEvent(new CustomEvent('rotate', { detail: 'next' }))
       event.stopPropagation()
     })
 
     carousel.append(leftArrow)
     carousel.append(rightArrow)
+
+    carousel.addEventListener('touchstart', carouselTouchStart)
+    carousel.addEventListener('touchmove', carouselTouchMove)
+    carousel.addEventListener('touchend', carouselTouchEnd)
   }
 }
 
@@ -428,6 +438,7 @@ function placeSlides(carousel) {
       slide.classList.add('hide-slide')
     }
 
+    // Compare shortest distance, including wraparound:
     if(left < right) {
       if(slide.classList.contains('slide-right')) {
         slide.classList.remove('slide-right')
@@ -467,6 +478,50 @@ function rotateCarousel(event) {
   placeSlides(event.currentTarget)
 
   const pips = event.currentTarget.querySelectorAll('.carousel-pip')
-  pips[current].classList.add('current')
   pips[last].classList.remove('current')
+  pips[current].classList.add('current')
+}
+
+function carouselTouchStart(event) {
+  carouselTouchStart.contact = {
+    x0: event.changedTouches[0].screenX,
+    y0: event.changedTouches[0].screenY,
+  }
+}
+
+function carouselTouchMove(event) {
+  if(!carouselTouchStart.contact) {
+    return
+  }
+
+  const size = Math.min(document.body.clientWidth, document.body.clientHeight)
+  const dx = (event.changedTouches[0].screenX
+    - carouselTouchStart.contact.x0) / size
+  const dy = (event.changedTouches[0].screenY
+    - carouselTouchStart.contact.y0) / size
+
+  // Ignore vertical swipes
+  if(Math.abs(dy/dx) > 1) {
+    return
+  }
+  
+  if(dy > 0.03 || dy < -0.03) {
+    delete carouselTouchStart.contact
+    return
+  }
+
+  if(dx > 0.02) {
+    event.currentTarget.dispatchEvent(
+      new CustomEvent('rotate', {detail: 'previous'}))
+    delete carouselTouchStart.contact
+  }
+  if(dx < -0.02) {
+    event.currentTarget.dispatchEvent(
+      new CustomEvent('rotate', {detail: 'next'}))
+    delete carouselTouchStart.contact
+  }
+}
+
+function carouselTouchEnd() {
+  delete carouselTouchStart.contact
 }

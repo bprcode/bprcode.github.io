@@ -352,14 +352,8 @@ body {
   z-index: 1;
   width: min(100%, 400px);
   height: 240px;
-  margin: 0px auto 1.5em auto;
+  margin: 0px auto 2.5em auto;
   display: block;
-  background: radial-gradient(at 80% 100%,
-    rgba(156, 247, 255, 0.167),
-    rgba(156, 247, 255, 0.0));
-
-  /* overflow-x: hidden;
-  overflow-y: visible; */
 }
 
 .carousel-clipping {
@@ -370,6 +364,10 @@ body {
   left: 0px;
   z-index: 1;
   overflow-x: hidden;
+  background-image: radial-gradient(closest-side,
+    rgba(67, 192, 255, 0.267),
+    rgba(67, 192, 255, 0)
+  );
 }
 
 .carousel-slide {
@@ -380,26 +378,46 @@ body {
   background-repeat: no-repeat;
   background-position: center;
   transform: translateX(0%);
-  transition: transform 0.5s ease-out;
+  transition: transform 0.4s ease-out;
 }
 
 .spin-left-button,
 .spin-right-button {
+  cursor: pointer;
   z-index: 1;
-  box-shadow: inset 0 0 1rem red;
   position: absolute;
+  background-color: transparent;
   
   top: 50%;
-  width: 64px;
-  height: 64px;
+  width: 32px;
+  height: 32px;
   transform: translateY(-50%);
+  border: none;
+}
+
+.spin-left-button:hover,
+.spin-right-button:hover {
+  filter: brightness(130%);
+}
+
+.spin-left-button:active,
+.spin-right-button:active {
+  filter: brightness(180%);
 }
 
 .spin-left-button {
+  background-image: url('/preview-slides/arrow-previous.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: 8px;
   left: 0px;
 }
 
 .spin-right-button {
+  background-image: url('/preview-slides/arrow-next.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: calc(100% - 8px);
   right: 0px;
 }
 
@@ -415,16 +433,36 @@ body {
   transition: unset !important;
 }
 
-.carousel-pip {
+.pip-container {
   position: absolute;
-  width: 16px;
-  height: 4px;
-  background-color: #fff4;
-  bottom: -16px;
+  display: flex;
+  justify-content: center;
+  bottom: -22px;
+  width: 100%;
 }
 
-.carousel-pip.current {
-  background-color: white;
+.carousel-pip {
+  position: relative;
+  cursor: pointer;
+  width: 32px;
+  height: 16px;
+}
+
+.carousel-pip::after {
+  content: '';
+  display: block;
+  position: absolute;
+  width: 16px;
+  height: 6px;
+  border-radius: 3px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #686787;
+}
+
+.carousel-pip.current::after {
+  background-color: var(--brighter-text);
 }
 
 .portfolio section {
