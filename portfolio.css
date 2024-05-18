@@ -340,7 +340,7 @@ body {
 .content h2 {
   font-weight: 400;
   font-size: 1.4em;
-  /* margin-bottom: 0.25em; */
+  margin-bottom: 0.25em;
 }
 
 .content p {
@@ -480,11 +480,15 @@ body {
 
 .project-links {
   display: flex;
-  margin-bottom: 1em;
+  margin-bottom: 5rem;
+}
+
+.portfolio section:last-of-type .project-links {
+  margin-bottom: 3rem;
 }
 
 .content .project-links a {
-  color: var(--soft-color);
+  color: var(--dimmer-text);
   margin-right: 1em;
   font-size: 0.9em;
 }
@@ -553,11 +557,11 @@ body {
 }
 
 .content.portfolio :not(section:last-of-type) p:last-of-type {
-  margin-bottom: 5em;
+  /* margin-bottom: 5em; */
 }
 
 .content.portfolio section:last-of-type p:last-of-type {
-  margin-bottom: 2em;
+  /* margin-bottom: 2em; */
 }
 
 .portfolio ul {
@@ -575,9 +579,14 @@ body {
   text-decoration: none;
 }
 
-.portfolio a img {
+.project-links a img {
   height: 0.8em;
   margin-left: 0.25em;
+}
+
+.portfolio h2 img {
+  height: 0.75em;
+  margin-left: 0.5em;
 }
 
 .portfolio a:hover {
@@ -590,13 +599,15 @@ body {
 
 .portfolio strong {
   font-weight: 500;
-  /* color: #81b3f3; */
 }
 
 .built-with {
   display: inline-block;
   font-weight: 300;
-  color: var(--dimmer-text);
+}
+
+p.built-with {
+  margin-bottom: 0.25em;
 }
 
 .feature-list {

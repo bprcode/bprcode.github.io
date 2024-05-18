@@ -347,14 +347,6 @@ function updateAnimationPreferences () {
 initCarousel()
 function initCarousel() {
   for(const carousel of all('.carousel')) {
-    carousel.addEventListener('click', () => {
-      if(carouselTouchStart.noClick) {
-        return
-      }
-
-      location = carousel.closest('.content').querySelector('a').href
-    })
-
     // Attach clipping
     const clipping = document.createElement('div')
     clipping.classList.add('carousel-clipping')
@@ -364,6 +356,14 @@ function initCarousel() {
     carousel.addEventListener('rotate', rotateCarousel)
     
     const sources = carousel.dataset.src.split(', ')
+
+    clipping.addEventListener('click', () => {
+      if(carouselTouchStart.noClick) {
+        return
+      }
+
+      location = carousel.closest('.content').querySelector('a').href
+    })
 
     // Attach pip indicators
     const pipContainer = document.createElement('div')
