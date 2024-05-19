@@ -608,7 +608,8 @@ body {
 }
 
 p.built-with {
-  margin-bottom: 0.25em;
+  margin-bottom: 0.5em;
+  font-size: 0.9em;
 }
 
 .feature-list {
