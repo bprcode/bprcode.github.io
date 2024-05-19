@@ -820,6 +820,7 @@ footer {
   .carousel {
     float:right;
     margin: 0px 0px 0px 1.5em;
+    width: min(100%, 400px, 40vw);
   }
 
   header {
