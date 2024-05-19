@@ -357,6 +357,7 @@ body {
 }
 
 .carousel::before {
+  pointer-events: none;
   position: absolute;
   content: '';
   width: calc(100% + 32px);
