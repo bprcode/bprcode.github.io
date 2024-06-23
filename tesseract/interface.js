@@ -362,7 +362,7 @@ function initCarousel() {
         return
       }
 
-      location = carousel.closest('.content').querySelector('a').href
+      location = carousel.closest('section').querySelector('a').href
     })
 
     // Attach pip indicators
