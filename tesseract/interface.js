@@ -114,7 +114,7 @@ function initialize () {
       const section = select('.' + selector)
 
       // Just close the pane if it's already open:
-      if(section.classList.contains('opaque')){
+      if (section.classList.contains('opaque')){
         return closeAllPanes()
       }
 
@@ -129,7 +129,7 @@ function initialize () {
         }
       }
 
-      if(selector !== 'settings') {
+      if (selector !== 'settings') {
         glint(section)
       }
 
@@ -208,7 +208,7 @@ function initialize () {
   }
 
   function glintFrame(t) {
-    if(!glint.ctx.createConicGradient) {
+    if (!glint.ctx.createConicGradient) {
       return
     }
   
@@ -238,7 +238,7 @@ function initialize () {
     glint.ctx.fillStyle = gradient;
     glint.ctx.fillRect(0, 0, size, size);
   
-    if(dt < 1) {
+    if (dt < 1) {
       requestAnimationFrame(glintFrame)
     }
   }
@@ -358,7 +358,7 @@ function initCarousel() {
     const sources = carousel.dataset.src.split(', ')
 
     clipping.addEventListener('click', () => {
-      if(carouselTouchStart.noClick) {
+      if (carouselTouchStart.noClick) {
         return
       }
 
@@ -366,24 +366,27 @@ function initCarousel() {
     })
 
     // Attach pip indicators
-    const pipContainer = document.createElement('div')
-    pipContainer.classList.add('pip-container')
-    carousel.append(pipContainer)
+    if (sources.length > 1) {
+      const pipContainer = document.createElement('div')
+      pipContainer.classList.add('pip-container')
+      carousel.append(pipContainer)
+  
+      for(const [index, src] of Object.entries(sources)) {
+        const centering = 32 * sources.length / -2
+        const pip = document.createElement('div')
+        pip.classList.add('carousel-pip')
+  
+        pip.addEventListener('click', event => {
+          carousel.dispatchEvent(new CustomEvent('rotate', { detail: index }))
+          event.stopPropagation()
+        })
+  
+        pipContainer.append(pip)
+      }
 
-    for(const [index, src] of Object.entries(sources)) {
-      const centering = 32 * sources.length / -2
-      const pip = document.createElement('div')
-      pip.classList.add('carousel-pip')
-
-      pip.addEventListener('click', event => {
-        carousel.dispatchEvent(new CustomEvent('rotate', { detail: index }))
-        event.stopPropagation()
-      })
-
-      pipContainer.append(pip)
+      carousel.querySelector('.carousel-pip').classList.add('current')
     }
 
-    carousel.querySelector('.carousel-pip').classList.add('current')
 
     // Attach image slides
     for(const src of carousel.dataset.src.split(', ')) {
@@ -399,26 +402,28 @@ function initCarousel() {
     placeSlides(carousel)
 
     // Attach navigation arrows
-    const leftArrow = document.createElement('button')
-    const rightArrow = document.createElement('button')
-    leftArrow.classList.add('spin-left-button')
-    rightArrow.classList.add('spin-right-button')
-
-    leftArrow.addEventListener('click', event => {
-      carousel.dispatchEvent(new CustomEvent('rotate', { detail: 'previous' }))
-      event.stopPropagation()
-    })
-    rightArrow.addEventListener('click', event => {
-      carousel.dispatchEvent(new CustomEvent('rotate', { detail: 'next' }))
-      event.stopPropagation()
-    })
-
-    carousel.append(leftArrow)
-    carousel.append(rightArrow)
-
-    carousel.addEventListener('touchstart', carouselTouchStart)
-    carousel.addEventListener('touchmove', carouselTouchMove)
-    carousel.addEventListener('touchend', carouselTouchEnd)
+    if (sources.length > 1) {
+      const leftArrow = document.createElement('button')
+      const rightArrow = document.createElement('button')
+      leftArrow.classList.add('spin-left-button')
+      rightArrow.classList.add('spin-right-button')
+  
+      leftArrow.addEventListener('click', event => {
+        carousel.dispatchEvent(new CustomEvent('rotate', { detail: 'previous' }))
+        event.stopPropagation()
+      })
+      rightArrow.addEventListener('click', event => {
+        carousel.dispatchEvent(new CustomEvent('rotate', { detail: 'next' }))
+        event.stopPropagation()
+      })
+  
+      carousel.append(leftArrow)
+      carousel.append(rightArrow)
+  
+      carousel.addEventListener('touchstart', carouselTouchStart)
+      carousel.addEventListener('touchmove', carouselTouchMove)
+      carousel.addEventListener('touchend', carouselTouchEnd)
+    }
   }
 }
 
@@ -430,7 +435,7 @@ function placeSlides(carousel) {
   for(const [index, slide] of Object.entries(slides)) {
     slide.classList.remove('skip-slide')
 
-    if(index === center) {
+    if (index === center) {
       slide.classList.remove('slide-left')
       slide.classList.remove('slide-right')
       slide.classList.remove('hide-slide')
@@ -440,21 +445,21 @@ function placeSlides(carousel) {
     const left = (center - index + count) % count
     const right = (index - center + count) % count
 
-    if(left === 1 || right === 1){
+    if (left === 1 || right === 1){
       slide.classList.remove('hide-slide')
     } else {
       slide.classList.add('hide-slide')
     }
 
     // Compare shortest distance, including wraparound:
-    if(left < right) {
-      if(slide.classList.contains('slide-right')) {
+    if (left < right) {
+      if (slide.classList.contains('slide-right')) {
         slide.classList.remove('slide-right')
         slide.classList.add('skip-slide')
       }
       slide.classList.add('slide-left')
     } else {
-      if(slide.classList.contains('slide-left')) {
+      if (slide.classList.contains('slide-left')) {
         slide.classList.remove('slide-left')
         slide.classList.add('skip-slide')
       }
@@ -499,7 +504,7 @@ function carouselTouchStart(event) {
 }
 
 function carouselTouchMove(event) {
-  if(!carouselTouchStart.contact) {
+  if (!carouselTouchStart.contact) {
     return
   }
 
@@ -510,25 +515,25 @@ function carouselTouchMove(event) {
     - carouselTouchStart.contact.y0) / size
 
   // Ignore vertical swipes (over 30° to horizontal):
-  if(Math.abs(dy/dx) > 0.577) {
+  if (Math.abs(dy/dx) > 0.577) {
     return
   }
 
   event.preventDefault()
   
-  if(dy > 0.03 || dy < -0.03) {
+  if (dy > 0.03 || dy < -0.03) {
     carouselTouchStart.noClick = true
     delete carouselTouchStart.contact
     return
   }
   
-  if(dx > 0.02) {
+  if (dx > 0.02) {
     event.currentTarget.dispatchEvent(
       new CustomEvent('rotate', {detail: 'previous'}))
     delete carouselTouchStart.contact
     carouselTouchStart.noClick = true
   }
-  if(dx < -0.02) {
+  if (dx < -0.02) {
     event.currentTarget.dispatchEvent(
       new CustomEvent('rotate', {detail: 'next'}))
     delete carouselTouchStart.contact
