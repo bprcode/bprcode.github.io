@@ -756,6 +756,21 @@ input {
   display: block !important;
 }
 
+.contact-email {
+  margin-left: 0.25em;
+  font-family: monospace;
+}
+
+.contact-email a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+.contact-email a:hover {
+  color: rgb(97, 202, 255);
+  text-decoration: underline;
+}
+
 header {
   grid-area: nametag;
   width: fit-content;

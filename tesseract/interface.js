@@ -104,6 +104,33 @@ function initialize () {
     ejectUnderline()
   })
 
+  // Inconvenience e-mail scrapers:
+  document.getElementById('contact-box').addEventListener('click', () => {
+    const contactElement = select('.contact-email')
+    if (contactElement.childElementCount > 0) {
+      return
+    }
+
+    const scrambledEmail = '<`hc\\TU,gRQa[.E^R'
+    const scrambleKey = 'You look down and see a tortoise...'
+
+    const email = unscramble(scrambledEmail, scrambleKey)
+    const mailLink = document.createElement('a')
+
+    mailLink.href = `mailto:${email}`
+    mailLink.textContent = email
+    contactElement.append(mailLink)
+
+    function unscramble(source, key) {
+      return [...source].map((c, i) =>
+        String.fromCharCode(
+          (c.charCodeAt(0) - 32
+          - (key.charCodeAt(i % key.length) - 32) + 95) % 95
+          + 32
+        )).join('')
+    }
+  })
+
   // Single-page link reactions:
   for (const clickable of
     [select('.gear'), ...all('.link-box')]) {
