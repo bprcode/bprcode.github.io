@@ -935,10 +935,10 @@ function initListeners () {
   }
   el('main-canvas').addEventListener('pointerup', pointerup)
 
-  const mouseleave = event => {
+  const pointerleave = event => {
     pointerup()
   }
-  el('main-canvas').addEventListener('mouseleave', mouseleave)
+  el('main-canvas').addEventListener('pointerleave', pointerleave)
 
   const pointermove = event => {
     
