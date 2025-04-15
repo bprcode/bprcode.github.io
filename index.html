@@ -76,6 +76,7 @@
         <ul class="feature-list">
           <li>Instant interactions, achieved via optimistic updates to a mutation buffer. The update algorithm is fault-tolerant, and will store updates indefinitely until the server can be reached. Network race conditions are recognized and handled appropriately. Concurrency conflicts are resolved automatically in favor of recent data without requiring user interaction.</li>
           <li>A managed local cache enables the front-end to serve queries from subsets or composite supersets of previously accessed data views. Staleness is tracked appropriately per view, and the application will only incur network activity when necessary, reducing server traffic and improving responsiveness for users.</li>
+          <li>User authentication managed via JWT. Correctness and security of backend API surface maintained via automated testing and CI hooks.</li>
           <li>Intuitive, fluid interface makes it easy for users to reschedule their calendars without a lot of unnecessary actions, whether on desktop or mobile.</li>
         </ul>
 
@@ -90,7 +91,7 @@
         <p>Optimal solution finder for classic <em>Lights Out</em> puzzles. Users can input existing puzzles to obtain solutions, or randomly generate new puzzles for experimentation.</p>
         <h3>Features</h3>
         <ul class="feature-list">
-          <li>Finds fast (polynomial-time) solutions via Gaussian reduction over the Galois field ℤ₂.</li>
+          <li>Finds fast (polynomial-time) solutions via Gauss-Jordan reduction over the Galois field ℤ₂.</li>
           <li>Unlike most other solvers, finds <em>optimal</em> solutions by identifying and permuting free variables in the puzzle's state transition matrix.</li>
           <li>Achieves seamless user interaction by delegating calculations to a separate worker thread.</li>
         </ul>
