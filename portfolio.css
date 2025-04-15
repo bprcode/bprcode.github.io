@@ -200,14 +200,14 @@ noscript {
   position: relative;
   
   font-weight: 400;
-  letter-spacing: 0.065rem;
+  letter-spacing: 0.045rem;
   padding-left: 0.7em;
 }
 
 .small-title {
   color: var(--soft-color);
   margin-left:0.7rem;
-  letter-spacing: 0.05rem;
+  letter-spacing: 0.03rem;
   font-weight: 100;
 }
 
@@ -282,6 +282,7 @@ noscript {
   min-width: 6.5ch;
   margin-left: 0px;
   margin-right: 0px;
+  letter-spacing: 0.03em;
 }
 
 .link-box:hover a {
@@ -341,12 +342,12 @@ noscript {
 .content h1 {
   margin-bottom: 1.25rem;
   margin-top: -12px; /* compensate for sticky close box */
-  font-weight: 400;
+  font-weight: 500;
   font-size: 1.7em;
 }
 
 .content h2 {
-  font-weight: 400;
+  font-weight: 500;
   font-size: 1.4em;
   margin-bottom: 0.25em;
 }
@@ -532,7 +533,7 @@ noscript {
      delegated to the shaders running the background animation. */
   border-radius: 10px;
   color: #f000;
-  background-color: #000000e0;
+  background-color: #000000f0;
 
   background-image: linear-gradient(138deg, #aaf4 -70%, #a0a0f005 110%);
   box-shadow:
