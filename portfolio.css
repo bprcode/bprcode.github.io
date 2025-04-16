@@ -58,6 +58,392 @@ html {
   scrollbar-color: var(--ff-scrollbar-thumb) var(--scrollbar-background);
 }
 
+/* FONT TEST BEGIN */
+
+.montserrat-test {
+  font-family: "Montserrat", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+.poppins-thin {
+  font-family: "Poppins", sans-serif;
+  font-weight: 100;
+  font-style: normal;
+}
+
+.poppins-extralight {
+  font-family: "Poppins", sans-serif;
+  font-weight: 200;
+  font-style: normal;
+}
+
+.poppins-light {
+  font-family: "Poppins", sans-serif;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.poppins-regular {
+  font-family: "Poppins", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.poppins-medium {
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.poppins-semibold {
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.poppins-bold {
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.poppins-extrabold {
+  font-family: "Poppins", sans-serif;
+  font-weight: 800;
+  font-style: normal;
+}
+
+.poppins-black {
+  font-family: "Poppins", sans-serif;
+  font-weight: 900;
+  font-style: normal;
+}
+
+.poppins-thin-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 100;
+  font-style: italic;
+}
+
+.poppins-extralight-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 200;
+  font-style: italic;
+}
+
+.poppins-light-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.poppins-regular-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.poppins-medium-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.poppins-semibold-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.poppins-bold-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.poppins-extrabold-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 800;
+  font-style: italic;
+}
+
+.poppins-black-italic {
+  font-family: "Poppins", sans-serif;
+  font-weight: 900;
+  font-style: italic;
+}
+
+.dm-sans-test {
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.quicksand-test {
+  font-family: "Quicksand", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.outfit-test {
+  font-family: "Outfit", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.jost-test {
+  font-family: "Jost", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.figtree-test {
+  font-family: "Figtree", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.plus-jakarta-sans-test {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.urbanist-test {
+  font-family: "Urbanist", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+.questrial-regular {
+  font-family: "Questrial", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.league-spartan-test {
+  font-family: "League Spartan", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.kumbh-sans-test {
+  font-family: "Kumbh Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings:
+    "YOPQ" 300;
+}
+
+.gabarito-test {
+  font-family: "Gabarito", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.afacad-test {
+  font-family: "Afacad", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.afacad-flux-test {
+  font-family: "Afacad Flux", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings:
+    "slnt" 0;
+}
+
+.teachers-test {
+  font-family: "Teachers", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+.niramit-extralight {
+  font-family: "Niramit", sans-serif;
+  font-weight: 200;
+  font-style: normal;
+}
+
+.niramit-light {
+  font-family: "Niramit", sans-serif;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.niramit-regular {
+  font-family: "Niramit", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.niramit-medium {
+  font-family: "Niramit", sans-serif;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.niramit-semibold {
+  font-family: "Niramit", sans-serif;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.niramit-bold {
+  font-family: "Niramit", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.niramit-extralight-italic {
+  font-family: "Niramit", sans-serif;
+  font-weight: 200;
+  font-style: italic;
+}
+
+.niramit-light-italic {
+  font-family: "Niramit", sans-serif;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.niramit-regular-italic {
+  font-family: "Niramit", sans-serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.niramit-medium-italic {
+  font-family: "Niramit", sans-serif;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.niramit-semibold-italic {
+  font-family: "Niramit", sans-serif;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.niramit-bold-italic {
+  font-family: "Niramit", sans-serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.raleway-test {
+  font-family: "Raleway", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+.alata-regular {
+  font-family: "Alata", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.red-hat-text-test {
+  font-family: "Red Hat Text", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.mulish-test {
+  font-family: "Mulish", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.assistant-test {
+  font-family: "Assistant", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.albert-sans-test {
+  font-family: "Albert Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+.average-sans-regular {
+  font-family: "Average Sans", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+.voltaire-regular {
+  font-family: "Voltaire", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+.biryani-extralight {
+  font-family: "Biryani", sans-serif;
+  font-weight: 200;
+  font-style: normal;
+}
+
+.biryani-light {
+  font-family: "Biryani", sans-serif;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.biryani-regular {
+  font-family: "Biryani", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.biryani-semibold {
+  font-family: "Biryani", sans-serif;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.biryani-bold {
+  font-family: "Biryani", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.biryani-extrabold {
+  font-family: "Biryani", sans-serif;
+  font-weight: 800;
+  font-style: normal;
+}
+
+.biryani-black {
+  font-family: "Biryani", sans-serif;
+  font-weight: 900;
+  font-style: normal;
+}
+
+.gantari-test {
+  font-family: "Gantari", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+/* FONT TEST END */
+
 body {
   position: relative;
   z-index: 1;
@@ -66,8 +452,8 @@ body {
   background-color: #000;
   -webkit-font-smoothing: antialiased;
   font-family: 'Catamaran', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-size: 1.1rem;
-  line-height: 1.6;
+  font-size: 1rem;
+  line-height: 2;
 }
 
 noscript {
@@ -200,14 +586,14 @@ noscript {
   position: relative;
   
   font-weight: 400;
-  letter-spacing: 0.045rem;
+  /* letter-spacing: 0.045rem; */
   padding-left: 0.7em;
 }
 
 .small-title {
   color: var(--soft-color);
   margin-left:0.7rem;
-  letter-spacing: 0.03rem;
+  /* letter-spacing: 0.03rem; */
   font-weight: 100;
 }
 
@@ -282,7 +668,7 @@ noscript {
   min-width: 6.5ch;
   margin-left: 0px;
   margin-right: 0px;
-  letter-spacing: 0.03em;
+  /* letter-spacing: 0.03em; */
 }
 
 .link-box:hover a {
@@ -535,7 +921,7 @@ noscript {
   color: #f000;
   background-color: #000000f0;
 
-  background-image: linear-gradient(138deg, #aaf4 -70%, #a0a0f005 110%);
+  background-image: linear-gradient(138deg, #aaf2 -70%, #a0aaf005 110%);
   box-shadow:
     0px 0px 1px 1px #0af8 inset,
     9px 9px 24px -6px #0004;
@@ -903,7 +1289,7 @@ footer {
 
 @media (min-width: 370px) {
   body {
-    font-size: 1.15rem;
+    /* font-size: 1.15rem; */
   }
 
   .gear,
