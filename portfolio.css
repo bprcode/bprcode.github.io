@@ -20,7 +20,7 @@ html {
   --content-top-margin: 2rem;
   --content-bottom-margin: 0.9rem;
   --hr-margin: 1.5em;
-  --content-padding: 1.1em;
+  --content-padding: 2rem;
   --scrollbar-background: transparent;
   --ff-scrollbar-thumb: #557;
   --interface-edge: 0px 0px 1px #0afc inset;
@@ -326,18 +326,19 @@ noscript {
   position: fixed;
   z-index: 2; /* Stack atop canvas. */
   grid-area: nametag / nametag / fill / fill;
-  overflow-y: auto;
-  overflow-x: hidden;
   width:max(320px, min(95vw, 70ch)); width:max(320px, min(95lvw, 70ch));
   max-height: calc(100%
     - var(--content-top-margin)
     - var(--content-bottom-margin));
-  padding-left: var(--content-padding);
-  padding-right: var(--content-padding);
-  font-weight: 300;
+  
+  font-weight: 350;
 }
 
-.content.portfolio {
+.content.portfolio,
+.content.about {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   width:max(320px, min(95vw, 78ch)); width:max(320px, min(95lvw, 78ch));
 }
 
@@ -509,24 +510,37 @@ noscript {
 
 .close {
   z-index: 2;
-  position: sticky;
-  margin-left: calc(100% - 24px);
-  top: 8px;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  width: 48px;
+  height: 48px;
+  background-size: 32px;
+  background-color: transparent;
+  border: none;
+  border-radius: 20%;
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+.close::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  left:0;
+  bottom:0;
   width: 32px;
   height: 32px;
-  background-color: transparent;
+  background-color: #001c;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='gainsboro' class='bi bi-x' viewBox='0 0 16 16'%3E%3Cpath d='M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-size: cover;
-  background-color: #0006;
   border: 1px solid #dacaca60;
   border-radius: 20%;
-  opacity: 0.5;
-  box-shadow: 0px 0px 15px #000 inset;
 }
 
 .close:hover {
-  filter: brightness(150%);
+  filter: brightness(190%);
 }
 
 .frosted {
@@ -536,20 +550,38 @@ noscript {
   border-radius: 10px;
   color: #f000;
   background-color: #000000f0;
-
-  background-image: linear-gradient(138deg, #aaf4 -60%, #a0aaf005 70%);
+  background-image: linear-gradient(138deg, #aaf4 -60%, #a0aaf005 90%);
+  transition: opacity ease-in-out 0.35s;
+}
+.frosted::after {
+  content: '';
+  position: absolute;
+  border-radius: 10px;
   box-shadow:
     0px 0px 1px 1px #0af8 inset,
     9px 9px 24px -6px #0004;
+  inset: 0px;
+  z-index: 1;
+  pointer-events: none;
+}
 
-  transition: opacity ease-in-out 0.35s;
+.scroll-container,
+.contact {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  padding-left: var(--content-padding);
+  padding-right: var(--content-padding);
+  
+  overflow-y: auto;
 }
 
 .portfolio section {
   position: relative;
+  margin-top: 2.5rem;
 }
 
 .portfolio section::before {
+  border-top: 1px solid #0af8;
   z-index: -1;
   content: '';
   width: calc(100% + 2 * var(--content-padding));
@@ -566,7 +598,9 @@ noscript {
   border-left: none;
   border-bottom: 1px solid #0af5;;
   margin-bottom: var(--hr-margin);
-  width: calc(100% + 2 * var(--content-padding));
+  
+  /* width: calc(100% + 2 * var(--content-padding) - 1px); */
+  width: 100%;
   transform: translateX(calc(-1 * var(--content-padding)));
 }
 
@@ -816,7 +850,7 @@ footer {
 @media (orientation: landscape) {
   :root {
     --header-height: 0px;
-    --content-padding: 1.75em;
+    --content-padding: 2rem;
   }
 
   .overlay-grid {

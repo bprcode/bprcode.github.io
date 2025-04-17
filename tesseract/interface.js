@@ -135,7 +135,7 @@ function initialize () {
   for (const clickable of
     [select('.gear'), ...all('.link-box')]) {
 
-    clickable.addEventListener('click', event => {
+    clickable.addEventListener('click', _ => {
 
       const selector = clickable.dataset.section
       const section = select('.' + selector)
@@ -148,6 +148,10 @@ function initialize () {
       section.classList.remove('concealed')
       section.classList.add('opaque')
       section.scrollTop = 0
+      const scrollContainer = section.querySelector('.scroll-container')
+      if(scrollContainer) {
+        scrollContainer.scrollTop = 0
+      }
             
       for (const c of all('.content')) {
         if (!c.classList.contains(selector)) {
