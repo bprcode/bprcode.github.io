@@ -363,7 +363,7 @@ noscript {
   position: relative;
   z-index: 1;
   width: min(100%, 400px);
-  height: 240px;
+  height: calc(240px + 32px);
   margin: 0px auto 2.5em auto;
   display: block;
 }
@@ -386,7 +386,7 @@ noscript {
   position: absolute;
   cursor: pointer;
   width: 100%;
-  height: 100%;
+  height: 240px;
   top: 0px;
   left: 0px;
   z-index: 1;
@@ -460,7 +460,7 @@ noscript {
   position: absolute;
   display: flex;
   justify-content: center;
-  bottom: -22px;
+  bottom: 12px;
   width: 100%;
 }
 
