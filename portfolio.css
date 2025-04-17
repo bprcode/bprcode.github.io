@@ -511,9 +511,9 @@ noscript {
 .close {
   z-index: 2;
   position: absolute;
-  right: 0px;
+  right: 12px;
   top: 0px;
-  width: 48px;
+  width: 36px;
   height: 48px;
   background-size: 32px;
   background-color: transparent;
