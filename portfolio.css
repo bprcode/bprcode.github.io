@@ -363,7 +363,7 @@ noscript {
   position: relative;
   z-index: 1;
   width: min(100%, 400px);
-  height: calc(240px + 32px);
+  height: calc(240px + 0px);
   margin: 0px auto 2.5em auto;
   display: block;
 }
@@ -460,7 +460,7 @@ noscript {
   position: absolute;
   display: flex;
   justify-content: center;
-  bottom: 12px;
+  bottom: -22px;
   width: 100%;
 }
 
@@ -888,6 +888,11 @@ footer {
     float:right;
     margin: 0px 0px 0px 1.5em;
     width: min(100%, 400px, 40vw);
+    height: calc(240px + 32px);
+  }
+
+  .pip-container {
+    bottom: 12px;
   }
 
   header {
@@ -951,10 +956,6 @@ footer {
 }
 
 @media (min-width: 370px) {
-  body {
-    /* font-size: 1.15rem; */
-  }
-
   .gear,
   .fullscreen {
     width: 4em;
