@@ -28,8 +28,8 @@ html {
   --strong-color: #98b6fb;
   --soft-color: #5f81d1;
 
-  --dimmer-text: rgb(226, 167, 214);
-  --light-text: rgb(223, 170, 229);
+  --dimmer-text: rgb(251, 156, 232);
+  --footer-link-text: rgb(230, 185, 239);
   --brighter-text: rgb(255, 230, 255);
 }
 
@@ -296,7 +296,7 @@ noscript {
 }
 
 .line-link {
-  color: var(--light-text);
+  color: var(--footer-link-text);
   text-decoration: none;
 }
 
@@ -308,7 +308,7 @@ noscript {
   padding: 0px;
   border: none;
   background-color: transparent;
-  color: var(--light-text);
+  color: var(--footer-link-text);
 }
 
 .gear svg,
@@ -784,7 +784,7 @@ input {
   left: 100%;
   top: 5ex;
   height: 1px;
-  border-bottom: 1px solid var(--light-text);
+  border-bottom: 1px solid var(--footer-link-text);
 }
 
 .bright-underline {
