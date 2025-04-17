@@ -565,6 +565,19 @@ noscript {
   pointer-events: none;
 }
 
+.settings {
+  display: flex;
+  flex-flow: column;
+  max-height: calc(100% - var(--footer-height));
+}
+
+.settings summary {
+  cursor: pointer;
+}
+.settings summary:hover {
+  filter: brightness(120%);
+}
+
 .scroll-container,
 .contact {
   padding-top: 2rem;
