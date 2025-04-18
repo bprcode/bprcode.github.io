@@ -22,7 +22,7 @@ html {
   --content-top-margin: 2rem;
   --content-bottom-margin: 0.9rem;
   --content-padding: 1.5rem;
-  --content-right-padding: 0.5rem;
+  --content-right-padding: 1.25rem;
   --scrollbar-background: transparent;
   --ff-scrollbar-thumb: #557;
   --interface-edge: 0px 0px 1px #0afc inset;
