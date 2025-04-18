@@ -23,6 +23,7 @@ html {
   --content-bottom-margin: 0.9rem;
   --hr-margin: 1.5em;
   --content-padding: 1.5rem;
+  --content-right-padding: 0.5rem;
   --scrollbar-background: transparent;
   --ff-scrollbar-thumb: #557;
   --interface-edge: 0px 0px 1px #0afc inset;
@@ -385,9 +386,12 @@ noscript {
 .carousel {
   position: relative;
   z-index: 1;
-  width: min(100%, 400px);
+  --column-width: calc(100% + var(--content-padding) + var(--content-right-padding));
+  --own-width: min(calc( var(--column-width) - 32px), 400px);
+  width: var(--own-width);
   height: calc(240px + 0px);
-  margin: 0px auto 2.5em auto;
+  margin-left: calc(-1 * var(--content-padding) + (var(--column-width) - var(--own-width)) / 2);
+  margin-bottom: 2.5em;
   display: block;
 }
 
@@ -604,7 +608,7 @@ noscript {
   padding-top: 2rem;
   padding-bottom: 2rem;
   padding-left: var(--content-padding);
-  padding-right: var(--content-padding);
+  padding-right: var(--content-right-padding);
 
   overflow-y: auto;
 }
@@ -618,7 +622,7 @@ noscript {
   border-top: 1px solid #0af8;
   z-index: -1;
   content: '';
-  width: calc(100% + 2 * var(--content-padding));
+  width: calc(100% + var(--content-padding) + var(--content-right-padding));
   height: 48px;
   position: absolute;
   top: calc(-1 * var(--hr-margin));
@@ -887,6 +891,10 @@ footer {
 
   .content {
     grid-area: fill;
+  }
+
+  .scroll-container {
+    --content-right-padding: 2rem;
   }
 
   .opaque ~ header * {
