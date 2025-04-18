@@ -575,8 +575,8 @@ noscript {
      delegated to the shaders running the background animation. */
   border-radius: 10px;
   color: #f000;
-  background-color: #000000e0;
-  background-image: linear-gradient(138deg, #aaf4 -60%, #a0aaf005 90%);
+  background-color: #000000eb;
+  background-image: linear-gradient(138deg, #aaf4 -60%, #a0aaf005 80%);
   transition: opacity ease-in-out 0.35s;
 }
 .frosted::after {

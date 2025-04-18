@@ -138,25 +138,19 @@
             </h2>
             <p>
               Full-stack calendar service with a single-page app frontend. Users
-              can instantly update their schedules from anywhere through a
-              snappy drag-and-drop interface.
+              can instantly update their schedules through a fluid drag-and-drop interface.
             </p>
             <h3>Features</h3>
             <ul class="feature-list">
               <li>
-                Instant interactions, achieved via optimistic updates to a
+                Instant interactions via optimistic updates to a
                 mutation buffer. The update algorithm is fault-tolerant and will
                 store updates indefinitely until the server can be reached.
-                Network race conditions are recognized and handled
-                appropriately. Concurrency conflicts are resolved automatically
-                in favor of recent data without requiring user interaction.
+                Concurrency conflicts are automatically resolved.
               </li>
               <li>
-                A managed local cache enables the front-end to serve queries
-                from subsets or composite supersets of previously accessed data
-                views. Staleness is tracked appropriately per view, and the
-                application will only incur network activity when necessary,
-                reducing server traffic and improving responsiveness for users.
+                A local cache serves queries from subsets or composite supersets 
+                of previous views. Staleness is tracked per-view, minimizing network traffic.
               </li>
               <li>
                 User authentication managed via JWT. Correctness and security of
@@ -165,14 +159,13 @@
               </li>
               <li>
                 Intuitive, fluid interface makes it easy for users to reschedule
-                their calendars without a lot of unnecessary actions, whether on
-                desktop or mobile.
+                their calendars whether on desktop or mobile.
               </li>
             </ul>
 
             <p class="built-with">
               <strong>Built with:</strong> React, React Router, TanStack Query,
-              PostgreSQL, Material UI, and lots of custom code.
+              PostgreSQL, and Material UI.
             </p>
             <div class="project-links">
               <a href="https://daysift.net/welcome"
@@ -194,15 +187,14 @@
               <a href="./lightsout-solver/"><em>Lights Out</em> Solver</a>
             </h2>
             <p>
-              Optimal solution finder for classic <em>Lights Out</em> puzzles.
-              Users can input existing puzzles to obtain solutions, or randomly
-              generate new puzzles for experimentation.
+              Optimal-solution finder for classic <em>Lights Out</em> puzzles.
+              Users can input existing puzzles to obtain solutions, or generate new random puzzles to try.
             </p>
             <h3>Features</h3>
             <ul class="feature-list">
               <li>
                 Finds fast (polynomial-time) solutions via Gauss-Jordan
-                reduction over the Galois field ℤ₂.
+                reduction over the prime field ℤ₂.
               </li>
               <li>
                 Unlike most other solvers, finds <em>optimal</em> solutions by
@@ -238,8 +230,7 @@
             </h2>
             <p>
               A mock library catalog, implemented as a full-stack web service.
-              Users can search a catalog of recorded books by title, subject, or
-              author; update the status of inventory; and add or import metadata
+              Users can search a catalog of recorded books, update inventory, or import metadata
               from real-world library databases.
             </p>
             <h3>Features</h3>
@@ -251,10 +242,8 @@
                 schema.
               </li>
               <li>
-                Rendering of a three-dimensional carousel gallery of recently
-                added books using CSS transitions. Mesh textures and dimensions
-                are inferred based on imported metadata. Records unlikely to
-                yield quality results are excluded from the recency queue.
+                Rendering of a three-dimensional carousel gallery of recently added books based on imported metadata.
+                Records unlikely to yield quality results are excluded from the recency queue.
               </li>
               <li>
                 Pages rendered via server-side templating for a nostalgic,
@@ -324,7 +313,7 @@
             <p>
               Visualization of a polychoron projected from fourth-dimensional
               space down to a two-dimensional viewport. Users can tap and drag
-              the canvas to envision the tesseract from different perspectives.
+              the canvas to view the tesseract from different 4D perspectives.
             </p>
             <h3>Features</h3>
             <ul class="feature-list">
