@@ -361,8 +361,16 @@ noscript {
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.content.portfolio {
   width: max(320px, min(95vw, 78ch));
   width: max(320px, min(95lvw, 78ch));
+}
+
+.content.about {
+  width: max(320px, min(95vw, 60ch));
+  width: max(320px, min(95lvw, 60ch));
 }
 
 .content h1 {
