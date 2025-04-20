@@ -3,16 +3,18 @@ type Vec3 = [number, number, number]
 
 class BokehEffect {
   sceneContainer?: HTMLElement = undefined
-  count = 30
+  count = 40
   particleDivs: HTMLDivElement[] = []
   positions: Vec3[] = []
   velocities: Vec3[] = []
   focalDepths: number[] = []
   isActive: boolean[] = []
   isFresh: boolean[] = []
+  particleAge: number[] = []
   circulationStrength: number[] = []
+  vignetteFactor: number[] = []
   tLast = 0
-  zCenter = 8
+  zCenter = 5
 
   // Soft clipping boundaries for particle fade-out:
   nearFence = 0.5
@@ -37,6 +39,8 @@ class BokehEffect {
     this.positions = Array.from({ length: this.count }, () => [0, 0, 0])
     this.velocities = Array.from({ length: this.count }, () => [0, 0, 0])
     this.focalDepths = Array(this.count).fill(0)
+    this.particleAge = Array(this.count).fill(0)
+    this.vignetteFactor = Array(this.count).fill(0)
     this.isActive = Array(this.count).fill(false)
     this.isFresh = Array(this.count).fill(false)
     this.circulationStrength = Array(this.count).fill(1)
@@ -63,6 +67,7 @@ class BokehEffect {
   }
 
   startParticle(i: number) {
+    this.particleAge[i] = 0
     const focusTime = 2
 
     this.isActive[i] = true
@@ -125,26 +130,9 @@ class BokehEffect {
     this.focalDepths[i] =
       this.positions[i][2] + focusTime * this.velocities[i][2]
 
+    this.particleDivs[i].style.setProperty('--hue', String(255 + Math.floor(Math.random() * 20)))
     // Vignette:
-    const overrideAlpha = String(
-      0.125 * (1 - (this.positions[i][0] / this.positions[i][2]) ** 2)
-    )
-
-    this.particleDivs[i].style.setProperty(
-      '--override-hue',
-      String(Math.random() > 0.5 ? Math.floor(Math.random() * 15) + 180 : Math.floor(Math.random() * 60) + 330)
-    )
-    this.particleDivs[i].style.setProperty(
-      '--override-saturation',
-      (Math.floor(Math.random() * 80) + 10) + '%'
-    )
-    this.particleDivs[i].style.setProperty(
-      '--override-lightness',
-      50 + Math.random() * 20 + '%'
-    )
-    this.particleDivs[i].style.setProperty('--override-alpha', overrideAlpha)
-    // Will apply through transition timing:
-    this.particleDivs[i].classList.add('override-color')
+    this.vignetteFactor[i] = 0.25 * (1 - (this.positions[i][0] / this.positions[i][2]) ** 2)
 
     setTimeout(() => {
       this.isFresh[i] = false
@@ -194,9 +182,27 @@ class BokehEffect {
       this.positions[i][1] += this.velocities[i][1] * dt
       this.positions[i][2] += this.velocities[i][2] * dt
 
+      this.particleAge[i] += dt
+
+      const centerFade = Math.min(1, Math.abs(this.positions[i][0] / 3)**2)
+      const focalDelta = Math.abs(this.positions[i][2] - this.focalDepths[i])
+      this.particleDivs[i].style.setProperty('--blur-radius', Math.max(10, Math.min(24, Math.floor(32 * focalDelta))) + 'px')
+
+      if(this.isFresh[i]) {
+        const fadeIn = Math.min(1, this.particleAge[i] / 2)
+        this.particleDivs[i].style.setProperty('--alpha', String(fadeIn * (1-focalDelta) * this.vignetteFactor[i] * centerFade))
+        
+      } else if(this.isActive[i]) {
+        this.particleDivs[i].style.setProperty('--alpha', String((1-focalDelta) * this.vignetteFactor[i] * centerFade))
+        
+      } else {
+        const fadeOut = Math.max(0, 1 - this.particleAge[i] / 2)
+        this.particleDivs[i].style.setProperty('--alpha', String(fadeOut * (1-focalDelta) * this.vignetteFactor[i] * centerFade))
+      }
+
       if (!this.isFresh[i] && this.isActive[i] && this.isOutOfFrame(i)) {
         this.isActive[i] = false
-        this.particleDivs[i].classList.remove('override-color')
+        this.particleAge[i] = 0
 
         setTimeout(() => {
           this.startParticle(i)
@@ -234,7 +240,7 @@ class BokehEffect {
       (this.zCenter - position[2]) / boundedRadius,
     ]
 
-    const gravity = 0.125
+    const gravity = 0.05
 
     const fCircular = [
       circulationFactor * magCircular * uCentripetal[0],

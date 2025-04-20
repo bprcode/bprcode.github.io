@@ -3,16 +3,12 @@
   contain: paint;
 }
 
-.bokeh-particle.override-color {
-  background-color: hsla(var(--override-hue), var(--override-saturation), var(--override-lightness), var(--override-alpha));
-  box-shadow: 2px 3px 2px 2px hsla(45, 100%, 50%, var(--override-alpha)), -3px -2px 6px 6px hsla(240, 100%, 50%, var(--override-alpha));
-  --blur-radius: 8px;
-}
-
 .bokeh-particle {
   position: absolute;
   aspect-ratio: 1;
-  mix-blend-mode: screen;
+  /* mix-blend-mode: screen; */
+
+  --alpha: 0;
 
   --full-height: 40%;
   --x: 0;
@@ -22,41 +18,22 @@
   --projected-x: calc(var(--x) / var(--z));
   --projected-y: calc(var(--y) / var(--z));
 
-  --base-hue: 300;
-  --base-saturation: 100%;
-  --base-lightness: 50%;
-  --base-alpha: 0;
+  --hue: 180;
+  --saturation: 100%;
+  --lightness: 50%;
+  --alpha: 0;
   --blur-radius: 16px;
 
-  /* Set first, then apply override class for correct transition: */
-  --override-hue: 90;
-  --override-lightness: 75%;
-  --override-saturation: 100%;
-  --override-alpha: 1;
-
-  /* --focus-delta: calc(var(--focal-depth) - var(--z));
-  --focus-factor: calc(1 - (var(--focus-delta) * var(--focus-delta))); */
-  
-  /* --own-color: hsla(300, calc(var(--focus-factor) * 100%), 50%, 0.5); */
-  /* --own-color: hsla(300, 100%, 50%, 0.5); */
-
-  background-color: hsla(var(--base-hue), var(--base-saturation), var(--base-lightness), var(--base-alpha));
-  box-shadow: 0px 0px 2px hsla(0, 100%, 50%, 0), 0px 0px 2px hsla(80, 100%, 50%, 0);
+  background-color: hsla(var(--hue), var(--saturation), var(--lightness), var(--alpha));
 
   top: calc((1 + var(--projected-y)) * 50%);
   left: calc((1 + var(--projected-x)) * 50%);
   height: var(--full-height);
-  /* opacity: var(--element-opacity); */
-  /* opacity: 1; */
-  /* outline: 1px solid orange; */
 
   border-radius: 50%;
 
   filter: blur(var(--blur-radius));
-  /* filter: blur(max(2px, calc((1 - var(--focus-factor)) * 4px))); */
-  /* box-shadow: 0px 0px 14px var(--own-color),
-    0px 0px 16px var(--own-color); */
 
   transform: translate(-50%, -50%) scale(calc(1 / var(--z)));
-  transition: transform 0.017s linear, background-color 2s ease, filter 1s ease-out, box-shadow 2s ease;
+  transition: transform 0.017s linear, background-color 0.017s linear, filter 0.017s linear;
 }
