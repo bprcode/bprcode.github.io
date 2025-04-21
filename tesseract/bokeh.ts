@@ -3,7 +3,7 @@ type Vec3 = [number, number, number]
 
 class BokehEffect {
   sceneContainer?: HTMLElement = undefined
-  count = 24
+  count = 60
   particleDivs: HTMLDivElement[] = []
   positions: Vec3[] = []
   velocities: Vec3[] = []
@@ -11,18 +11,20 @@ class BokehEffect {
   isActive: boolean[] = []
   isFresh: boolean[] = []
   particleAge: number[] = []
+  particleLifetime: number[] = []
   circulationStrength: number[] = []
   vignetteFactor: number[] = []
   tLast = 0
-  zCenter = 7
+  zCenter = 12
+  beamAngle = 0
 
   // Soft clipping boundaries for particle fade-out:
   nearFence = 0.5
   xFence = 1.25
   riseFence = 3.0
   dropFence = 0.25
-  blackHoleFenceSquared = 1.5
-  focalFence = 1.0
+  blackHoleSize = 0.5
+  focalFence = 0.15
 
   constructor(container?: HTMLElement | null) {
     this.animate = this.animate.bind(this)
@@ -40,6 +42,7 @@ class BokehEffect {
     this.velocities = Array.from({ length: this.count }, () => [0, 0, 0])
     this.focalDepths = Array(this.count).fill(0)
     this.particleAge = Array(this.count).fill(0)
+    this.particleLifetime = Array(this.count).fill(0)
     this.vignetteFactor = Array(this.count).fill(0)
     this.isActive = Array(this.count).fill(false)
     this.isFresh = Array(this.count).fill(false)
@@ -68,23 +71,25 @@ class BokehEffect {
 
   startParticle(i: number) {
     this.particleAge[i] = 0
+    this.particleLifetime[i] = 2 + Math.random() * 3
     const focusTime = 2
 
     this.isActive[i] = true
     this.isFresh[i] = true
 
     // Create eccentric particle:
-    if (Math.random() > 0.4) {
+    if (Math.random() > 0) {
+      // debug, no circular particles
       const z =
-        Math.random() ** 2 * (this.nearFence * 15) +
+        Math.random() ** 2 * (this.nearFence * 20) +
         this.zCenter -
         this.nearFence * 0.25
       const x = z * (Math.random() - 0.5) * 2
-      const y = z * (Math.random() - 0.75) * 0.65
+      const y = z * (Math.random() - 0.65) * 0.65
 
       this.positions[i] = [x, y, z]
       this.velocities[i] = [
-        Math.random() * -this.positions[i][0] * 0.05 +
+        Math.random() * -this.positions[i][0] * 0.01 +
           (Math.random() - 0.5) * 0.5,
         (Math.random() - 0.125) * 1,
         Math.random() - 0.25,
@@ -99,7 +104,8 @@ class BokehEffect {
       const angle =
         (Math.PI * 2 * (Date.now() % 8000)) / 8000 + (fuzz * Math.PI) / 1.5
       const radius =
-        1.25 * Math.random() ** 2 + Math.sqrt(this.blackHoleFenceSquared) * 1.5
+        this.blackHoleSize * Math.random() ** 2 +
+        Math.sqrt(this.blackHoleSize) * 1.5
       this.positions[i] = [
         radius * Math.cos(angle),
         (Math.random() - 0.5) * 3,
@@ -130,9 +136,18 @@ class BokehEffect {
     this.focalDepths[i] =
       this.positions[i][2] + focusTime * this.velocities[i][2]
 
-    this.particleDivs[i].style.setProperty('--hue', String(255 + Math.floor(Math.random() * 20)))
+    this.particleDivs[i].style.setProperty(
+      '--hue',
+      Math.random() > 0.5
+        ? String(255 + Math.floor(Math.random() * 20))
+        : String(330 + Math.floor(Math.random() * 20))
+    )
     // Vignette:
-    this.vignetteFactor[i] = 0.18 * (1 - (this.positions[i][0] / this.positions[i][2]) ** 2)
+    this.vignetteFactor[i] =
+      0.09 * (1 - (this.positions[i][0] / this.positions[i][2]) ** 2)
+
+    // DEBUG - override velocities
+    this.velocities[i] = [0, 0, 0]
 
     setTimeout(() => {
       this.isFresh[i] = false
@@ -141,6 +156,7 @@ class BokehEffect {
 
   isOutOfFrame(i: number): boolean {
     if (
+      this.particleLifetime[i] < 0 ||
       Math.abs(this.positions[i][0] / this.positions[i][2]) > this.xFence ||
       this.positions[i][1] / Math.abs(this.positions[i][2]) > this.dropFence ||
       this.positions[i][1] < -this.riseFence ||
@@ -149,7 +165,7 @@ class BokehEffect {
       this.positions[i][0] ** 2 +
         this.positions[i][1] ** 2 +
         (this.positions[i][2] - this.zCenter) ** 2 <
-        this.blackHoleFenceSquared
+        this.blackHoleSize
     ) {
       return true
     }
@@ -168,36 +184,84 @@ class BokehEffect {
     const dt = (t - this.tLast) / 1000
     this.tLast = t
 
+    this.beamAngle = (this.beamAngle + dt) % (Math.PI * 2)
+
     for (let i = 0; i < this.count; i++) {
-      const wind = this.wind(
-        this.positions[i],
-        this.velocities[i],
-        this.circulationStrength[i]
-      )
-      this.velocities[i][0] += wind[0] * dt
-      this.velocities[i][1] += wind[1] * dt
-      this.velocities[i][2] += wind[2] * dt
+      // const wind = this.wind(
+      //   this.positions[i],
+      //   this.velocities[i],
+      //   this.circulationStrength[i]
+      // )
+
+      // this.velocities[i][0] += wind[0] * dt
+      // this.velocities[i][1] += wind[1] * dt
+      // this.velocities[i][2] += wind[2] * dt
 
       this.positions[i][0] += this.velocities[i][0] * dt
       this.positions[i][1] += this.velocities[i][1] * dt
       this.positions[i][2] += this.velocities[i][2] * dt
 
       this.particleAge[i] += dt
+      this.particleLifetime[i] -= dt
 
-      const centerFade = Math.min(1, Math.abs(this.positions[i][0] / 3)**2)
+      const centerFade = 1
+      // const centerFade = Math.min(1, Math.abs(2*this.positions[i][0] / this.positions[i][2]))
       const focalDelta = Math.abs(this.positions[i][2] - this.focalDepths[i])
-      this.particleDivs[i].style.setProperty('--blur-radius', Math.max(16, Math.min(32, Math.floor(32 * focalDelta))) + 'px')
+      const beamBoost =
+        (this.positions[i][0] * Math.cos(this.beamAngle) +
+          (this.positions[i][2] - this.zCenter) * Math.sin(this.beamAngle)) /
+        Math.sqrt(this.positions[i][0] ** 2 + this.positions[i][1]**2 + this.positions[i][2] ** 2)
+      const boost = Math.max(0, beamBoost) ** 2
 
-      if(this.isFresh[i]) {
+      this.particleDivs[i].style.setProperty(
+        '--blur-radius',
+        Math.max(1, Math.min(32, Math.floor(32 * (1 - boost)))) + 'px'
+      )
+
+      this.particleDivs[i].style.setProperty(
+        '--lightness',
+        50 + 30 * boost + '%'
+      )
+
+      if (this.isFresh[i]) {
         const fadeIn = Math.min(1, this.particleAge[i] / 2)
-        this.particleDivs[i].style.setProperty('--alpha', String(fadeIn * (1-focalDelta) * this.vignetteFactor[i] * centerFade))
-        
-      } else if(this.isActive[i]) {
-        this.particleDivs[i].style.setProperty('--alpha', String((1-focalDelta) * this.vignetteFactor[i] * centerFade))
-        
+        this.particleDivs[i].style.setProperty(
+          '--alpha',
+          String(
+            fadeIn *
+              (1 - focalDelta) *
+              this.vignetteFactor[i] *
+              centerFade *
+              (1 + 3 * boost)
+            // fadeIn * this.vignetteFactor[i] *centerFade +
+            // fadeIn * boost * 0.5
+          )
+        )
+      } else if (this.isActive[i]) {
+        this.particleDivs[i].style.setProperty(
+          '--alpha',
+          String(
+            (1 - focalDelta) *
+              this.vignetteFactor[i] *
+              centerFade *
+              (1 + 3 * boost)
+          )
+          // String(this.vignetteFactor[i]*centerFade+boost * 0.5)
+        )
       } else {
         const fadeOut = Math.max(0, 1 - this.particleAge[i] / 2)
-        this.particleDivs[i].style.setProperty('--alpha', String(fadeOut * (1-focalDelta) * this.vignetteFactor[i] * centerFade))
+        this.particleDivs[i].style.setProperty(
+          '--alpha',
+          String(
+            fadeOut *
+              (1 - focalDelta) *
+              this.vignetteFactor[i] *
+              centerFade *
+              (1 + 3 * boost)
+            // this.vignetteFactor[i]*centerFade+
+            // fadeOut * boost * 0.5
+          )
+        )
       }
 
       if (!this.isFresh[i] && this.isActive[i] && this.isOutOfFrame(i)) {
@@ -226,12 +290,22 @@ class BokehEffect {
     requestAnimationFrame(this.animate)
   }
 
+  outwardForce(position: Vec3): Vec3 {
+    const rSquared =
+      position[0] ** 2 + position[1] ** 2 + (position[2] - this.zCenter) ** 2
+    return [
+      position[0] / rSquared,
+      position[1] / rSquared,
+      (position[2] - this.zCenter) / rSquared,
+    ]
+  }
+
   wind(position: Vec3, velocity: Vec3, circulationFactor: number): Vec3 {
     const radius = Math.sqrt(
       position[0] ** 2 + position[1] ** 2 + (position[2] - this.zCenter) ** 2
     )
     // Limit centripetal force strength to avoid singularity behavior:
-    const boundedRadius = Math.max(2 * this.blackHoleFenceSquared, radius)
+    const boundedRadius = Math.max(2 * this.blackHoleSize, radius)
     const magCircular =
       (velocity[0] ** 2 + velocity[1] ** 2 + velocity[2] ** 2) / boundedRadius
     const uCentripetal = [
