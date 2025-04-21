@@ -3,7 +3,7 @@ type Vec3 = [number, number, number]
 
 class BokehEffect {
   sceneContainer?: HTMLElement = undefined
-  count = 40
+  count = 18
   particleDivs: HTMLDivElement[] = []
   positions: Vec3[] = []
   velocities: Vec3[] = []
@@ -14,8 +14,9 @@ class BokehEffect {
   particleLifetime: number[] = []
   circulationStrength: number[] = []
   vignetteFactor: number[] = []
+  frameCountdown:number[] =[]
   tLast = 0
-  zCenter = 11
+  zCenter = 8
   beamAngle = 0
 
   // Soft clipping boundaries for particle fade-out:
@@ -41,6 +42,7 @@ class BokehEffect {
     this.positions = Array.from({ length: this.count }, () => [0, 0, 0])
     this.velocities = Array.from({ length: this.count }, () => [0, 0, 0])
     this.focalDepths = Array(this.count).fill(0)
+    this.frameCountdown = Array(this.count).fill(0)
     this.particleAge = Array(this.count).fill(0)
     this.particleLifetime = Array(this.count).fill(0)
     this.vignetteFactor = Array(this.count).fill(0)
@@ -72,6 +74,7 @@ class BokehEffect {
   startParticle(i: number) {
     this.particleAge[i] = 0
     this.particleLifetime[i] = 2
+    this.frameCountdown[i] = 0.125
     const focusTime = 2
 
     this.isActive[i] = true
@@ -204,6 +207,10 @@ class BokehEffect {
 
       this.particleAge[i] += dt
       this.particleLifetime[i] -= dt
+      this.frameCountdown[i] -= dt
+      if(this.frameCountdown[i] > 0) {
+        continue
+      }
 
       // const centerFade = 1
       const centerFade = Math.min(1, Math.abs(2*this.positions[i][0] / this.positions[i][2]))
@@ -227,7 +234,7 @@ class BokehEffect {
       if (this.isFresh[i]) {
         const fadeIn = Math.min(1, this.particleAge[i] / 2)
         this.particleDivs[i].style.setProperty(
-          '--alpha',
+          '--shine-alpha',
           String(
             fadeIn *
               (1 - focalDelta) *
@@ -240,7 +247,7 @@ class BokehEffect {
         )
       } else if (this.isActive[i]) {
         this.particleDivs[i].style.setProperty(
-          '--alpha',
+          '--shine-alpha',
           String(
             (1 - focalDelta) *
               this.vignetteFactor[i] *
@@ -252,7 +259,7 @@ class BokehEffect {
       } else {
         const fadeOut = Math.max(0, 1 - this.particleAge[i] / 2)
         this.particleDivs[i].style.setProperty(
-          '--alpha',
+          '--shine-alpha',
           String(
             fadeOut *
               (1 - focalDelta) *
@@ -276,6 +283,12 @@ class BokehEffect {
     }
 
     for (let i = 0; i < this.count; i++) {
+      if(this.frameCountdown[i] > 0) {
+        continue
+      } else {
+        this.frameCountdown[i] += 0.125
+      }
+
       const rotated = rotX(3.14 / 8, [
         this.positions[i][0],
         this.positions[i][1],

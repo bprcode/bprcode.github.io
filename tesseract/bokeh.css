@@ -3,6 +3,12 @@
   contain: paint;
 }
 
+.bokeh-particle svg {
+  width: 100%;
+  height: 100%;
+
+}
+
 .bokeh-particle {
   position: absolute;
   aspect-ratio: 1;
@@ -10,7 +16,7 @@
 
   --alpha: 0;
 
-  --full-height: 90%;
+  --full-height: 150vmin;
   --x: 0;
   --y: 0;
   --z: 2;
@@ -25,19 +31,62 @@
   --alpha: 0;
   --blur-radius: 16px;
 
-  background-color: hsla(var(--hue), var(--saturation), var(--lightness), var(--alpha));
+  --back-alpha: 0.1;
+  --shine-alpha: 1;
+
+  /* background-color: hsla(var(--hue), var(--saturation), var(--lightness), var(--alpha)); */
 
   top: calc((1 + var(--projected-y)) * 50%);
   left: calc((1 + var(--projected-x)) * 50%);
   height: var(--full-height);
 
-  border-radius: 50%;
+  /* border-radius: 50%; */
 
-  filter: blur(var(--blur-radius));
+  /* filter: blur(var(--blur-radius)); */
 
-  transform: translate(-50%, -50%) scale(calc(1 / var(--z))) rotate(var(--rot));
-  transition: transform 0.017s linear, background-color 0.017s linear, filter 0.017s linear;
+  /* transform: translate(-50%, -50%) scale(calc(1 / var(--z))) rotate(var(--rot)); */
+  transform: translate(-50%, -50%) scale(calc(1 / var(--z))) rotate(10deg);
+  /* transition: transform 0.017s linear, background-color 0.017s linear, filter 0.017s linear; */
+  /* transition: transform 0.017s linear, background-color 0.017s linear; */
 
-  -webkit-clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
-  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+  /* transition: color 0.5s linear; */
+  /* color:hsla(var(--hue), var(--saturation), var(--lightness), var(--alpha)); */
+
+  /* background-image: url('./blurry-cyan-hex.webp');
+  background-size: cover; */
+
+  /* transition: opacity 0.125s linear; */
+  /* opacity: var(--alpha); */
+  opacity: 1;
+
+  /* -webkit-clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%); */
+
+}
+
+.bokeh-particle::before {
+  opacity: var(--back-alpha);
+  content: '';
+  width: 100%;
+  height: 100%;
+  top:0;
+  left:0;
+  position: absolute;
+  background-image: url('./blurry-cyan-hex.webp');
+  background-size: cover;
+  transition: opacity 0.125s linear;
+}
+
+.bokeh-particle::after {
+  opacity: calc(3 * var(--shine-alpha));
+  content: '';
+  width: 80%;
+  height: 80%;
+  top:50%;
+  left:50%;
+  transform: translate(-50%, -50%);
+  position: absolute;
+  background-image: url('./sharper-cyan-hex.webp');
+  background-size: cover;
+  transition: opacity 0.125s linear;
 }
