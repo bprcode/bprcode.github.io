@@ -3,7 +3,7 @@ type Vec3 = [number, number, number]
 
 class BokehEffect {
   sceneContainer?: HTMLElement = undefined
-  count = 60
+  count = 40
   particleDivs: HTMLDivElement[] = []
   positions: Vec3[] = []
   velocities: Vec3[] = []
@@ -15,7 +15,7 @@ class BokehEffect {
   circulationStrength: number[] = []
   vignetteFactor: number[] = []
   tLast = 0
-  zCenter = 12
+  zCenter = 11
   beamAngle = 0
 
   // Soft clipping boundaries for particle fade-out:
@@ -71,7 +71,7 @@ class BokehEffect {
 
   startParticle(i: number) {
     this.particleAge[i] = 0
-    this.particleLifetime[i] = 2 + Math.random() * 3
+    this.particleLifetime[i] = 2
     const focusTime = 2
 
     this.isActive[i] = true
@@ -136,11 +136,12 @@ class BokehEffect {
     this.focalDepths[i] =
       this.positions[i][2] + focusTime * this.velocities[i][2]
 
+    this.particleDivs[i].style.setProperty('--rot', Math.floor(Math.random()*360)+'deg')
     this.particleDivs[i].style.setProperty(
       '--hue',
       Math.random() > 0.5
-        ? String(255 + Math.floor(Math.random() * 20))
-        : String(330 + Math.floor(Math.random() * 20))
+        ? String(220 + Math.floor(Math.random() * 20))
+        : String(180 + Math.floor(Math.random() * 20))
     )
     // Vignette:
     this.vignetteFactor[i] =
@@ -204,8 +205,8 @@ class BokehEffect {
       this.particleAge[i] += dt
       this.particleLifetime[i] -= dt
 
-      const centerFade = 1
-      // const centerFade = Math.min(1, Math.abs(2*this.positions[i][0] / this.positions[i][2]))
+      // const centerFade = 1
+      const centerFade = Math.min(1, Math.abs(2*this.positions[i][0] / this.positions[i][2]))
       const focalDelta = Math.abs(this.positions[i][2] - this.focalDepths[i])
       const beamBoost =
         (this.positions[i][0] * Math.cos(this.beamAngle) +
