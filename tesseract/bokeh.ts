@@ -3,7 +3,7 @@ type Vec3 = [number, number, number]
 
 class BokehEffect {
   sceneContainer?: HTMLElement = undefined
-  count = 40
+  count = 24
   particleDivs: HTMLDivElement[] = []
   positions: Vec3[] = []
   velocities: Vec3[] = []
@@ -14,14 +14,14 @@ class BokehEffect {
   circulationStrength: number[] = []
   vignetteFactor: number[] = []
   tLast = 0
-  zCenter = 5
+  zCenter = 7
 
   // Soft clipping boundaries for particle fade-out:
   nearFence = 0.5
   xFence = 1.25
   riseFence = 3.0
   dropFence = 0.25
-  blackHoleFenceSquared = 3
+  blackHoleFenceSquared = 1.5
   focalFence = 1.0
 
   constructor(container?: HTMLElement | null) {
@@ -74,13 +74,13 @@ class BokehEffect {
     this.isFresh[i] = true
 
     // Create eccentric particle:
-    if (Math.random() > 0.25) {
+    if (Math.random() > 0.4) {
       const z =
         Math.random() ** 2 * (this.nearFence * 15) +
         this.zCenter -
         this.nearFence * 0.25
-      const x = z * (Math.random() - 0.5) * 3
-      const y = z * (Math.random() - 0.75) * 0.45
+      const x = z * (Math.random() - 0.5) * 2
+      const y = z * (Math.random() - 0.75) * 0.65
 
       this.positions[i] = [x, y, z]
       this.velocities[i] = [
@@ -102,7 +102,7 @@ class BokehEffect {
         1.25 * Math.random() ** 2 + Math.sqrt(this.blackHoleFenceSquared) * 1.5
       this.positions[i] = [
         radius * Math.cos(angle),
-        (Math.random() - 0.5) * 1.5,
+        (Math.random() - 0.5) * 3,
         this.zCenter + radius * Math.sin(angle),
       ]
       // this.velocities[i]=[0,0,0]
@@ -132,7 +132,7 @@ class BokehEffect {
 
     this.particleDivs[i].style.setProperty('--hue', String(255 + Math.floor(Math.random() * 20)))
     // Vignette:
-    this.vignetteFactor[i] = 0.25 * (1 - (this.positions[i][0] / this.positions[i][2]) ** 2)
+    this.vignetteFactor[i] = 0.18 * (1 - (this.positions[i][0] / this.positions[i][2]) ** 2)
 
     setTimeout(() => {
       this.isFresh[i] = false
@@ -186,7 +186,7 @@ class BokehEffect {
 
       const centerFade = Math.min(1, Math.abs(this.positions[i][0] / 3)**2)
       const focalDelta = Math.abs(this.positions[i][2] - this.focalDepths[i])
-      this.particleDivs[i].style.setProperty('--blur-radius', Math.max(10, Math.min(24, Math.floor(32 * focalDelta))) + 'px')
+      this.particleDivs[i].style.setProperty('--blur-radius', Math.max(16, Math.min(32, Math.floor(32 * focalDelta))) + 'px')
 
       if(this.isFresh[i]) {
         const fadeIn = Math.min(1, this.particleAge[i] / 2)
