@@ -15,7 +15,7 @@ class BokehEffect {
   circulationStrength: number[] = []
   vignetteFactor: number[] = []
   tLast = 0
-  zCenter = 11
+  zCenter = 8
   beamAngle = 0
 
   // Soft clipping boundaries for particle fade-out:
@@ -38,7 +38,7 @@ class BokehEffect {
       throw new Error('Cannot initialize bokeh animation: no scene container.')
     }
 
-    this.positions = Array.from({ length: this.count }, () => [0, 0, 0])
+    this.positions = Array.from({ length: this.count }, () => [0, 0, 200])
     this.velocities = Array.from({ length: this.count }, () => [0, 0, 0])
     this.focalDepths = Array(this.count).fill(0)
     this.particleAge = Array(this.count).fill(0)
@@ -52,6 +52,10 @@ class BokehEffect {
       const div = document.createElement('div')
 
       div.classList.add('bokeh-particle')
+      div.innerHTML=`<svg width="102" height="118" viewBox="0 0 102 118" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M51.0275 0.76148L101.69 30.0115V88.5115L51.0275 117.761L0.36499 88.5115V30.0115L51.0275 0.76148Z" fill="currentColor"/>
+</svg>
+`
       this.particleDivs.push(div)
 
       this.sceneContainer.append(div)
