@@ -1,13 +1,21 @@
 const shaders: { [k: string]: string } = {}
 const geometry: { [k: string]: number[] } = {}
-const locations: {
-  position: GLint
-  aspect: WebGLUniformLocation | null
-  transform: WebGLUniformLocation | null
-} = {
-  position: -1,
-  aspect: null,
-  transform: null,
+const shared = {
+  gl: null as WebGLRenderingContext | null,
+  tLast: 0,
+  position: -1 as GLint,
+  aspect: null as WebGLUniformLocation | null,
+  transform: null as WebGLUniformLocation | null,
+  matrix: [
+    Math.cos(.785), Math.sin(.785), 0, 0,
+
+    -Math.sin(.785), Math.cos(.785), 0, 0,
+
+    0, 0, 1, 0,
+
+    1, 0, 0, 1,
+  ],
+  elapsed: 0,
 }
 
 const foo: {
@@ -23,7 +31,9 @@ function init() {
     throw Error('No bokeh canvas found')
   }
 
-  const gl = canvas.getContext('webgl')
+  shared.gl = canvas.getContext('webgl')
+  const gl = shared.gl
+  
   if (!gl) {
     throw Error('Unable to create bokeh rendering context')
   }
@@ -42,8 +52,8 @@ function init() {
     canvas.height = h
     canvas.width = w
     gl.viewport(0, 0, w, h)
-    gl.uniform1f(locations.aspect, w / h)
-    render(gl)
+    gl.uniform1f(shared.aspect, w / h)
+    render()
   }
 
   window.addEventListener('resize', updateSize)
@@ -52,9 +62,9 @@ function init() {
   const fragShader = createShader(gl, gl.FRAGMENT_SHADER, shaders.fragEx)
   const program = createProgram(gl, vertShader, fragShader)
 
-  locations.position = gl.getAttribLocation(program, 'position')
-  locations.aspect = gl.getUniformLocation(program, 'aspect')
-  locations.transform = gl.getUniformLocation(program, 'transform')
+  shared.position = gl.getAttribLocation(program, 'position')
+  shared.aspect = gl.getUniformLocation(program, 'aspect')
+  shared.transform = gl.getUniformLocation(program, 'transform')
   const positionBuffer = gl.createBuffer()
 
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
@@ -68,31 +78,57 @@ function init() {
 
   gl.useProgram(program)
 
-  gl.enableVertexAttribArray(locations.position)
+  gl.enableVertexAttribArray(shared.position)
 
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
-  gl.vertexAttribPointer(locations.position, 3, gl.FLOAT, false, 0, 0)
+  gl.vertexAttribPointer(shared.position, 3, gl.FLOAT, false, 0, 0)
 
   updateSize()
+
+  requestAnimationFrame(animate)
 }
 
-function render(gl: WebGLRenderingContext) {
-  gl.uniformMatrix4fv(
-    locations.transform,
-    false,
-    [
-      1, 0, 0, 0,
+function animate(t: number) {
+  shared.tLast ??= t
+  // Skip large timesteps:
+  if(t - shared.tLast > 100) {
+    shared.tLast = t
+  }
 
-      0, 1, 0, 0,
+  const dt = (t - shared.tLast) / 1000
+  shared.tLast = t
 
-      0, 0, 1, 0,
+  shared.elapsed += dt
+  shared.matrix[12] = Math.cos(Math.PI * 2 * shared.elapsed / 5)
+  render()
 
-      1, 1, 0, 1,
-    ]
-  )
+  requestAnimationFrame(animate)
+}
 
+function render() {
+  const gl = shared.gl
+  if(!gl) {
+    return
+  }
   gl.clear(gl.COLOR_BUFFER_BIT)
-  gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
+
+  const x0 = shared.matrix[12]
+  shared.matrix[12] -= 15*0.1
+
+  for (let i = 0; i < 30; i++) {
+
+  
+  gl.uniformMatrix4fv(
+      shared.transform,
+      false,
+      shared.matrix,
+    )
+  
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
+    shared.matrix[12] += i*0.1
+  }
+
+  shared.matrix[12] =x0
 }
 
 function createProgram(
@@ -171,17 +207,20 @@ shaders.vertEx = /* glsl */ `
 uniform float aspect;
 uniform mat4 transform;
 attribute vec4 position;
+varying vec3 rgb;
 
 void main() {
-  gl_Position = transform * vec4(position.x / aspect, position.y, position.z, 1);
+  gl_Position = vec4(1.0/aspect, 1.0, 1.0, 1.0) * (transform * position);
+  rgb = vec3(gl_Position.x, gl_Position.y, 0);
 }
 `
 
 shaders.fragEx = /* glsl */ `
 precision mediump float;
+varying vec3 rgb;
 
 void main() {
-  gl_FragColor = vec4(1, 0, 0.5, 0.25);
+  gl_FragColor = vec4(rgb, 0.25);
 }
 `
 
