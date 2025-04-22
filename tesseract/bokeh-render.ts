@@ -1,5 +1,20 @@
 const shaders: { [k: string]: string } = {}
 const geometry: { [k: string]: number[] } = {}
+const locations: {
+  position: GLint
+  aspect: WebGLUniformLocation | null
+  transform: WebGLUniformLocation | null
+} = {
+  position: -1,
+  aspect: null,
+  transform: null,
+}
+
+const foo: {
+  name: 'bob' | 'fred'
+} = {
+  name: 'bob',
+}
 
 function init() {
   const canvas: HTMLCanvasElement | null =
@@ -23,13 +38,11 @@ function init() {
     }
 
     const h = Math.round(Math.min(600, canvas.clientHeight))
-    const w = Math.round(
-      (h * canvas.clientWidth) / canvas.clientHeight
-    )
+    const w = Math.round((h * canvas.clientWidth) / canvas.clientHeight)
     canvas.height = h
     canvas.width = w
     gl.viewport(0, 0, w, h)
-    gl.uniform1f(aspectLoc, w / h)
+    gl.uniform1f(locations.aspect, w / h)
     render(gl)
   }
 
@@ -39,8 +52,9 @@ function init() {
   const fragShader = createShader(gl, gl.FRAGMENT_SHADER, shaders.fragEx)
   const program = createProgram(gl, vertShader, fragShader)
 
-  const positionLoc = gl.getAttribLocation(program, 'position')
-  const aspectLoc = gl.getUniformLocation(program, 'aspect')
+  locations.position = gl.getAttribLocation(program, 'position')
+  locations.aspect = gl.getUniformLocation(program, 'aspect')
+  locations.transform = gl.getUniformLocation(program, 'transform')
   const positionBuffer = gl.createBuffer()
 
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
@@ -54,16 +68,29 @@ function init() {
 
   gl.useProgram(program)
 
-  gl.enableVertexAttribArray(positionLoc)
+  gl.enableVertexAttribArray(locations.position)
 
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
-  gl.vertexAttribPointer(positionLoc, 3, gl.FLOAT, false, 0, 0)
-  
+  gl.vertexAttribPointer(locations.position, 3, gl.FLOAT, false, 0, 0)
 
   updateSize()
 }
 
 function render(gl: WebGLRenderingContext) {
+  gl.uniformMatrix4fv(
+    locations.transform,
+    false,
+    [
+      1, 0, 0, 0,
+
+      0, 1, 0, 0,
+
+      0, 0, 1, 0,
+
+      1, 1, 0, 1,
+    ]
+  )
+
   gl.clear(gl.COLOR_BUFFER_BIT)
   gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
 }
@@ -114,24 +141,27 @@ function createShader(
   throw Error('Shader compilation failed')
 }
 
-geometry.triangleCross = [0, 0, 0, 1, 1, 0, 0, 0, -1, 0, 0, -1]
-
 geometry.hexagon = [
   -1,
   0,
   0,
+
   -1 / 2,
   Math.sqrt(3) / 2,
   0,
+
   1 / 2,
   Math.sqrt(3) / 2,
   0,
+
   1,
   0,
   0,
+
   1 / 2,
   -Math.sqrt(3) / 2,
   0,
+
   -1 / 2,
   -Math.sqrt(3) / 2,
   0,
@@ -139,10 +169,11 @@ geometry.hexagon = [
 
 shaders.vertEx = /* glsl */ `
 uniform float aspect;
+uniform mat4 transform;
 attribute vec4 position;
 
 void main() {
-  gl_Position = vec4(position.x / aspect, position.y, position.z, 1);
+  gl_Position = transform * vec4(position.x / aspect, position.y, position.z, 1);
 }
 `
 
