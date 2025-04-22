@@ -9,6 +9,11 @@ function init() {
     throw Error('No bokeh canvas found')
   }
 
+  const boundingRect = canvas.getBoundingClientRect()
+  const boundHeight = Math.min(600, boundingRect.height)
+  canvas.height = boundHeight
+  canvas.width = Math.floor(boundHeight * boundingRect.width / boundingRect.height)
+
   const gl = canvas.getContext('webgl')
   if (!gl) {
     throw Error('Unable to create bokeh rendering context')
