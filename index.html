@@ -24,7 +24,7 @@
 
     <script type="module" src="/tesseract/tesseract-controller.js"></script>
     <script type="module" src="/tesseract/interface.js"></script>
-    <script type="module" src="/tesseract/bokeh.ts"></script>
+    <script type="module" src="/tesseract/bokeh-render.ts"></script>
 
     <meta
       name="description"
@@ -59,7 +59,7 @@
         proceed.</noscript
       >
 
-      <div class="bokeh-container" style="pointer-events: none; width: 100vw; height: 100svh; position: absolute;"></div>
+      <canvas class="bokeh-canvas" width="80" height="80" style="pointer-events: none; width: 100vw; height: 100svh; position: absolute;"></canvas>
 
       <canvas class="glint-canvas" width="80" height="80"></canvas>
 
