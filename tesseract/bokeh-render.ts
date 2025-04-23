@@ -82,6 +82,7 @@ function init() {
     })
 
     shared.sceneScale = getSceneScale()
+    console.log('x-copies req.', (shared.aspect * 1 / shared.sceneScale).toFixed(3), 'y-copies:', (1/shared.sceneScale).toFixed(3))
 
     render()
   }
@@ -102,7 +103,7 @@ function init() {
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
   gl.bufferData(
     gl.ARRAY_BUFFER,
-    new Float32Array(geometry.hexagon),
+    new Float32Array(geometry.square),
     gl.STATIC_DRAW
   )
 
@@ -168,34 +169,71 @@ function render() {
 
   gl.uniformMatrix4fv(locations.project, false, matrices.project)
 
-  const scale = scaleMatrix(0.1)
-  let t = 0
-  for (const p of particles.positions) {
-    matrices.transform = translateMatrix(p[0], p[1], p[2])
-    mult4(matrices.transform, matrices.transform, scale)
-    gl.uniform3f(locations.rgb, 1 - t, t, 0)
-    t += 1 / particles.count
+  checkerboard()
 
-    gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
+  // const scale = scaleMatrix(0.1)
+  // let t = 0
+  // for (const p of particles.positions) {
+  //   matrices.transform = translateMatrix(p[0], p[1], p[2])
+  //   mult4(matrices.transform, matrices.transform, scale)
+  //   gl.uniform3f(locations.rgb, 1 - t, t, 0)
+  //   t += 1 / particles.count
 
-    gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
-  }
+  //   gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
 
-  const swapProjection = matrices.project
-  matrices.project = []
-  ident(matrices.transform)
-  ident(matrices.project)
+  //   gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 3)
+  // }
 
-  matrices.project[0] = 1/shared.aspect
-  mult4(matrices.transform, scaleMatrix(shared.sceneScale), rotateXY(Math.PI/2))
+  // const swapProjection = matrices.project
+  // matrices.project = []
+  // ident(matrices.transform)
+  // ident(matrices.project)
+
+  // matrices.project[0] = 1/shared.aspect
+  // mult4(matrices.transform, scaleMatrix(shared.sceneScale), rotateXY(Math.PI/2))
   
 
-  // mult4(matrices.transform, scaleMatrix(1/shared.aspect,1,1), rotateXY(Math.PI/2))
-  gl.uniform3f(locations.rgb, 0.30,0,0.5)
-  gl.uniformMatrix4fv(locations.project, false, matrices.project)
-  gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
-  gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
-  matrices.project = swapProjection
+  // // mult4(matrices.transform, scaleMatrix(1/shared.aspect,1,1), rotateXY(Math.PI/2))
+  // gl.uniform3f(locations.rgb, 0.30,0,0.5)
+  // gl.uniformMatrix4fv(locations.project, false, matrices.project)
+  // gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
+  // gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 3)
+  // matrices.project = swapProjection
+}
+
+function checkerboard() {
+  if(!shared.gl) {
+    return
+  }
+  const gl = shared.gl
+  
+
+  let index = 0
+  for(let row = -1; row < 2; row++) {
+    for(let col = -1; col < 2; col++) {
+      const spacing = shared.sceneScale*2
+      ident(matrices.project)
+
+      matrices.project[0] = 1/shared.aspect
+      matrices.transform = scaleMatrix(shared.sceneScale)
+      mult4(matrices.transform, translateMatrix(spacing*col,spacing*row,0), matrices.transform)
+
+      if(index%2) {
+
+        gl.uniform3f(locations.rgb, 0.2,0,0)
+      }
+      else {
+        gl.uniform3f(locations.rgb, 0,0.1,0.3)
+
+      }
+      gl.uniformMatrix4fv(locations.project, false, matrices.project)
+      gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
+      gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 3)
+      // return
+      index++
+    }
+  }
+
 }
 
 function createProgram(
@@ -268,6 +306,13 @@ geometry.hexagon = [
   -1 / 2,
   -Math.sqrt(3) / 2,
   0,
+]
+
+geometry.square = [
+  -1, 1, 0,
+  1, 1, 0,
+  1, -1, 0,
+  -1, -1, 0,
 ]
 
 shaders.vertEx = /* glsl */ `
