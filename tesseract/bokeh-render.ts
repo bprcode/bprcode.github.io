@@ -1,5 +1,6 @@
 import {
   frustum,
+  ident,
   mult4,
   rotateXY,
   scaleMatrix,
@@ -25,12 +26,49 @@ const shared = {
   gl: null as WebGLRenderingContext | null,
   tLast: 0,
   elapsed: 0,
+  aspect: 1,
+  fovX: 12,
 }
 
 const particles = {
   count: 30,
   positions: [] as [number, number, number][],
   colors: [] as [number, number, number][],
+}
+
+/*
+dimensions to match:
+height: max(
+    4px,
+    min(
+      var(--max-canvas-resolution),
+      95vmin,
+      calc(100vh - var(--header-height) - var(--footer-height) - 70px)
+    )
+  );
+
+  or where dvh supported:
+  height: max(
+      4px,
+      min(
+        var(--max-canvas-resolution),
+        95dvmin,
+        calc(100dvh - var(--header-height) - var(--footer-height))
+      )
+    );
+
+where: --max-canvas-resolution: 500px;
+
+so: at least 4px, at most 500px or 95 dvmin
+  otherwise: tries to fill entire height minus header and footer height:
+  --header-height: 78px;
+  --footer-height: 68px;
+  header dropped on some layouts
+
+*/
+
+function matchedSize() {
+  return Math.max(4, Math.min())
 }
 
 function init() {
@@ -60,9 +98,15 @@ function init() {
     const w = Math.round((h * canvas.clientWidth) / canvas.clientHeight)
     canvas.height = h
     canvas.width = w
+    shared.aspect = w / h
     gl.viewport(0, 0, w, h)
-    matrices.project = frustum({ near: 0.1, far: 1000, fov: 22, aspect: w / h })
-    gl.uniformMatrix4fv(locations.project, false, matrices.project)
+    matrices.project = frustum({
+      near: 0.1,
+      far: 1000,
+      fov: shared.fovX,
+      aspect: shared.aspect,
+    })
+
     render()
   }
 
@@ -146,6 +190,8 @@ function render() {
 
   gl.clear(gl.COLOR_BUFFER_BIT)
 
+  gl.uniformMatrix4fv(locations.project, false, matrices.project)
+
   const scale = scaleMatrix(0.1)
   let t = 0
   for (const p of particles.positions) {
@@ -158,6 +204,16 @@ function render() {
 
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
   }
+
+  const swapProjection = matrices.project
+  matrices.project = []
+  ident(matrices.project)
+  mult4(matrices.transform, scaleMatrix(1/shared.aspect,1,1), rotateXY(Math.PI/2))
+  gl.uniform3f(locations.rgb, 0.30,0,0.5)
+  gl.uniformMatrix4fv(locations.project, false, matrices.project)
+  gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
+  gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
+  matrices.project = swapProjection
 }
 
 function createProgram(
