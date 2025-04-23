@@ -1,4 +1,4 @@
-import { frustum, ident, rotateXY, translateMatrix } from './sundry-matrix'
+import { frustum, mult4, rotateXY, scaleMatrix, translateMatrix } from './sundry-matrix'
 
 const shaders: { [k: string]: string } = {}
 const geometry: { [k: string]: number[] } = {}
@@ -7,6 +7,7 @@ const locations = {
   aspect: null as WebGLUniformLocation | null,
   transform: null as WebGLUniformLocation | null,
   project: null as WebGLUniformLocation | null,
+  rgb: null as WebGLUniformLocation | null,
 }
 
 const matrices = {
@@ -18,6 +19,12 @@ const shared = {
   gl: null as WebGLRenderingContext | null,
   tLast: 0,
   elapsed: 0,
+}
+
+const particles = {
+  count: 30,
+  positions: [] as [number,number,number][],
+  colors: [] as [number,number,number][],
 }
 
 function init() {
@@ -49,6 +56,7 @@ function init() {
     canvas.width = w
     gl.viewport(0, 0, w, h)
     matrices.project = frustum({ near: 0.1, far: 1000, fov: 12, aspect: w / h })
+    gl.uniformMatrix4fv(locations.project, false, matrices.project)
     render()
   }
 
@@ -62,6 +70,7 @@ function init() {
   locations.aspect = gl.getUniformLocation(program, 'aspect')
   locations.transform = gl.getUniformLocation(program, 'transform')
   locations.project = gl.getUniformLocation(program, 'project')
+  locations.rgb = gl.getUniformLocation(program, 'rgb')
   const positionBuffer = gl.createBuffer()
 
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
@@ -82,7 +91,18 @@ function init() {
 
   updateSize()
 
+  initParticles()
   requestAnimationFrame(animate)
+}
+
+function initParticles() {
+  particles.positions = Array(particles.count)
+
+  for (let i = 0; i < particles.count; i++) {
+    const r = 1
+    const theta = Math.PI * 2 / particles.count * i
+    particles.positions[i] = [r * Math.cos(theta), r*Math.sin(theta), -10]
+  }
 }
 
 function animate(t: number) {
@@ -102,6 +122,16 @@ function animate(t: number) {
   requestAnimationFrame(animate)
 }
 
+function show(matrix:number[]) {
+  for (let c = 0; c < 4; c++) {
+    let str=''
+    for (let r = 0; r < 4; r++) {
+      str+= matrix[r+c*4]+'\t'
+    }
+    console.log(str+'\n')
+  }
+}
+
 function render() {
   const gl = shared.gl
   if (!gl) {
@@ -110,16 +140,16 @@ function render() {
 
   gl.clear(gl.COLOR_BUFFER_BIT)
 
-  gl.uniformMatrix4fv(locations.project, false, matrices.project)
-
-  for (let i = 0; i < 30; i++) {
-    matrices.transform = translateMatrix(
-      0,
-      Math.cos(shared.elapsed + i * 0.1),
-      10 * Math.sin(shared.elapsed + i * 0.1) - 30
-    )
+  const scale = scaleMatrix(0.1)
+  let t = 0
+  for(const p of particles.positions) {
+    matrices.transform = translateMatrix(p[0], p[1], p[2])
+    mult4(matrices.transform, matrices.transform, scale)
+    gl.uniform3f(locations.rgb, 1-t,t,0)
+    t+= 1/particles.count
+    
     gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
-
+  
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
   }
 }
@@ -201,17 +231,15 @@ uniform float aspect;
 uniform mat4 transform;
 uniform mat4 project;
 attribute vec4 position;
-varying vec3 rgb;
 
 void main() {
   gl_Position = project * (transform * position);
-  rgb = vec3(gl_Position.z/30.0, 0.5, 0);
 }
 `
 
 shaders.fragEx = /* glsl */ `
 precision mediump float;
-varying vec3 rgb;
+uniform vec3 rgb;
 
 void main() {
   gl_FragColor = vec4(rgb, 0.25);
