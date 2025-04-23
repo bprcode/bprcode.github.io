@@ -27,7 +27,7 @@ const shared = {
   tLast: 0,
   elapsed: 0,
   aspect: 1,
-  fovX: 12,
+  sceneScale: 1,
 }
 
 const particles = {
@@ -36,39 +36,13 @@ const particles = {
   colors: [] as [number, number, number][],
 }
 
-/*
-dimensions to match:
-height: max(
-    4px,
-    min(
-      var(--max-canvas-resolution),
-      95vmin,
-      calc(100vh - var(--header-height) - var(--footer-height) - 70px)
-    )
-  );
-
-  or where dvh supported:
-  height: max(
-      4px,
-      min(
-        var(--max-canvas-resolution),
-        95dvmin,
-        calc(100dvh - var(--header-height) - var(--footer-height))
-      )
-    );
-
-where: --max-canvas-resolution: 500px;
-
-so: at least 4px, at most 500px or 95 dvmin
-  otherwise: tries to fill entire height minus header and footer height:
-  --header-height: 78px;
-  --footer-height: 68px;
-  header dropped on some layouts
-
-*/
-
-function matchedSize() {
-  return Math.max(4, Math.min())
+function getSceneScale() {
+  const renderCanvas = document.querySelector('.render-canvas')
+  if(!renderCanvas) {
+    return 1
+  }
+  
+  return renderCanvas.clientHeight / document.documentElement.clientHeight
 }
 
 function init() {
@@ -103,9 +77,11 @@ function init() {
     matrices.project = frustum({
       near: 0.1,
       far: 1000,
-      fov: shared.fovX,
+      fov: 20,
       aspect: shared.aspect,
     })
+
+    shared.sceneScale = getSceneScale()
 
     render()
   }
@@ -207,8 +183,14 @@ function render() {
 
   const swapProjection = matrices.project
   matrices.project = []
+  ident(matrices.transform)
   ident(matrices.project)
-  mult4(matrices.transform, scaleMatrix(1/shared.aspect,1,1), rotateXY(Math.PI/2))
+
+  matrices.project[0] = 1/shared.aspect
+  mult4(matrices.transform, scaleMatrix(shared.sceneScale), rotateXY(Math.PI/2))
+  
+
+  // mult4(matrices.transform, scaleMatrix(1/shared.aspect,1,1), rotateXY(Math.PI/2))
   gl.uniform3f(locations.rgb, 0.30,0,0.5)
   gl.uniformMatrix4fv(locations.project, false, matrices.project)
   gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
