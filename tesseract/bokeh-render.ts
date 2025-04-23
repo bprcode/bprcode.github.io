@@ -1,27 +1,23 @@
+import { frustum, ident, rotateXY, translateMatrix } from './sundry-matrix'
+
 const shaders: { [k: string]: string } = {}
 const geometry: { [k: string]: number[] } = {}
-const shared = {
-  gl: null as WebGLRenderingContext | null,
-  tLast: 0,
+const locations = {
   position: -1 as GLint,
   aspect: null as WebGLUniformLocation | null,
   transform: null as WebGLUniformLocation | null,
-  matrix: [
-    Math.cos(.785), Math.sin(.785), 0, 0,
-
-    -Math.sin(.785), Math.cos(.785), 0, 0,
-
-    0, 0, 1, 0,
-
-    1, 0, 0, 1,
-  ],
-  elapsed: 0,
+  project: null as WebGLUniformLocation | null,
 }
 
-const foo: {
-  name: 'bob' | 'fred'
-} = {
-  name: 'bob',
+const matrices = {
+  transform: rotateXY(Math.PI / 4),
+  project: [] as number[],
+}
+
+const shared = {
+  gl: null as WebGLRenderingContext | null,
+  tLast: 0,
+  elapsed: 0,
 }
 
 function init() {
@@ -33,7 +29,7 @@ function init() {
 
   shared.gl = canvas.getContext('webgl')
   const gl = shared.gl
-  
+
   if (!gl) {
     throw Error('Unable to create bokeh rendering context')
   }
@@ -52,7 +48,7 @@ function init() {
     canvas.height = h
     canvas.width = w
     gl.viewport(0, 0, w, h)
-    gl.uniform1f(shared.aspect, w / h)
+    matrices.project = frustum({ near: 0.1, far: 1000, fov: 12, aspect: w / h })
     render()
   }
 
@@ -62,9 +58,10 @@ function init() {
   const fragShader = createShader(gl, gl.FRAGMENT_SHADER, shaders.fragEx)
   const program = createProgram(gl, vertShader, fragShader)
 
-  shared.position = gl.getAttribLocation(program, 'position')
-  shared.aspect = gl.getUniformLocation(program, 'aspect')
-  shared.transform = gl.getUniformLocation(program, 'transform')
+  locations.position = gl.getAttribLocation(program, 'position')
+  locations.aspect = gl.getUniformLocation(program, 'aspect')
+  locations.transform = gl.getUniformLocation(program, 'transform')
+  locations.project = gl.getUniformLocation(program, 'project')
   const positionBuffer = gl.createBuffer()
 
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
@@ -74,14 +71,14 @@ function init() {
     gl.STATIC_DRAW
   )
 
-  gl.clearColor(0, 0, 0.5, 0)
+  gl.clearColor(0, 0, 0, 0)
 
   gl.useProgram(program)
 
-  gl.enableVertexAttribArray(shared.position)
+  gl.enableVertexAttribArray(locations.position)
 
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
-  gl.vertexAttribPointer(shared.position, 3, gl.FLOAT, false, 0, 0)
+  gl.vertexAttribPointer(locations.position, 3, gl.FLOAT, false, 0, 0)
 
   updateSize()
 
@@ -91,7 +88,7 @@ function init() {
 function animate(t: number) {
   shared.tLast ??= t
   // Skip large timesteps:
-  if(t - shared.tLast > 100) {
+  if (t - shared.tLast > 100) {
     shared.tLast = t
   }
 
@@ -99,7 +96,7 @@ function animate(t: number) {
   shared.tLast = t
 
   shared.elapsed += dt
-  shared.matrix[12] = Math.cos(Math.PI * 2 * shared.elapsed / 5)
+  matrices.transform[12] = Math.cos((Math.PI * 2 * shared.elapsed) / 5)
   render()
 
   requestAnimationFrame(animate)
@@ -107,28 +104,24 @@ function animate(t: number) {
 
 function render() {
   const gl = shared.gl
-  if(!gl) {
+  if (!gl) {
     return
   }
+
   gl.clear(gl.COLOR_BUFFER_BIT)
 
-  const x0 = shared.matrix[12]
-  shared.matrix[12] -= 15*0.1
+  gl.uniformMatrix4fv(locations.project, false, matrices.project)
 
   for (let i = 0; i < 30; i++) {
-
-  
-  gl.uniformMatrix4fv(
-      shared.transform,
-      false,
-      shared.matrix,
+    matrices.transform = translateMatrix(
+      0,
+      Math.cos(shared.elapsed + i * 0.1),
+      10 * Math.sin(shared.elapsed + i * 0.1) - 30
     )
-  
-    gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
-    shared.matrix[12] += i*0.1
-  }
+    gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
 
-  shared.matrix[12] =x0
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
+  }
 }
 
 function createProgram(
@@ -206,12 +199,13 @@ geometry.hexagon = [
 shaders.vertEx = /* glsl */ `
 uniform float aspect;
 uniform mat4 transform;
+uniform mat4 project;
 attribute vec4 position;
 varying vec3 rgb;
 
 void main() {
-  gl_Position = vec4(1.0/aspect, 1.0, 1.0, 1.0) * (transform * position);
-  rgb = vec3(gl_Position.x, gl_Position.y, 0);
+  gl_Position = project * (transform * position);
+  rgb = vec3(gl_Position.z/30.0, 0.5, 0);
 }
 `
 
