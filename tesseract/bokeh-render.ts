@@ -1,4 +1,10 @@
-import { frustum, mult4, rotateXY, scaleMatrix, translateMatrix } from './sundry-matrix'
+import {
+  frustum,
+  mult4,
+  rotateXY,
+  scaleMatrix,
+  translateMatrix,
+} from './sundry-matrix'
 
 const shaders: { [k: string]: string } = {}
 const geometry: { [k: string]: number[] } = {}
@@ -23,8 +29,8 @@ const shared = {
 
 const particles = {
   count: 30,
-  positions: [] as [number,number,number][],
-  colors: [] as [number,number,number][],
+  positions: [] as [number, number, number][],
+  colors: [] as [number, number, number][],
 }
 
 function init() {
@@ -55,7 +61,7 @@ function init() {
     canvas.height = h
     canvas.width = w
     gl.viewport(0, 0, w, h)
-    matrices.project = frustum({ near: 0.1, far: 1000, fov: 12, aspect: w / h })
+    matrices.project = frustum({ near: 0.1, far: 1000, fov: 22, aspect: w / h })
     gl.uniformMatrix4fv(locations.project, false, matrices.project)
     render()
   }
@@ -100,8 +106,8 @@ function initParticles() {
 
   for (let i = 0; i < particles.count; i++) {
     const r = 1
-    const theta = Math.PI * 2 / particles.count * i
-    particles.positions[i] = [r * Math.cos(theta), r*Math.sin(theta), -10]
+    const theta = ((Math.PI * 2) / particles.count) * i
+    particles.positions[i] = [r * Math.cos(theta), r * Math.sin(theta), -10]
   }
 }
 
@@ -122,13 +128,13 @@ function animate(t: number) {
   requestAnimationFrame(animate)
 }
 
-function show(matrix:number[]) {
+function show(matrix: number[]) {
   for (let c = 0; c < 4; c++) {
-    let str=''
+    let str = ''
     for (let r = 0; r < 4; r++) {
-      str+= matrix[r+c*4]+'\t'
+      str += matrix[r + c * 4] + '\t'
     }
-    console.log(str+'\n')
+    console.log(str + '\n')
   }
 }
 
@@ -142,14 +148,14 @@ function render() {
 
   const scale = scaleMatrix(0.1)
   let t = 0
-  for(const p of particles.positions) {
+  for (const p of particles.positions) {
     matrices.transform = translateMatrix(p[0], p[1], p[2])
     mult4(matrices.transform, matrices.transform, scale)
-    gl.uniform3f(locations.rgb, 1-t,t,0)
-    t+= 1/particles.count
-    
+    gl.uniform3f(locations.rgb, 1 - t, t, 0)
+    t += 1 / particles.count
+
     gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
-  
+
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
   }
 }
