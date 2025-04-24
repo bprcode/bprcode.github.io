@@ -33,6 +33,7 @@ const shared = {
 }
 
 const particles = {
+  density: 4,
   active: 0,
   max: 1,
   positions: [] as [number, number, number][],
@@ -41,10 +42,10 @@ const particles = {
 
 function getSceneScale() {
   const renderCanvas = document.querySelector('.render-canvas')
-  if(!renderCanvas) {
+  if (!renderCanvas) {
     return 1
   }
-  
+
   return renderCanvas.clientHeight / document.documentElement.clientHeight
 }
 
@@ -86,12 +87,24 @@ function init() {
 
     shared.sceneScale = getSceneScale()
 
-    const spacing = shared.sceneScale*2
-    shared.xMax = 0.5 * spacing * shared.aspect / shared.sceneScale
-    shared.yMax = 0.5 * spacing / shared.sceneScale
+    const spacing = shared.sceneScale * 2
+    shared.xMax = (0.5 * spacing * shared.aspect) / shared.sceneScale
+    shared.yMax = (0.5 * spacing) / shared.sceneScale
 
     // Keep particle count proportional to canvas area:
-    particles.max = Math.round(shared.xMax * shared.yMax * 4)
+    const bokehCanvas = document.querySelector('.bokeh-canvas')
+    const renderCanvas = document.querySelector('.render-canvas')
+    if (!bokehCanvas || !renderCanvas) {
+      throw Error('DOM missing canvas nodes')
+    }
+    console.log(bokehCanvas.clientWidth, bokehCanvas.clientHeight)
+    console.log(renderCanvas.clientWidth, renderCanvas.clientHeight)
+
+    particles.max = Math.round(
+      (particles.density *
+        (bokehCanvas.clientWidth * bokehCanvas.clientHeight)) /
+        (renderCanvas.clientWidth * renderCanvas.clientHeight)
+    )
     initParticles()
 
     render()
@@ -140,14 +153,20 @@ function initParticles() {
   // xCount = floor[aspect * yCount]
   // aspect * yCount^2 = N  give or take rounding
   const rows = Math.ceil(Math.sqrt(particles.max / shared.aspect))
-  const columns = Math.ceil(particles.max / rows)
+  const columns = Math.floor(particles.max / rows)
 
-  console.log(particles.max, 'particle rows/cols',rows,columns)
+  console.log(particles.max, 'particle rows/cols', rows, columns)
 
-  for(let i = 0; i < particles.max; i++) {
-    particles.positions[i] = [-shared.xMax + 2*shared.xMax * (i % columns)/columns,
-      -shared.yMax + 2*shared.yMax * Math.floor(i/columns)/rows
-       ,0]
+  let x = -shared.xMax
+  let y = -shared.yMax
+
+  for (let i = 0; i < particles.max; i++) {
+    particles.positions[i] = [x, y, 0]
+    x += (2 * shared.xMax) / columns
+    if (x >= shared.xMax) {
+      x = -shared.xMax
+      y += (2 * shared.yMax) / rows
+    }
   }
 
   // console.log(particles.positions)
@@ -182,15 +201,23 @@ function render() {
 
   checkerboard()
 
-  for(const p of particles.positions) {
+  for (const p of particles.positions) {
     ident(matrices.project)
     ident(matrices.transform)
 
-    matrices.project[0] = 1/shared.aspect
-    mult4(matrices.transform, rotateXY(Math.PI/4), scaleMatrix(shared.sceneScale/2))
-    mult4(matrices.transform, translateMatrix(p[0], p[1], p[2]), matrices.transform)
+    matrices.project[0] = 1 / shared.aspect
+    mult4(
+      matrices.transform,
+      rotateXY(Math.PI / 4),
+      scaleMatrix(shared.sceneScale / 4)
+    )
+    mult4(
+      matrices.transform,
+      translateMatrix(p[0], p[1], p[2]),
+      matrices.transform
+    )
 
-    gl.uniform3f(locations.rgb, 0.5,0.25,0)
+    gl.uniform3f(locations.rgb, 0.5, 0.25, 0)
     gl.uniformMatrix4fv(locations.project, false, matrices.project)
     gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 3)
@@ -216,7 +243,6 @@ function render() {
 
   // matrices.project[0] = 1/shared.aspect
   // mult4(matrices.transform, scaleMatrix(shared.sceneScale), rotateXY(Math.PI/2))
-  
 
   // // mult4(matrices.transform, scaleMatrix(1/shared.aspect,1,1), rotateXY(Math.PI/2))
   // gl.uniform3f(locations.rgb, 0.30,0,0.5)
@@ -227,34 +253,34 @@ function render() {
 }
 
 function checkerboard() {
-  if(!shared.gl) {
+  if (!shared.gl) {
     return
   }
   const gl = shared.gl
-  
+
   // console.log('x-copies req.', (shared.aspect * 1 / shared.sceneScale).toFixed(3),
   // 'y-copies:', (1/shared.sceneScale).toFixed(3))
 
-
   let index = 0
 
-  for(let x = -shared.xMax; x <= shared.xMax; x += shared.xMax) {
-    for(let y = -shared.yMax; y <= shared.yMax; y += shared.yMax) {
+  for (let x = -shared.xMax; x <= shared.xMax; x += shared.xMax) {
+    for (let y = -shared.yMax; y <= shared.yMax; y += shared.yMax) {
       ident(matrices.project)
       ident(matrices.transform)
 
-      matrices.project[0] = 1/shared.aspect
+      matrices.project[0] = 1 / shared.aspect
       mult4(matrices.transform, rotateXY(0), matrices.transform)
-      mult4(matrices.transform, scaleMatrix(shared.sceneScale/2), matrices.transform)
+      mult4(
+        matrices.transform,
+        scaleMatrix(shared.sceneScale / 2),
+        matrices.transform
+      )
       mult4(matrices.transform, translateMatrix(x, y, 0), matrices.transform)
 
-      if(index%2) {
-
-        gl.uniform3f(locations.rgb, 0.2,0,0)
-      }
-      else {
-        gl.uniform3f(locations.rgb, 0,0.1,0.3)
-
+      if (index % 2) {
+        gl.uniform3f(locations.rgb, 0.2, 0, 0)
+      } else {
+        gl.uniform3f(locations.rgb, 0, 0.1, 0.3)
       }
       gl.uniformMatrix4fv(locations.project, false, matrices.project)
       gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
@@ -263,7 +289,6 @@ function checkerboard() {
       index++
     }
   }
-
 }
 
 function createProgram(
@@ -338,12 +363,7 @@ geometry.hexagon = [
   0,
 ]
 
-geometry.square = [
-  -1, 1, 0,
-  1, 1, 0,
-  1, -1, 0,
-  -1, -1, 0,
-]
+geometry.square = [-1, 1, 0, 1, 1, 0, 1, -1, 0, -1, -1, 0]
 
 shaders.vertEx = /* glsl */ `
 uniform float aspect;
