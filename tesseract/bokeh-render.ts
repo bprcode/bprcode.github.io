@@ -14,7 +14,7 @@ const locations = {
   aspect: null as WebGLUniformLocation | null,
   transform: null as WebGLUniformLocation | null,
   project: null as WebGLUniformLocation | null,
-  rgb: null as WebGLUniformLocation | null,
+  rgba: null as WebGLUniformLocation | null,
 }
 
 const matrices = {
@@ -30,15 +30,18 @@ const shared = {
   sceneScale: 1,
   xMax: 0,
   yMax: 0,
+  particleDensity: 4,
+  maxParticles: 1,
 }
 
-const particles = {
-  density: 4,
-  active: 0,
-  max: 1,
-  positions: [] as [number, number, number][],
-  colors: [] as [number, number, number][],
+type particle = {
+  position: [number,number,number],
+  lifetime: number,
+  color: [number,number,number,number]
 }
+
+const particles = [] as particle[]
+
 
 function getSceneScale() {
   const renderCanvas = document.querySelector('.render-canvas')
@@ -97,15 +100,12 @@ function init() {
     if (!bokehCanvas || !renderCanvas) {
       throw Error('DOM missing canvas nodes')
     }
-    console.log(bokehCanvas.clientWidth, bokehCanvas.clientHeight)
-    console.log(renderCanvas.clientWidth, renderCanvas.clientHeight)
 
-    particles.max = Math.round(
-      (particles.density *
+    shared.maxParticles = Math.round(
+      (shared.particleDensity *
         (bokehCanvas.clientWidth * bokehCanvas.clientHeight)) /
         (renderCanvas.clientWidth * renderCanvas.clientHeight)
     )
-    initParticles()
 
     render()
   }
@@ -120,7 +120,7 @@ function init() {
   locations.aspect = gl.getUniformLocation(program, 'aspect')
   locations.transform = gl.getUniformLocation(program, 'transform')
   locations.project = gl.getUniformLocation(program, 'project')
-  locations.rgb = gl.getUniformLocation(program, 'rgb')
+  locations.rgba = gl.getUniformLocation(program, 'rgba')
   const positionBuffer = gl.createBuffer()
 
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
@@ -130,6 +130,8 @@ function init() {
     gl.STATIC_DRAW
   )
 
+  gl.enable(gl.BLEND)
+  gl.blendFunc(gl.SRC_ALPHA, gl.ZERO)
   gl.clearColor(0, 0, 0, 0)
 
   gl.useProgram(program)
@@ -145,32 +147,67 @@ function init() {
   requestAnimationFrame(animate)
 }
 
-function initParticles() {
-  // Debug: temporary approach
-  particles.positions = Array(particles.max)
 
-  // xCount * yCount = N
-  // xCount = floor[aspect * yCount]
-  // aspect * yCount^2 = N  give or take rounding
-  const rows = Math.ceil(Math.sqrt(particles.max / shared.aspect))
-  const columns = Math.floor(particles.max / rows)
+function removeParticle(i: number) {
+  particles[i] = particles.at(-1)!
+  particles.pop()
+}
 
-  console.log(particles.max, 'particle rows/cols', rows, columns)
-
-  let x = -shared.xMax
-  let y = -shared.yMax
-
-  for (let i = 0; i < particles.max; i++) {
-    particles.positions[i] = [x, y, 0]
-    x += (2 * shared.xMax) / columns
-    if (x >= shared.xMax) {
-      x = -shared.xMax
-      y += (2 * shared.yMax) / rows
+function updateParticles(dt: number) {
+  for (let i = 0; i < particles.length; i++) {
+    particles[i].lifetime -= dt
+    if(particles[i].lifetime < 0) {
+      removeParticle(i)
+      i--
+      continue
     }
+    
+    particles[i].color[3] = particles[i].lifetime / 2
   }
 
-  // console.log(particles.positions)
+  while(particles.length < shared.maxParticles) {
+    particles.push({
+      position: [-shared.xMax + 2*shared.xMax * Math.random(), -shared.yMax + 2*shared.yMax * Math.random(), 0],
+      lifetime: 2,
+      color: [0,1,1,1],
+    })
+  }
+
 }
+
+function initParticles() {
+  particles.length = 0
+
+  for (let i = 0; i < shared.maxParticles; i++) {
+    particles.push({
+      position: [-shared.xMax + 2*shared.xMax * Math.random(), -shared.yMax + 2*shared.yMax * Math.random(), 0],
+      lifetime: 2,
+      color: [1,0,1,1],
+    })
+  }
+}
+
+// function initParticles() {
+  // particles.positions = Array(shared.maxParticles)
+
+  // const rows = Math.ceil(Math.sqrt(shared.maxParticles / shared.aspect))
+  // const columns = Math.floor(shared.maxParticles / rows)
+
+  // console.log(shared.maxParticles, 'particle rows/cols', rows, columns)
+
+  // let x = -shared.xMax
+  // let y = -shared.yMax
+
+  // for (let i = 0; i < shared.maxParticles; i++) {
+  //   particles.positions[i] = [x, y, 0]
+  //   x += (2 * shared.xMax) / columns
+  //   if (x >= shared.xMax) {
+  //     x = -shared.xMax
+  //     y += (2 * shared.yMax) / rows
+  //   }
+  // }
+
+// }
 
 function animate(t: number) {
   shared.tLast ??= t
@@ -183,7 +220,8 @@ function animate(t: number) {
   shared.tLast = t
 
   shared.elapsed += dt
-  matrices.transform[12] = Math.cos((Math.PI * 2 * shared.elapsed) / 5)
+  
+  updateParticles(dt)
   render()
 
   requestAnimationFrame(animate)
@@ -201,7 +239,7 @@ function render() {
 
   checkerboard()
 
-  for (const p of particles.positions) {
+  for (const p of particles) {
     ident(matrices.project)
     ident(matrices.transform)
 
@@ -213,11 +251,11 @@ function render() {
     )
     mult4(
       matrices.transform,
-      translateMatrix(p[0], p[1], p[2]),
+      translateMatrix(p.position[0], p.position[1], p.position[2]),
       matrices.transform
     )
 
-    gl.uniform3f(locations.rgb, 0.5, 0.25, 0)
+    gl.uniform4fv(locations.rgba, p.color)
     gl.uniformMatrix4fv(locations.project, false, matrices.project)
     gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 3)
@@ -278,9 +316,9 @@ function checkerboard() {
       mult4(matrices.transform, translateMatrix(x, y, 0), matrices.transform)
 
       if (index % 2) {
-        gl.uniform3f(locations.rgb, 0.2, 0, 0)
+        gl.uniform4f(locations.rgba, 0.2, 0, 0, 1)
       } else {
-        gl.uniform3f(locations.rgb, 0, 0.1, 0.3)
+        gl.uniform4f(locations.rgba, 0, 0.1, 0.3, 1)
       }
       gl.uniformMatrix4fv(locations.project, false, matrices.project)
       gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
@@ -378,10 +416,10 @@ void main() {
 
 shaders.fragEx = /* glsl */ `
 precision mediump float;
-uniform vec3 rgb;
+uniform vec4 rgba;
 
 void main() {
-  gl_FragColor = vec4(rgb, 0.25);
+  gl_FragColor = rgba;
 }
 `
 
