@@ -82,7 +82,6 @@ function init() {
     })
 
     shared.sceneScale = getSceneScale()
-    console.log('x-copies req.', (shared.aspect * 1 / shared.sceneScale).toFixed(3), 'y-copies:', (1/shared.sceneScale).toFixed(3))
 
     render()
   }
@@ -207,16 +206,24 @@ function checkerboard() {
   }
   const gl = shared.gl
   
+  // console.log('x-copies req.', (shared.aspect * 1 / shared.sceneScale).toFixed(3), 'y-copies:', (1/shared.sceneScale).toFixed(3))
+
 
   let index = 0
-  for(let row = -1; row < 2; row++) {
-    for(let col = -1; col < 2; col++) {
-      const spacing = shared.sceneScale*2
+  const spacing = shared.sceneScale*2
+  const xSize = spacing * shared.aspect / shared.sceneScale
+  const ySize = spacing / shared.sceneScale
+
+  for(let x = -xSize/2; x <= xSize/2; x += xSize / 2) {
+    for(let y = -ySize/2; y <= ySize/2; y += ySize / 2) {
       ident(matrices.project)
+      ident(matrices.transform)
 
       matrices.project[0] = 1/shared.aspect
-      matrices.transform = scaleMatrix(shared.sceneScale)
-      mult4(matrices.transform, translateMatrix(spacing*col,spacing*row,0), matrices.transform)
+      mult4(matrices.transform, rotateXY(Math.PI/4), matrices.transform)
+      // mult4(matrices.transform, scaleMatrix(shared.sceneScale), matrices.transform)
+      mult4(matrices.transform, scaleMatrix(shared.sceneScale/4), matrices.transform)
+      mult4(matrices.transform, translateMatrix(x, y, 0), matrices.transform)
 
       if(index%2) {
 
