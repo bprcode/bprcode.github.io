@@ -28,10 +28,13 @@ const shared = {
   elapsed: 0,
   aspect: 1,
   sceneScale: 1,
+  xMax: 0,
+  yMax: 0,
 }
 
 const particles = {
-  count: 30,
+  active: 0,
+  max: 1,
   positions: [] as [number, number, number][],
   colors: [] as [number, number, number][],
 }
@@ -83,6 +86,14 @@ function init() {
 
     shared.sceneScale = getSceneScale()
 
+    const spacing = shared.sceneScale*2
+    shared.xMax = 0.5 * spacing * shared.aspect / shared.sceneScale
+    shared.yMax = 0.5 * spacing / shared.sceneScale
+
+    // Keep particle count proportional to canvas area:
+    particles.max = Math.round(shared.xMax * shared.yMax * 4)
+    initParticles()
+
     render()
   }
 
@@ -122,13 +133,24 @@ function init() {
 }
 
 function initParticles() {
-  particles.positions = Array(particles.count)
+  // Debug: temporary approach
+  particles.positions = Array(particles.max)
 
-  for (let i = 0; i < particles.count; i++) {
-    const r = 1
-    const theta = ((Math.PI * 2) / particles.count) * i
-    particles.positions[i] = [r * Math.cos(theta), r * Math.sin(theta), -10]
+  // xCount * yCount = N
+  // xCount = floor[aspect * yCount]
+  // aspect * yCount^2 = N  give or take rounding
+  const rows = Math.ceil(Math.sqrt(particles.max / shared.aspect))
+  const columns = Math.ceil(particles.max / rows)
+
+  console.log(particles.max, 'particle rows/cols',rows,columns)
+
+  for(let i = 0; i < particles.max; i++) {
+    particles.positions[i] = [-shared.xMax + 2*shared.xMax * (i % columns)/columns,
+      -shared.yMax + 2*shared.yMax * Math.floor(i/columns)/rows
+       ,0]
   }
+
+  // console.log(particles.positions)
 }
 
 function animate(t: number) {
@@ -148,16 +170,6 @@ function animate(t: number) {
   requestAnimationFrame(animate)
 }
 
-function show(matrix: number[]) {
-  for (let c = 0; c < 4; c++) {
-    let str = ''
-    for (let r = 0; r < 4; r++) {
-      str += matrix[r + c * 4] + '\t'
-    }
-    console.log(str + '\n')
-  }
-}
-
 function render() {
   const gl = shared.gl
   if (!gl) {
@@ -169,6 +181,20 @@ function render() {
   gl.uniformMatrix4fv(locations.project, false, matrices.project)
 
   checkerboard()
+
+  for(const p of particles.positions) {
+    ident(matrices.project)
+    ident(matrices.transform)
+
+    matrices.project[0] = 1/shared.aspect
+    mult4(matrices.transform, rotateXY(Math.PI/4), scaleMatrix(shared.sceneScale/2))
+    mult4(matrices.transform, translateMatrix(p[0], p[1], p[2]), matrices.transform)
+
+    gl.uniform3f(locations.rgb, 0.5,0.25,0)
+    gl.uniformMatrix4fv(locations.project, false, matrices.project)
+    gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 3)
+  }
 
   // const scale = scaleMatrix(0.1)
   // let t = 0
@@ -206,23 +232,20 @@ function checkerboard() {
   }
   const gl = shared.gl
   
-  // console.log('x-copies req.', (shared.aspect * 1 / shared.sceneScale).toFixed(3), 'y-copies:', (1/shared.sceneScale).toFixed(3))
+  // console.log('x-copies req.', (shared.aspect * 1 / shared.sceneScale).toFixed(3),
+  // 'y-copies:', (1/shared.sceneScale).toFixed(3))
 
 
   let index = 0
-  const spacing = shared.sceneScale*2
-  const xSize = spacing * shared.aspect / shared.sceneScale
-  const ySize = spacing / shared.sceneScale
 
-  for(let x = -xSize/2; x <= xSize/2; x += xSize / 2) {
-    for(let y = -ySize/2; y <= ySize/2; y += ySize / 2) {
+  for(let x = -shared.xMax; x <= shared.xMax; x += shared.xMax) {
+    for(let y = -shared.yMax; y <= shared.yMax; y += shared.yMax) {
       ident(matrices.project)
       ident(matrices.transform)
 
       matrices.project[0] = 1/shared.aspect
-      mult4(matrices.transform, rotateXY(Math.PI/4), matrices.transform)
-      // mult4(matrices.transform, scaleMatrix(shared.sceneScale), matrices.transform)
-      mult4(matrices.transform, scaleMatrix(shared.sceneScale/4), matrices.transform)
+      mult4(matrices.transform, rotateXY(0), matrices.transform)
+      mult4(matrices.transform, scaleMatrix(shared.sceneScale/2), matrices.transform)
       mult4(matrices.transform, translateMatrix(x, y, 0), matrices.transform)
 
       if(index%2) {
