@@ -30,7 +30,7 @@ const shared = {
   sceneScale: 1,
   xMax: 0,
   yMax: 0,
-  particleDensity: 4,
+  particleDensity: 36,
   maxParticles: 1,
 }
 
@@ -131,7 +131,7 @@ function init() {
   )
 
   gl.enable(gl.BLEND)
-  gl.blendFunc(gl.SRC_ALPHA, gl.ZERO)
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE)
   gl.clearColor(0, 0, 0, 0)
 
   gl.useProgram(program)
@@ -143,7 +143,16 @@ function init() {
 
   updateSize()
 
-  initParticles()
+  setInterval(() => {
+    if(particles.length < shared.maxParticles) {
+      particles.push({
+        position: [-shared.xMax + 2*shared.xMax * Math.random(), -shared.yMax + 2*shared.yMax * Math.random(), 0],
+        lifetime: 2,
+        color: [0,1,1,1],
+      })
+    }
+  }, 300)
+
   requestAnimationFrame(animate)
 }
 
@@ -165,49 +174,7 @@ function updateParticles(dt: number) {
     particles[i].color[3] = particles[i].lifetime / 2
   }
 
-  while(particles.length < shared.maxParticles) {
-    particles.push({
-      position: [-shared.xMax + 2*shared.xMax * Math.random(), -shared.yMax + 2*shared.yMax * Math.random(), 0],
-      lifetime: 2,
-      color: [0,1,1,1],
-    })
-  }
-
 }
-
-function initParticles() {
-  particles.length = 0
-
-  for (let i = 0; i < shared.maxParticles; i++) {
-    particles.push({
-      position: [-shared.xMax + 2*shared.xMax * Math.random(), -shared.yMax + 2*shared.yMax * Math.random(), 0],
-      lifetime: 2,
-      color: [1,0,1,1],
-    })
-  }
-}
-
-// function initParticles() {
-  // particles.positions = Array(shared.maxParticles)
-
-  // const rows = Math.ceil(Math.sqrt(shared.maxParticles / shared.aspect))
-  // const columns = Math.floor(shared.maxParticles / rows)
-
-  // console.log(shared.maxParticles, 'particle rows/cols', rows, columns)
-
-  // let x = -shared.xMax
-  // let y = -shared.yMax
-
-  // for (let i = 0; i < shared.maxParticles; i++) {
-  //   particles.positions[i] = [x, y, 0]
-  //   x += (2 * shared.xMax) / columns
-  //   if (x >= shared.xMax) {
-  //     x = -shared.xMax
-  //     y += (2 * shared.yMax) / rows
-  //   }
-  // }
-
-// }
 
 function animate(t: number) {
   shared.tLast ??= t
