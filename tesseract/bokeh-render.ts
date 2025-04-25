@@ -21,12 +21,16 @@ const locations = {
 }
 
 const matrices = {
-  transform: rotateXY(Math.PI / 4),
+  transform: rotateXY(0),
   project: [] as number[],
 }
 
 const shared = {
   gl: null as WebGLRenderingContext | null,
+  canvasWidth: 0,
+  canvasHeight: 0,
+  textureWidth: 1024,
+  textureHeight: 1024,
   tLast: 0,
   elapsed: 0,
   aspect: 1,
@@ -41,6 +45,7 @@ const shared = {
   hexagonVertBuffer: null as WebGLBuffer | null,
   flatVertBuffer: null as WebGLBuffer | null,
   uvBuffer: null as WebGLBuffer | null,
+  readbackFbo: null as WebGLFramebuffer | null,
 }
 
 type particle = {
@@ -85,12 +90,12 @@ function init() {
       return
     }
 
-    const h = Math.round(Math.min(600, canvas.clientHeight))
-    const w = Math.round((h * canvas.clientWidth) / canvas.clientHeight)
-    canvas.height = h
-    canvas.width = w
-    shared.aspect = w / h
-    gl.viewport(0, 0, w, h)
+    shared.canvasHeight = Math.round(Math.min(600, canvas.clientHeight))
+    shared.canvasWidth = Math.round((shared.canvasHeight * canvas.clientWidth) / canvas.clientHeight)
+    canvas.height = shared.canvasHeight
+    canvas.width = shared.canvasWidth
+    shared.aspect = shared.canvasWidth / shared.canvasHeight
+    
     matrices.project = frustum({
       near: 0.1,
       far: 1000,
@@ -154,7 +159,9 @@ function init() {
   gl.clearColor(0, 0, 0, 0)
 
   // Textured surface initialization
-  gl.useProgram(shared.flatProgram)
+  shared.readbackFbo = gl.createFramebuffer()
+  gl.bindFramebuffer(gl.FRAMEBUFFER, shared.readbackFbo)
+
   locations.xy = gl.getAttribLocation(shared.flatProgram, 'xy')
   locations.uv = gl.getAttribLocation(shared.flatProgram, 'uv')
   locations.texSampler = gl.getUniformLocation(shared.flatProgram, 'texSampler')
@@ -163,7 +170,7 @@ function init() {
   gl.bindBuffer(gl.ARRAY_BUFFER, shared.flatVertBuffer)
   gl.bufferData(
     gl.ARRAY_BUFFER,
-    new Float32Array(geometry.square.map(x => x / 2)),
+    new Float32Array(geometry.square),
     gl.STATIC_DRAW
   )
 
@@ -171,41 +178,29 @@ function init() {
   gl.bindBuffer(gl.ARRAY_BUFFER, shared.uvBuffer)
   gl.bufferData(
     gl.ARRAY_BUFFER,
-    new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]),
+    new Float32Array([0, 1, 1, 1, 1, 0, 0, 0]),
     gl.STATIC_DRAW
   )
 
   shared.flatTexture = gl.createTexture()
-  const pixels = new Uint8Array(256 * 256 * 4)
-  for (let x = 0; x < 256; x++) {
-    for (let y = 0; y < 256; y++) {
-      pixels[x * 4 + y * 256 * 4] =
-        255 *
-        Math.cos((Math.PI * 2 * x) / 256) *
-        Math.sin((Math.PI * 2 * y) / 256)
-      pixels[x * 4 + y * 256 * 4 + 1] = 55
-      pixels[x * 4 + y * 256 * 4 + 2] = 128
-      pixels[x * 4 + y * 256 * 4 + 3] = 255
-      // Math.cos((Math.PI * 2 * x) / 256) * Math.sin((Math.PI * 2 * y) / 256)
-    }
-  }
-
   gl.bindTexture(gl.TEXTURE_2D, shared.flatTexture)
   gl.texImage2D(
     gl.TEXTURE_2D,
     0,
     gl.RGBA,
-    256,
-    256,
+    shared.textureWidth,
+    shared.textureHeight,
     0,
     gl.RGBA,
     gl.UNSIGNED_BYTE,
-    pixels
+    null
   )
 
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, shared.flatTexture, 0)
 
   updateSize()
 
@@ -281,6 +276,9 @@ function renderFlatTexture() {
     return
   }
 
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+
+  gl.viewport(0, 0, shared.canvasWidth, shared.canvasHeight)
   gl.useProgram(shared.flatProgram)
   gl.enableVertexAttribArray(locations.xy)
   gl.enableVertexAttribArray(locations.uv)
@@ -304,6 +302,11 @@ function renderHexagons() {
   if (!gl) {
     return
   }
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, shared.readbackFbo)
+  gl.viewport(0,0,shared.textureWidth,shared.textureHeight)
+  
+  gl.clear(gl.COLOR_BUFFER_BIT)
 
   gl.useProgram(shared.hexagonProgram)
   gl.enableVertexAttribArray(locations.position)
@@ -344,13 +347,13 @@ function render() {
     return
   }
 
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+
   gl.clear(gl.COLOR_BUFFER_BIT)
 
-  // flat texture section
-  renderFlatTexture()
-
-  // hexagon section
+  
   renderHexagons()
+  renderFlatTexture()
 }
 
 function createProgram(
@@ -433,8 +436,11 @@ uniform mat4 transform;
 uniform mat4 project;
 attribute vec4 position;
 
+varying vec4 projected;
+
 void main() {
-  gl_Position = project * (transform * position);
+  projected = project * (transform * position);
+  gl_Position = projected;
 }
 `
 
@@ -442,8 +448,11 @@ shaders.fragEx = /* glsl */ `
 precision mediump float;
 uniform vec4 rgba;
 
+varying vec4 projected;
+
 void main() {
-  gl_FragColor = rgba;
+  // gl_FragColor = rgba + length(vec2(projected.x, projected.y)) * vec4(1,0,0,0);
+  gl_FragColor = clamp(length(vec2(projected.x, projected.y)), 0., 1.) * rgba;
 }
 `
 
@@ -453,7 +462,7 @@ attribute vec2 uv;
 varying mediump vec2 vuv;
 
 void main() {
-  gl_Position = vec4(xy[0],xy[1], 0, 1);
+  gl_Position = vec4(xy, 0, 1);
   vuv = uv;
 }
 
@@ -465,7 +474,6 @@ uniform sampler2D texSampler;
 varying mediump vec2 vuv;
 
 void main() {
-  // gl_FragColor = vec4(vuv.x, vuv.y, 0.5, 1.0);
   gl_FragColor = texture2D(texSampler, vuv);
 }
 `
