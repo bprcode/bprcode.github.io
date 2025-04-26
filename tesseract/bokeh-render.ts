@@ -1,5 +1,4 @@
 import {
-  frustum,
   ident,
   mult4,
   rotateXY,
@@ -39,13 +38,13 @@ const shared = {
   yMax: 0,
   particleDensity: 12,
   maxParticles: 0,
-  flatTexture: null as WebGLTexture | null,
   hexagonProgram: null as WebGLProgram | null,
   flatProgram: null as WebGLProgram | null,
   hexagonVertBuffer: null as WebGLBuffer | null,
   flatVertBuffer: null as WebGLBuffer | null,
   uvBuffer: null as WebGLBuffer | null,
-  readbackFbo: null as WebGLFramebuffer | null,
+  fboAlternates: [] as WebGLFramebuffer[],
+  textureAlternates: [] as WebGLTexture[],
 }
 
 type particle = {
@@ -91,31 +90,25 @@ function init() {
     }
 
     shared.canvasHeight = Math.round(Math.min(600, canvas.clientHeight))
-    shared.canvasWidth = Math.round((shared.canvasHeight * canvas.clientWidth) / canvas.clientHeight)
+    shared.canvasWidth = Math.round(
+      (shared.canvasHeight * canvas.clientWidth) / canvas.clientHeight
+    )
     canvas.height = shared.canvasHeight
     canvas.width = shared.canvasWidth
     shared.aspect = shared.canvasWidth / shared.canvasHeight
-    
-    matrices.project = frustum({
-      near: 0.1,
-      far: 1000,
-      fov: 20,
-      aspect: shared.aspect,
-    })
-
     shared.sceneScale = getSceneScale()
 
     const spacing = shared.sceneScale * 2
     shared.xMax = (0.5 * spacing * shared.aspect) / shared.sceneScale
     shared.yMax = (0.5 * spacing) / shared.sceneScale
 
-    // Keep particle count proportional to canvas area:
     const bokehCanvas = document.querySelector('.bokeh-canvas')
     const renderCanvas = document.querySelector('.render-canvas')
     if (!bokehCanvas || !renderCanvas) {
       throw Error('DOM missing canvas nodes')
     }
-
+    
+    // Keep particle count proportional to canvas area:
     shared.maxParticles = Math.round(
       (shared.particleDensity *
         (bokehCanvas.clientWidth * bokehCanvas.clientHeight)) /
@@ -144,7 +137,6 @@ function init() {
   )
   locations.project = gl.getUniformLocation(shared.hexagonProgram, 'project')
   locations.rgba = gl.getUniformLocation(shared.hexagonProgram, 'rgba')
-
   shared.hexagonVertBuffer = gl.createBuffer()
 
   gl.bindBuffer(gl.ARRAY_BUFFER, shared.hexagonVertBuffer)
@@ -159,9 +151,6 @@ function init() {
   gl.clearColor(0, 0, 0, 0)
 
   // Textured surface initialization
-  shared.readbackFbo = gl.createFramebuffer()
-  gl.bindFramebuffer(gl.FRAMEBUFFER, shared.readbackFbo)
-
   locations.xy = gl.getAttribLocation(shared.flatProgram, 'xy')
   locations.uv = gl.getAttribLocation(shared.flatProgram, 'uv')
   locations.texSampler = gl.getUniformLocation(shared.flatProgram, 'texSampler')
@@ -182,25 +171,38 @@ function init() {
     gl.STATIC_DRAW
   )
 
-  shared.flatTexture = gl.createTexture()
-  gl.bindTexture(gl.TEXTURE_2D, shared.flatTexture)
-  gl.texImage2D(
-    gl.TEXTURE_2D,
-    0,
-    gl.RGBA,
-    shared.textureWidth,
-    shared.textureHeight,
-    0,
-    gl.RGBA,
-    gl.UNSIGNED_BYTE,
-    null
-  )
+  // Ping-pong buffers for blur effect:
+  shared.fboAlternates = [gl.createFramebuffer(), gl.createFramebuffer()]
 
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+  for (const fbo of shared.fboAlternates) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
 
-  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, shared.flatTexture, 0)
+    shared.textureAlternates.push(gl.createTexture())
+    gl.bindTexture(gl.TEXTURE_2D, shared.textureAlternates.at(-1)!)
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      shared.textureWidth,
+      shared.textureHeight,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      null
+    )
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D,
+      shared.textureAlternates.at(-1)!,
+      0
+    )
+  }
 
   updateSize()
 
@@ -289,7 +291,7 @@ function renderFlatTexture() {
   gl.vertexAttribPointer(locations.uv, 2, gl.FLOAT, false, 0, 0)
 
   gl.activeTexture(gl.TEXTURE0)
-  gl.bindTexture(gl.TEXTURE_2D, shared.flatTexture)
+  gl.bindTexture(gl.TEXTURE_2D, shared.textureAlternates[0])
   gl.uniform1i(locations.texSampler, 0)
 
   gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
@@ -303,9 +305,9 @@ function renderHexagons() {
     return
   }
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER, shared.readbackFbo)
-  gl.viewport(0,0,shared.textureWidth,shared.textureHeight)
-  
+  gl.bindFramebuffer(gl.FRAMEBUFFER, shared.fboAlternates[0])
+  gl.viewport(0, 0, shared.textureWidth, shared.textureHeight)
+
   gl.clear(gl.COLOR_BUFFER_BIT)
 
   gl.useProgram(shared.hexagonProgram)
@@ -314,13 +316,14 @@ function renderHexagons() {
   gl.bindBuffer(gl.ARRAY_BUFFER, shared.hexagonVertBuffer)
   gl.vertexAttribPointer(locations.position, 3, gl.FLOAT, false, 0, 0)
 
+  ident(matrices.project)
+  matrices.project[0] = 1 / shared.aspect
   gl.uniformMatrix4fv(locations.project, false, matrices.project)
 
+
   for (const p of particles) {
-    ident(matrices.project)
     ident(matrices.transform)
 
-    matrices.project[0] = 1 / shared.aspect
     mult4(
       matrices.transform,
       rotateXY(Math.PI / 10),
@@ -333,7 +336,6 @@ function renderHexagons() {
     )
 
     gl.uniform4fv(locations.rgba, p.color)
-    gl.uniformMatrix4fv(locations.project, false, matrices.project)
     gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
   }
@@ -351,7 +353,6 @@ function render() {
 
   gl.clear(gl.COLOR_BUFFER_BIT)
 
-  
   renderHexagons()
   renderFlatTexture()
 }
