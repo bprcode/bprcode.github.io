@@ -29,13 +29,16 @@ const matrices = {
   project: [] as number[],
 }
 
+const majorDimension = Math.max(document.documentElement.clientWidth, document.documentElement.clientHeight)
+const textureSize = Math.min(1024, 2**Math.floor(Math.log2(majorDimension)))
+
 const shared = {
   gl: null as WebGLRenderingContext | null,
   blurKernelSize: 12,
   canvasWidth: 0,
   canvasHeight: 0,
-  textureWidth: 512,
-  textureHeight: 512,
+  textureWidth: textureSize,
+  textureHeight: textureSize,
   tLast: 0,
   elapsed: 0,
   aspect: 1,
@@ -90,7 +93,8 @@ function init() {
   function updateSize(e?: UIEvent) {
     const checker = document.getElementById('resize-check')
     if (checker) {
-      checker.textContent = 'Resize ' + document.documentElement.clientWidth
+      checker.textContent = 'Resize: window largest: ' + Math.max(
+        document.documentElement.clientWidth,document.documentElement.clientHeight)+' tex size: '+shared.textureWidth
     }
     if (!canvas || !gl) {
       return
