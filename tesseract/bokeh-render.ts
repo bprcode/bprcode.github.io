@@ -1,3 +1,4 @@
+import { normalizedGaussianKernel } from './gleam-painters'
 import {
   ident,
   mult4,
@@ -7,11 +8,15 @@ import {
 } from './sundry-matrix'
 
 const shaders: { [k: string]: string } = {}
+
 const geometry: { [k: string]: number[] } = {}
 const locations = {
   position: -1 as GLint,
   xy: -1 as GLint,
   uv: -1 as GLint,
+  kernel: null as WebGLUniformLocation | null,
+  readTexture: null as WebGLUniformLocation | null,
+  blurStep: null as WebGLUniformLocation | null,
   texSampler: null as WebGLUniformLocation | null,
   aspect: null as WebGLUniformLocation | null,
   transform: null as WebGLUniformLocation | null,
@@ -26,10 +31,11 @@ const matrices = {
 
 const shared = {
   gl: null as WebGLRenderingContext | null,
+  blurKernelSize: 12,
   canvasWidth: 0,
   canvasHeight: 0,
-  textureWidth: 1024,
-  textureHeight: 1024,
+  textureWidth: 128,
+  textureHeight: 128,
   tLast: 0,
   elapsed: 0,
   aspect: 1,
@@ -40,6 +46,7 @@ const shared = {
   maxParticles: 0,
   hexagonProgram: null as WebGLProgram | null,
   flatProgram: null as WebGLProgram | null,
+  blurProgram: null as WebGLProgram | null,
   hexagonVertBuffer: null as WebGLBuffer | null,
   flatVertBuffer: null as WebGLBuffer | null,
   uvBuffer: null as WebGLBuffer | null,
@@ -107,7 +114,7 @@ function init() {
     if (!bokehCanvas || !renderCanvas) {
       throw Error('DOM missing canvas nodes')
     }
-    
+
     // Keep particle count proportional to canvas area:
     shared.maxParticles = Math.round(
       (shared.particleDensity *
@@ -129,6 +136,9 @@ function init() {
   const texFragShader = createShader(gl, gl.FRAGMENT_SHADER, shaders.texFrag)
   shared.flatProgram = createProgram(gl, texVertShader, texFragShader)
 
+  const blurShader = createShader(gl, gl.FRAGMENT_SHADER, shaders.blur1d)
+  shared.blurProgram = createProgram(gl, texVertShader, blurShader)
+
   locations.position = gl.getAttribLocation(shared.hexagonProgram, 'position')
   locations.aspect = gl.getUniformLocation(shared.hexagonProgram, 'aspect')
   locations.transform = gl.getUniformLocation(
@@ -149,6 +159,10 @@ function init() {
   gl.enable(gl.BLEND)
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE)
   gl.clearColor(0, 0, 0, 0)
+
+  gl.useProgram(shared.blurProgram)
+  locations.kernel = gl.getUniformLocation(shared.blurProgram, 'kernel')
+  gl.uniform1fv(locations.kernel, normalizedGaussianKernel(0.1, shared.blurKernelSize))
 
   // Textured surface initialization
   locations.xy = gl.getAttribLocation(shared.flatProgram, 'xy')
@@ -272,6 +286,35 @@ function animate(t: number) {
   requestAnimationFrame(animate)
 }
 
+function renderBlur(fromTexture: WebGLTexture, toFbo: WebGLFramebuffer) {
+  const gl = shared.gl
+  if (!gl) {
+    return
+  }
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, toFbo)
+  gl.clear(gl.COLOR_BUFFER_BIT)
+
+  gl.viewport(0, 0, shared.textureWidth, shared.textureHeight)
+  gl.useProgram(shared.blurProgram)
+  gl.enableVertexAttribArray(locations.xy)
+  gl.enableVertexAttribArray(locations.uv)
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, shared.flatVertBuffer)
+  gl.vertexAttribPointer(locations.xy, 2, gl.FLOAT, false, 0, 0)
+  gl.bindBuffer(gl.ARRAY_BUFFER, shared.uvBuffer)
+  gl.vertexAttribPointer(locations.uv, 2, gl.FLOAT, false, 0, 0)
+
+  gl.activeTexture(gl.TEXTURE0)
+  gl.bindTexture(gl.TEXTURE_2D, fromTexture)
+  gl.uniform1i(locations.readTexture, 0)
+  gl.uniform2f(locations.blurStep, 0.1, 0)
+
+  gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
+  gl.disableVertexAttribArray(locations.xy)
+  gl.disableVertexAttribArray(locations.uv)
+}
+
 function renderFlatTexture() {
   const gl = shared.gl
   if (!gl) {
@@ -291,7 +334,7 @@ function renderFlatTexture() {
   gl.vertexAttribPointer(locations.uv, 2, gl.FLOAT, false, 0, 0)
 
   gl.activeTexture(gl.TEXTURE0)
-  gl.bindTexture(gl.TEXTURE_2D, shared.textureAlternates[0])
+  gl.bindTexture(gl.TEXTURE_2D, shared.textureAlternates[1])
   gl.uniform1i(locations.texSampler, 0)
 
   gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
@@ -319,7 +362,6 @@ function renderHexagons() {
   ident(matrices.project)
   matrices.project[0] = 1 / shared.aspect
   gl.uniformMatrix4fv(locations.project, false, matrices.project)
-
 
   for (const p of particles) {
     ident(matrices.transform)
@@ -354,6 +396,7 @@ function render() {
   gl.clear(gl.COLOR_BUFFER_BIT)
 
   renderHexagons()
+  renderBlur(shared.textureAlternates[0], shared.fboAlternates[1])
   renderFlatTexture()
 }
 
@@ -476,6 +519,32 @@ varying mediump vec2 vuv;
 
 void main() {
   gl_FragColor = texture2D(texSampler, vuv);
+}
+`
+
+shaders.blur1d = /* glsl */ `
+precision mediump float;
+varying vec2 vuv;
+
+uniform sampler2D readTexture;
+#define kernelSize ${shared.blurKernelSize}
+uniform float kernel[kernelSize];
+uniform vec2 blurStep;
+
+void main (void) {
+  vec2 dv = blurStep;
+
+  float g = texture2D(readTexture, vuv - vec2(0.01,0.)).g;
+  float b = texture2D(readTexture, vuv + vec2(0.01,0.)).b;
+  vec4 color = vec4(0., g, b, 0.5);
+  // double-weight on 0 element:
+  // vec4 color = texture2D(readTexture, vuv) * kernel[0];
+  // for (int i = 1; i < kernelSize; i++) {
+  //   color += texture2D(readTexture, vuv - float(i)*dv) * kernel[i]
+  //           + texture2D(readTexture, vuv + float(i)*dv) * kernel[i];
+  // }
+
+  gl_FragColor = color;
 }
 `
 

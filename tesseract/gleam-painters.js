@@ -635,7 +635,7 @@ function show (m, tag = undefined) {
  * @param {number} sigma standard deviation (prior to normalization)
  * @param {number} steps the number of elements for the one-sided kernel
  */
-function normalizedGaussianKernel (sigma, steps) {
+export function normalizedGaussianKernel (sigma, steps) {
   const yMin = 0.06 // The lowest y value to include
   const xMax = Math.sqrt(-2 * sigma ** 2 * Math.log(yMin * sigma *
                 Math.sqrt(2 * π))) // the x value for yMin
