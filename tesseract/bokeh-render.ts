@@ -8,8 +8,8 @@ import {
 } from './sundry-matrix'
 
 const shaders: { [k: string]: string } = {}
-
 const geometry: { [k: string]: number[] } = {}
+
 const locations = {
   position: -1 as GLint,
   xy: -1 as GLint,
@@ -29,16 +29,13 @@ const matrices = {
   project: [] as number[],
 }
 
-const majorDimension = Math.max(document.documentElement.clientWidth, document.documentElement.clientHeight)
-const textureSize = Math.min(1024, 2**Math.floor(Math.log2(majorDimension)))
-
 const shared = {
   gl: null as WebGLRenderingContext | null,
   blurKernelSize: 12,
   canvasWidth: 0,
   canvasHeight: 0,
-  textureWidth: textureSize,
-  textureHeight: textureSize,
+  textureWidth: 1,
+  textureHeight: 1,
   tLast: 0,
   elapsed: 0,
   aspect: 1,
@@ -47,6 +44,7 @@ const shared = {
   yMax: 0,
   particleDensity: 12,
   maxParticles: 0,
+  easedParticleMax: 0,
   hexagonProgram: null as WebGLProgram | null,
   flatProgram: null as WebGLProgram | null,
   blurProgram: null as WebGLProgram | null,
@@ -73,7 +71,91 @@ function getSceneScale() {
     return 1
   }
 
+  if (document.documentElement.clientHeight < 1) {
+    return 1
+  }
+
   return renderCanvas.clientHeight / document.documentElement.clientHeight
+}
+
+function updateSize() {
+  const gl = shared.gl
+  const canvas: HTMLCanvasElement | null =
+    document.querySelector('.bokeh-canvas')
+  const checker = document.getElementById('resize-check')
+
+  if (!canvas || !gl) {
+    return
+  }
+
+  shared.canvasHeight = Math.max(
+    1,
+    Math.round(Math.min(600, canvas.clientHeight))
+  )
+  shared.canvasWidth = Math.max(
+    1,
+    Math.round((shared.canvasHeight * canvas.clientWidth) / canvas.clientHeight)
+  )
+
+  shared.textureWidth = Math.max(1, Math.min(1024, shared.canvasWidth))
+  shared.textureHeight = Math.max(1, Math.min(1024, shared.canvasHeight))
+
+  canvas.height = shared.canvasHeight
+  canvas.width = shared.canvasWidth
+  shared.aspect = shared.canvasWidth / shared.canvasHeight
+  shared.sceneScale = getSceneScale()
+
+  const spacing = shared.sceneScale * 2
+  shared.xMax = (0.5 * spacing * shared.aspect) / shared.sceneScale
+  shared.yMax = (0.5 * spacing) / shared.sceneScale
+
+  const bokehCanvas = document.querySelector('.bokeh-canvas')
+  const renderCanvas = document.querySelector('.render-canvas')
+  if (!bokehCanvas || !renderCanvas) {
+    throw Error('DOM missing canvas nodes')
+  }
+
+  // Keep particle count proportional to canvas area:
+  shared.maxParticles = Math.min(
+    200,
+    Math.round(
+      (shared.particleDensity *
+        (bokehCanvas.clientWidth * bokehCanvas.clientHeight)) /
+        (renderCanvas.clientWidth * renderCanvas.clientHeight)
+    )
+  )
+
+  for (const texAlt of shared.textureAlternates) {
+    gl.bindTexture(gl.TEXTURE_2D, texAlt)
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      shared.textureWidth,
+      shared.textureHeight,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      null
+    )
+  }
+
+  if (checker) {
+    checker.textContent =
+      'Resize: window largest: ' +
+      Math.max(
+        document.documentElement.clientWidth,
+        document.documentElement.clientHeight
+      ) +
+      ' tex size: ' +
+      shared.textureWidth +
+      ', ' +
+      shared.textureHeight +
+      ' #: ' +
+      shared.maxParticles
+  }
+
+  render()
 }
 
 function init() {
@@ -88,45 +170,6 @@ function init() {
 
   if (!gl) {
     throw Error('Unable to create bokeh rendering context')
-  }
-
-  function updateSize(e?: UIEvent) {
-    const checker = document.getElementById('resize-check')
-    if (checker) {
-      checker.textContent = 'Resize: window largest: ' + Math.max(
-        document.documentElement.clientWidth,document.documentElement.clientHeight)+' tex size: '+shared.textureWidth
-    }
-    if (!canvas || !gl) {
-      return
-    }
-
-    shared.canvasHeight = Math.round(Math.min(600, canvas.clientHeight))
-    shared.canvasWidth = Math.round(
-      (shared.canvasHeight * canvas.clientWidth) / canvas.clientHeight
-    )
-    canvas.height = shared.canvasHeight
-    canvas.width = shared.canvasWidth
-    shared.aspect = shared.canvasWidth / shared.canvasHeight
-    shared.sceneScale = getSceneScale()
-
-    const spacing = shared.sceneScale * 2
-    shared.xMax = (0.5 * spacing * shared.aspect) / shared.sceneScale
-    shared.yMax = (0.5 * spacing) / shared.sceneScale
-
-    const bokehCanvas = document.querySelector('.bokeh-canvas')
-    const renderCanvas = document.querySelector('.render-canvas')
-    if (!bokehCanvas || !renderCanvas) {
-      throw Error('DOM missing canvas nodes')
-    }
-
-    // Keep particle count proportional to canvas area:
-    shared.maxParticles = Math.round(
-      (shared.particleDensity *
-        (bokehCanvas.clientWidth * bokehCanvas.clientHeight)) /
-        (renderCanvas.clientWidth * renderCanvas.clientHeight)
-    )
-
-    render()
   }
 
   window.addEventListener('resize', updateSize)
@@ -167,7 +210,10 @@ function init() {
   gl.useProgram(shared.blurProgram)
   locations.blurStep = gl.getUniformLocation(shared.blurProgram, 'blurStep')
   locations.kernel = gl.getUniformLocation(shared.blurProgram, 'kernel')
-  gl.uniform1fv(locations.kernel, normalizedGaussianKernel(0.1, shared.blurKernelSize))
+  gl.uniform1fv(
+    locations.kernel,
+    normalizedGaussianKernel(0.1, shared.blurKernelSize)
+  )
 
   // Textured surface initialization
   locations.xy = gl.getAttribLocation(shared.flatProgram, 'xy')
@@ -198,12 +244,14 @@ function init() {
 
     shared.textureAlternates.push(gl.createTexture())
     gl.bindTexture(gl.TEXTURE_2D, shared.textureAlternates.at(-1)!)
+
+    // Single pixel placeholder:
     gl.texImage2D(
       gl.TEXTURE_2D,
       0,
       gl.RGBA,
-      shared.textureWidth,
-      shared.textureHeight,
+      1,
+      1,
       0,
       gl.RGBA,
       gl.UNSIGNED_BYTE,
@@ -539,9 +587,6 @@ uniform vec2 blurStep;
 void main (void) {
   vec2 dv = blurStep;
 
-  // float g = texture2D(readTexture, vuv - blurStep).g;
-  // float b = texture2D(readTexture, vuv + blurStep).b;
-  // vec4 color = vec4(0., g, b, 0.5);
   // double-weight on 0 element:
   vec4 color = texture2D(readTexture, vuv) * kernel[0];
   for (int i = 1; i < kernelSize; i++) {
