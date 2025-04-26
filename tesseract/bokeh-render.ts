@@ -34,8 +34,8 @@ const shared = {
   blurKernelSize: 12,
   canvasWidth: 0,
   canvasHeight: 0,
-  textureWidth: 128,
-  textureHeight: 128,
+  textureWidth: 512,
+  textureHeight: 512,
   tLast: 0,
   elapsed: 0,
   aspect: 1,
@@ -90,7 +90,7 @@ function init() {
   function updateSize(e?: UIEvent) {
     const checker = document.getElementById('resize-check')
     if (checker) {
-      checker.textContent = 'Resize ' + Math.random()
+      checker.textContent = 'Resize ' + document.documentElement.clientWidth
     }
     if (!canvas || !gl) {
       return
@@ -161,6 +161,7 @@ function init() {
   gl.clearColor(0, 0, 0, 0)
 
   gl.useProgram(shared.blurProgram)
+  locations.blurStep = gl.getUniformLocation(shared.blurProgram, 'blurStep')
   locations.kernel = gl.getUniformLocation(shared.blurProgram, 'kernel')
   gl.uniform1fv(locations.kernel, normalizedGaussianKernel(0.1, shared.blurKernelSize))
 
@@ -308,7 +309,7 @@ function renderBlur(fromTexture: WebGLTexture, toFbo: WebGLFramebuffer) {
   gl.activeTexture(gl.TEXTURE0)
   gl.bindTexture(gl.TEXTURE_2D, fromTexture)
   gl.uniform1i(locations.readTexture, 0)
-  gl.uniform2f(locations.blurStep, 0.1, 0)
+  gl.uniform2f(locations.blurStep, 1 / shared.textureWidth, 0)
 
   gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
   gl.disableVertexAttribArray(locations.xy)
@@ -534,15 +535,15 @@ uniform vec2 blurStep;
 void main (void) {
   vec2 dv = blurStep;
 
-  float g = texture2D(readTexture, vuv - vec2(0.01,0.)).g;
-  float b = texture2D(readTexture, vuv + vec2(0.01,0.)).b;
-  vec4 color = vec4(0., g, b, 0.5);
+  // float g = texture2D(readTexture, vuv - blurStep).g;
+  // float b = texture2D(readTexture, vuv + blurStep).b;
+  // vec4 color = vec4(0., g, b, 0.5);
   // double-weight on 0 element:
-  // vec4 color = texture2D(readTexture, vuv) * kernel[0];
-  // for (int i = 1; i < kernelSize; i++) {
-  //   color += texture2D(readTexture, vuv - float(i)*dv) * kernel[i]
-  //           + texture2D(readTexture, vuv + float(i)*dv) * kernel[i];
-  // }
+  vec4 color = texture2D(readTexture, vuv) * kernel[0];
+  for (int i = 1; i < kernelSize; i++) {
+    color += texture2D(readTexture, vuv - float(i)*dv) * kernel[i]
+            + texture2D(readTexture, vuv + float(i)*dv) * kernel[i];
+  }
 
   gl_FragColor = color;
 }
