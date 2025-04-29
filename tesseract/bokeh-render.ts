@@ -30,7 +30,7 @@ const matrices = {
 }
 
 const shared = {
-  gl: null as WebGLRenderingContext | null,
+  gl: null as WebGL2RenderingContext | WebGLRenderingContext | null,
   blurKernelSize: 12,
   canvasWidth: 0,
   canvasHeight: 0,
@@ -51,6 +51,8 @@ const shared = {
   hexagonVertBuffer: null as WebGLBuffer | null,
   flatVertBuffer: null as WebGLBuffer | null,
   uvBuffer: null as WebGLBuffer | null,
+  fboAA: null as WebGLFramebuffer | null,
+  rbAA: null as WebGLRenderbuffer | null,
   fboAlternates: [] as WebGLFramebuffer[],
   textureAlternates: [] as WebGLTexture[],
 }
@@ -78,86 +80,6 @@ function getSceneScale() {
   return renderCanvas.clientHeight / document.documentElement.clientHeight
 }
 
-function updateSize() {
-  const gl = shared.gl
-  const canvas: HTMLCanvasElement | null =
-    document.querySelector('.bokeh-canvas')
-  const checker = document.getElementById('resize-check')
-
-  if (!canvas || !gl) {
-    return
-  }
-
-  shared.canvasHeight = Math.max(
-    1,
-    Math.round(Math.min(600, canvas.clientHeight))
-  )
-  shared.canvasWidth = Math.max(
-    1,
-    Math.round((shared.canvasHeight * canvas.clientWidth) / canvas.clientHeight)
-  )
-
-  shared.textureWidth = Math.max(1, Math.min(1024, shared.canvasWidth))
-  shared.textureHeight = Math.max(1, Math.min(1024, shared.canvasHeight))
-
-  canvas.height = shared.canvasHeight
-  canvas.width = shared.canvasWidth
-  shared.aspect = shared.canvasWidth / shared.canvasHeight
-  shared.sceneScale = getSceneScale()
-
-  const spacing = shared.sceneScale * 2
-  shared.xMax = (0.5 * spacing * shared.aspect) / shared.sceneScale
-  shared.yMax = (0.5 * spacing) / shared.sceneScale
-
-  const bokehCanvas = document.querySelector('.bokeh-canvas')
-  const renderCanvas = document.querySelector('.render-canvas')
-  if (!bokehCanvas || !renderCanvas) {
-    throw Error('DOM missing canvas nodes')
-  }
-
-  // Keep particle count proportional to canvas area:
-  shared.maxParticles = Math.min(
-    200,
-    Math.round(
-      (shared.particleDensity *
-        (bokehCanvas.clientWidth * bokehCanvas.clientHeight)) /
-        (renderCanvas.clientWidth * renderCanvas.clientHeight)
-    )
-  )
-
-  for (const texAlt of shared.textureAlternates) {
-    gl.bindTexture(gl.TEXTURE_2D, texAlt)
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA,
-      shared.textureWidth,
-      shared.textureHeight,
-      0,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      null
-    )
-  }
-
-  if (checker) {
-    checker.textContent =
-      'Resize: window largest: ' +
-      Math.max(
-        document.documentElement.clientWidth,
-        document.documentElement.clientHeight
-      ) +
-      ' tex size: ' +
-      shared.textureWidth +
-      ', ' +
-      shared.textureHeight +
-      ' #: ' +
-      shared.maxParticles
-  }
-
-  render()
-}
-
 function init() {
   const canvas: HTMLCanvasElement | null =
     document.querySelector('.bokeh-canvas')
@@ -165,14 +87,23 @@ function init() {
     throw Error('No bokeh canvas found')
   }
 
-  shared.gl = canvas.getContext('webgl')
-  const gl = shared.gl
+  shared.gl = canvas.getContext('webgl2')
+  if (!shared.gl) {
+    shared.gl = canvas.getContext('webgl')
 
-  if (!gl) {
-    throw Error('Unable to create bokeh rendering context')
+    if (!shared.gl) {
+      throw Error('Unable to create bokeh rendering context')
+    }
   }
 
+  const gl = shared.gl
   window.addEventListener('resize', updateSize)
+
+  // Create antialiasing buffer objects, if possible:
+  if (gl instanceof WebGL2RenderingContext) {
+    shared.fboAA = gl.createFramebuffer()
+    shared.rbAA = gl.createRenderbuffer()
+  }
 
   // Particle pass initialization
   const flareVertShader = createShader(gl, gl.VERTEX_SHADER, shaders.vertEx)
@@ -276,6 +207,121 @@ function init() {
   requestAnimationFrame(animate)
 }
 
+function updateSize() {
+  const gl = shared.gl
+  const canvas: HTMLCanvasElement | null =
+    document.querySelector('.bokeh-canvas')
+  const checker = document.getElementById('resize-check')
+
+  if (!canvas || !gl) {
+    return
+  }
+
+  shared.canvasHeight = Math.max(
+    1,
+    Math.round(Math.min(600, canvas.clientHeight))
+  )
+  shared.canvasWidth = Math.max(
+    1,
+    Math.round((shared.canvasHeight * canvas.clientWidth) / canvas.clientHeight)
+  )
+
+  // DEBUG -- temporarily reduce canvas size, / 2
+  shared.textureWidth = Math.max(
+    1,
+    Math.min(1024, Math.floor(shared.canvasWidth / 2))
+  )
+  shared.textureHeight = Math.max(
+    1,
+    Math.min(1024, Math.floor(shared.canvasHeight / 2))
+  )
+
+  canvas.height = shared.canvasHeight
+  canvas.width = shared.canvasWidth
+  shared.aspect = shared.canvasWidth / shared.canvasHeight
+  shared.sceneScale = getSceneScale()
+
+  const spacing = shared.sceneScale * 2
+  shared.xMax = (0.5 * spacing * shared.aspect) / shared.sceneScale
+  shared.yMax = (0.5 * spacing) / shared.sceneScale
+
+  // Update renderbuffer storage for antialiasing, if supported:
+  if (shared.fboAA && gl instanceof WebGL2RenderingContext) {
+    const samples = Math.min(16, gl.getParameter(gl.MAX_SAMPLES))
+    console.log('creating bokeh renderbuffer with', samples, 'samples')
+
+    const restore = gl.getParameter(gl.RENDERBUFFER_BINDING)
+
+    gl.bindRenderbuffer(gl.RENDERBUFFER, shared.rbAA)
+    gl.renderbufferStorageMultisample(
+      gl.RENDERBUFFER,
+      samples,
+      gl.RGBA8,
+      shared.textureWidth,
+      shared.textureHeight
+    )
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, shared.fboAA)
+    gl.framebufferRenderbuffer(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.RENDERBUFFER,
+      shared.rbAA
+    )
+
+    gl.bindRenderbuffer(gl.RENDERBUFFER, restore)
+  }
+
+  const bokehCanvas = document.querySelector('.bokeh-canvas')
+  const renderCanvas = document.querySelector('.render-canvas')
+  if (!bokehCanvas || !renderCanvas) {
+    throw Error('DOM missing canvas nodes')
+  }
+
+  // Keep particle count proportional to canvas area:
+  shared.maxParticles = Math.min(
+    300,
+    Math.round(
+      (shared.particleDensity *
+        (bokehCanvas.clientWidth * bokehCanvas.clientHeight)) /
+        (renderCanvas.clientWidth * renderCanvas.clientHeight)
+    )
+  )
+
+  for (const texAlt of shared.textureAlternates) {
+    gl.bindTexture(gl.TEXTURE_2D, texAlt)
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      shared.textureWidth,
+      shared.textureHeight,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      // debug: causes lazy init if not drawing to surface before read
+      null
+    )
+  }
+
+  if (checker) {
+    checker.textContent =
+      'Resize: window largest: ' +
+      Math.max(
+        document.documentElement.clientWidth,
+        document.documentElement.clientHeight
+      ) +
+      ' tex size: ' +
+      shared.textureWidth +
+      ', ' +
+      shared.textureHeight +
+      ' #: ' +
+      shared.maxParticles
+  }
+
+  render()
+}
+
 function removeParticle(i: number) {
   particles[i] = particles.at(-1)!
   particles.pop()
@@ -368,7 +414,7 @@ function renderBlur(fromTexture: WebGLTexture, toFbo: WebGLFramebuffer) {
   gl.disableVertexAttribArray(locations.uv)
 }
 
-function renderFlatTexture() {
+function renderFlatTexture(sourceTexture: WebGLTexture) {
   const gl = shared.gl
   if (!gl) {
     return
@@ -387,7 +433,7 @@ function renderFlatTexture() {
   gl.vertexAttribPointer(locations.uv, 2, gl.FLOAT, false, 0, 0)
 
   gl.activeTexture(gl.TEXTURE0)
-  gl.bindTexture(gl.TEXTURE_2D, shared.textureAlternates[1])
+  gl.bindTexture(gl.TEXTURE_2D, sourceTexture)
   gl.uniform1i(locations.texSampler, 0)
 
   gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
@@ -401,7 +447,6 @@ function renderHexagons() {
     return
   }
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER, shared.fboAlternates[0])
   gl.viewport(0, 0, shared.textureWidth, shared.textureHeight)
 
   gl.clear(gl.COLOR_BUFFER_BIT)
@@ -448,9 +493,40 @@ function render() {
 
   gl.clear(gl.COLOR_BUFFER_BIT)
 
+  if (gl instanceof WebGL2RenderingContext) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, shared.fboAA)
+  } else {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, shared.fboAlternates[0])
+  }
+
   renderHexagons()
+  resolveAA()
+
   renderBlur(shared.textureAlternates[0], shared.fboAlternates[1])
-  renderFlatTexture()
+  renderFlatTexture(shared.textureAlternates[1])
+}
+
+// Blit from the antialiased frame buffer, if valid:
+function resolveAA() {
+  if (!(shared.gl instanceof WebGL2RenderingContext) || !shared.fboAA) {
+    return
+  }
+
+  const gl = shared.gl
+  gl.bindFramebuffer(gl.READ_FRAMEBUFFER, shared.fboAA)
+  gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, shared.fboAlternates[0])
+  gl.blitFramebuffer(
+    0,
+    0,
+    shared.textureWidth,
+    shared.textureHeight,
+    0,
+    0,
+    shared.textureWidth,
+    shared.textureHeight,
+    gl.COLOR_BUFFER_BIT,
+    gl.NEAREST
+  )
 }
 
 function createProgram(
