@@ -31,7 +31,8 @@ const matrices = {
 
 const shared = {
   gl: null as WebGL2RenderingContext | WebGLRenderingContext | null,
-  blurKernelSize: 12,
+  resizeCount: 0,
+  blurKernelSize: 8,
   canvasWidth: 0,
   canvasHeight: 0,
   textureWidth: 1,
@@ -217,6 +218,8 @@ function updateSize() {
     return
   }
 
+  shared.resizeCount++
+
   shared.canvasHeight = Math.max(
     1,
     Math.round(Math.min(600, canvas.clientHeight))
@@ -226,7 +229,6 @@ function updateSize() {
     Math.round((shared.canvasHeight * canvas.clientWidth) / canvas.clientHeight)
   )
 
-  // DEBUG -- temporarily reduce canvas size, / 2
   shared.textureWidth = Math.max(
     1,
     Math.min(1024, Math.floor(shared.canvasWidth / 2))
@@ -248,7 +250,6 @@ function updateSize() {
   // Update renderbuffer storage for antialiasing, if supported:
   if (shared.fboAA && gl instanceof WebGL2RenderingContext) {
     const samples = Math.min(16, gl.getParameter(gl.MAX_SAMPLES))
-    console.log('creating bokeh renderbuffer with', samples, 'samples')
 
     const restore = gl.getParameter(gl.RENDERBUFFER_BINDING)
 
@@ -299,14 +300,13 @@ function updateSize() {
       0,
       gl.RGBA,
       gl.UNSIGNED_BYTE,
-      // debug: causes lazy init if not drawing to surface before read
       null
     )
   }
 
   if (checker) {
     checker.textContent =
-      'Resize: window largest: ' +
+      shared.resizeCount + ' resizes: window largest: ' +
       Math.max(
         document.documentElement.clientWidth,
         document.documentElement.clientHeight
@@ -385,7 +385,7 @@ function animate(t: number) {
   requestAnimationFrame(animate)
 }
 
-function renderBlur(fromTexture: WebGLTexture, toFbo: WebGLFramebuffer) {
+function renderBlur(blurX:number,blurY:number,fromTexture: WebGLTexture, toFbo: WebGLFramebuffer) {
   const gl = shared.gl
   if (!gl) {
     return
@@ -407,7 +407,7 @@ function renderBlur(fromTexture: WebGLTexture, toFbo: WebGLFramebuffer) {
   gl.activeTexture(gl.TEXTURE0)
   gl.bindTexture(gl.TEXTURE_2D, fromTexture)
   gl.uniform1i(locations.readTexture, 0)
-  gl.uniform2f(locations.blurStep, 1 / shared.textureWidth, 0)
+  gl.uniform2f(locations.blurStep, blurX, blurY)
 
   gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
   gl.disableVertexAttribArray(locations.xy)
@@ -502,8 +502,11 @@ function render() {
   renderHexagons()
   resolveAA()
 
-  renderBlur(shared.textureAlternates[0], shared.fboAlternates[1])
-  renderFlatTexture(shared.textureAlternates[1])
+  // renderBlur(1/shared.textureWidth, 0, shared.textureAlternates[0], shared.fboAlternates[1])
+
+  renderBlur(1/shared.textureWidth, 0, shared.textureAlternates[0], shared.fboAlternates[1])
+  renderBlur(0, 1/shared.textureHeight, shared.textureAlternates[1], shared.fboAlternates[0])
+  renderFlatTexture(shared.textureAlternates[0])
 }
 
 // Blit from the antialiased frame buffer, if valid:
