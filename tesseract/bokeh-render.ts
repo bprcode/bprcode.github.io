@@ -21,6 +21,7 @@ const locations = {
   blurSampler: null as WebGLUniformLocation | null,
   clearSampler: null as WebGLUniformLocation | null,
   aspect: null as WebGLUniformLocation | null,
+  positionMax: null as WebGLUniformLocation | null,
   transform: null as WebGLUniformLocation | null,
   project: null as WebGLUniformLocation | null,
   focus: null as WebGLUniformLocation | null,
@@ -127,6 +128,7 @@ function init() {
 
   locations.position = gl.getAttribLocation(shared.hexagonProgram, 'position')
   locations.aspect = gl.getUniformLocation(shared.hexagonProgram, 'aspect')
+  locations.positionMax = gl.getUniformLocation(shared.hexagonProgram, 'positionMax')
   locations.transform = gl.getUniformLocation(
     shared.hexagonProgram,
     'transform'
@@ -262,6 +264,9 @@ function updateSize() {
   const spacing = shared.sceneScale * 2
   shared.xMax = (0.5 * spacing * shared.aspect) / shared.sceneScale
   shared.yMax = (0.5 * spacing) / shared.sceneScale
+
+  gl.useProgram(shared.hexagonProgram)
+  gl.uniform2fv(locations.positionMax, [shared.xMax, shared.yMax])
 
   // Update renderbuffer storage for antialiasing, if supported:
   if (shared.fboAA && gl instanceof WebGL2RenderingContext) {
@@ -665,6 +670,7 @@ geometry.square = [-1, 1, 1, 1, 1, -1, -1, -1]
 
 shaders.vertEx = /* glsl */ `
 uniform float aspect;
+uniform vec2 positionMax;
 uniform mat4 transform;
 uniform mat4 project;
 attribute vec4 position;
@@ -672,7 +678,14 @@ attribute vec4 position;
 varying vec4 projected;
 
 void main() {
-  projected = project * (transform * position);
+  vec4 transformed = transform * position;
+
+  float r = length(vec2(transformed)) / length(positionMax);
+  transformed.x /= 0.9 + r * 0.1;
+  transformed.y /= 0.9 + r * 0.1;
+
+  projected = project * transformed;
+
   gl_Position = projected;
 }
 `
@@ -734,14 +747,19 @@ void main() {
   // gl_FragColor = vec4(texture2D(blurSampler, vuv).a, 0., 0., 1.);
   vec4 clearColor = texture2D(clearSampler, vuv);
   vec4 blurColor = texture2D(blurSampler, vuv);
-  float t = max(pow(max(blurColor.a, 0.00001), 0.125), 0.5);
   float r = min(1.0, 2.0 * length(vuv - vec2(0.5, 0.5)));
+  // float t = max(pow(max(blurColor.a, 0.00001), 0.125), 0.5);
+  float t = 1.0  - pow(1.0 - r, 0.85);
   float v = cos(3.14159 * abs(vuv.y - 0.5));
 
 
+  // gl_FragColor = vec4(t, 0, 0, 1);
   vec4 lerpColor = (1. - t) * clearColor + (t) * blurColor;
   lerpColor.a = 1.0;
-  gl_FragColor = lerpColor * 0.15 * pow(r, 4.0) * v + vec4(0.0, 0.005, 0.02, 0.0);
+  // gl_FragColor = lerpColor;
+
+
+  gl_FragColor = lerpColor * 0.25 * pow(r, 4.0) * v + vec4(0.0, 0.005, 0.02, 0.0);
 }
 `
 
