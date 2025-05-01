@@ -92,9 +92,9 @@ function init() {
     throw Error('No bokeh canvas found')
   }
 
-  shared.gl = canvas.getContext('webgl2')
+  shared.gl = canvas.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: false })
   if (!shared.gl) {
-    shared.gl = canvas.getContext('webgl')
+    shared.gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: false })
 
     if (!shared.gl) {
       throw Error('Unable to create bokeh rendering context')
@@ -378,10 +378,9 @@ function updateParticles(dt: number) {
       continue
     }
 
-    // particles[i].color[3] = Math.sin(
-    //   (Math.PI * particles[i].age) / particles[i].lifetime
-    // )
-    particles[i].color[3] = 0.5
+    particles[i].color[3] = Math.sin(
+      (Math.PI * particles[i].age) / particles[i].lifetime
+    ) ** 2
   }
 }
 
