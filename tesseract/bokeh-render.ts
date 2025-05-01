@@ -35,7 +35,7 @@ const matrices = {
 const shared = {
   gl: null as WebGL2RenderingContext | WebGLRenderingContext | null,
   resizeCount: 0,
-  blurKernelSize: 8,
+  blurKernelSize: 16,
   canvasWidth: 0,
   canvasHeight: 0,
   textureWidth: 1,
@@ -378,9 +378,10 @@ function updateParticles(dt: number) {
       continue
     }
 
-    particles[i].color[3] = Math.sin(
-      (Math.PI * particles[i].age) / particles[i].lifetime
-    )
+    // particles[i].color[3] = Math.sin(
+    //   (Math.PI * particles[i].age) / particles[i].lifetime
+    // )
+    particles[i].color[3] = 0.5
   }
 }
 
@@ -509,8 +510,11 @@ function renderHexagons() {
     if(p.spawnDelay > 0) {
       continue
     }
-    
-    gl.uniform1f(locations.focus, p.color[3])
+
+    gl.uniform1f(locations.focus, Math.sin(Math.PI * p.age / p.lifetime))
+    // particles[i].color[3] = Math.sin(
+    //   (Math.PI * particles[i].age) / particles[i].lifetime
+    // )
 
     ident(matrices.transform)
 
@@ -728,14 +732,14 @@ uniform sampler2D clearSampler;
 varying mediump vec2 vuv;
 
 void main() {
-  gl_FragColor = vec4(texture2D(blurSampler, vuv).a, 0., 0., 1.);
-  // vec4 clearColor = texture2D(clearSampler, vuv);
-  // vec4 blurColor = texture2D(blurSampler, vuv);
-  // float t = blurColor.a;
+  // gl_FragColor = vec4(texture2D(blurSampler, vuv).a, 0., 0., 1.);
+  vec4 clearColor = texture2D(clearSampler, vuv);
+  vec4 blurColor = texture2D(blurSampler, vuv);
+  float t = blurColor.a;
 
-  // vec4 lerpColor = t * clearColor + (1. - t) * blurColor;
-  // lerpColor.a = 1.0;
-  // gl_FragColor = lerpColor;
+  vec4 lerpColor = (1. - t) * clearColor + (t) * blurColor;
+  lerpColor.a = 1.0;
+  gl_FragColor = lerpColor;
 }
 `
 
@@ -759,8 +763,8 @@ void main (void) {
   }
 
   // gl_FragColor = color;
-  // debug -- test
-  gl_FragColor = vec4(color.g, color.b, color.r, color.a);
+  color.r = 0.75; // debug
+  gl_FragColor = color;
 }
 `
 
