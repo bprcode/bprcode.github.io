@@ -35,7 +35,7 @@ const matrices = {
 const shared = {
   gl: null as WebGL2RenderingContext | WebGLRenderingContext | null,
   resizeCount: 0,
-  blurKernelSize: 16,
+  blurKernelSize: 8,
   canvasWidth: 0,
   canvasHeight: 0,
   textureWidth: 1,
@@ -735,7 +735,7 @@ void main() {
   // gl_FragColor = vec4(texture2D(blurSampler, vuv).a, 0., 0., 1.);
   vec4 clearColor = texture2D(clearSampler, vuv);
   vec4 blurColor = texture2D(blurSampler, vuv);
-  float t = blurColor.a;
+  float t = max(pow(max(blurColor.a, 0.00001), 0.125), 0.5);
 
   vec4 lerpColor = (1. - t) * clearColor + (t) * blurColor;
   lerpColor.a = 1.0;
@@ -762,8 +762,6 @@ void main (void) {
             + texture2D(readTexture, vuv + float(i)*dv) * kernel[i];
   }
 
-  // gl_FragColor = color;
-  color.r = 0.75; // debug
   gl_FragColor = color;
 }
 `
