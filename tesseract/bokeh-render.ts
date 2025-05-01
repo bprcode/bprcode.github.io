@@ -69,6 +69,7 @@ type particle = {
   age: number
   spawnDelay: number
   color: [number, number, number, number]
+  scale: number
 }
 
 const particles = [] as particle[]
@@ -93,9 +94,17 @@ function init() {
     throw Error('No bokeh canvas found')
   }
 
-  shared.gl = canvas.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: false })
+  shared.gl = canvas.getContext('webgl2', {
+    alpha: true,
+    premultipliedAlpha: true,
+    antialias: false,
+  })
   if (!shared.gl) {
-    shared.gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: false })
+    shared.gl = canvas.getContext('webgl', {
+      alpha: true,
+      premultipliedAlpha: true,
+      antialias: false,
+    })
 
     if (!shared.gl) {
       throw Error('Unable to create bokeh rendering context')
@@ -113,7 +122,11 @@ function init() {
 
   // Particle pass initialization
   const hexVertShader = createShader(gl, gl.VERTEX_SHADER, shaders.vertEx)
-  const hexFragShader = createShader(gl, gl.FRAGMENT_SHADER, shaders.alphaFromFocus)
+  const hexFragShader = createShader(
+    gl,
+    gl.FRAGMENT_SHADER,
+    shaders.alphaFromFocus
+  )
   shared.hexagonProgram = createProgram(gl, hexVertShader, hexFragShader)
 
   const texVertShader = createShader(gl, gl.VERTEX_SHADER, shaders.texVert)
@@ -123,12 +136,19 @@ function init() {
   const blurShader = createShader(gl, gl.FRAGMENT_SHADER, shaders.blur1d)
   shared.blurProgram = createProgram(gl, texVertShader, blurShader)
 
-  const compositorShader = createShader(gl, gl.FRAGMENT_SHADER, shaders.compositor)
+  const compositorShader = createShader(
+    gl,
+    gl.FRAGMENT_SHADER,
+    shaders.compositor
+  )
   shared.compositorProgram = createProgram(gl, texVertShader, compositorShader)
 
   locations.position = gl.getAttribLocation(shared.hexagonProgram, 'position')
   locations.aspect = gl.getUniformLocation(shared.hexagonProgram, 'aspect')
-  locations.positionMax = gl.getUniformLocation(shared.hexagonProgram, 'positionMax')
+  locations.positionMax = gl.getUniformLocation(
+    shared.hexagonProgram,
+    'positionMax'
+  )
   locations.transform = gl.getUniformLocation(
     shared.hexagonProgram,
     'transform'
@@ -157,8 +177,14 @@ function init() {
     normalizedGaussianKernel(0.1, shared.blurKernelSize)
   )
 
-  locations.blurSampler = gl.getUniformLocation(shared.compositorProgram, 'blurSampler')
-  locations.clearSampler = gl.getUniformLocation(shared.compositorProgram, 'clearSampler')
+  locations.blurSampler = gl.getUniformLocation(
+    shared.compositorProgram,
+    'blurSampler'
+  )
+  locations.clearSampler = gl.getUniformLocation(
+    shared.compositorProgram,
+    'clearSampler'
+  )
 
   // Textured surface initialization
   locations.xy = gl.getAttribLocation(shared.flatProgram, 'xy')
@@ -360,6 +386,7 @@ function addParticle() {
     spawnDelay: 0,
     age: 0,
     color: Math.random() > 0.5 ? [0.2, 0.3, 1, 1] : [1, 0.25, 0.3, 1],
+    scale: 0.9 + 0.2 * Math.random()
   })
 }
 
@@ -383,9 +410,8 @@ function updateParticles(dt: number) {
       continue
     }
 
-    particles[i].color[3] = Math.sin(
-      (Math.PI * particles[i].age) / particles[i].lifetime
-    ) ** 2
+    particles[i].color[3] =
+      Math.sin((Math.PI * particles[i].age) / particles[i].lifetime) ** 2
   }
 }
 
@@ -511,11 +537,11 @@ function renderHexagons() {
   gl.uniformMatrix4fv(locations.project, false, matrices.project)
 
   for (const p of particles) {
-    if(p.spawnDelay > 0) {
+    if (p.spawnDelay > 0) {
       continue
     }
 
-    gl.uniform1f(locations.focus, Math.sin(Math.PI * p.age / p.lifetime))
+    gl.uniform1f(locations.focus, Math.sin((Math.PI * p.age) / p.lifetime))
     // particles[i].color[3] = Math.sin(
     //   (Math.PI * particles[i].age) / particles[i].lifetime
     // )
@@ -525,7 +551,7 @@ function renderHexagons() {
     mult4(
       matrices.transform,
       rotateXY(Math.PI / 10),
-      scaleMatrix(shared.sceneScale / 4)
+      scaleMatrix(p.scale * shared.sceneScale / 4)
     )
     mult4(
       matrices.transform,
@@ -560,10 +586,30 @@ function render() {
   renderHexagons()
   resolveAA()
 
-  renderBlur(1/shared.textureWidth, 0, shared.textureList[0], shared.fboList[1])
-  renderBlur(0, 1/shared.textureHeight, shared.textureList[1], shared.fboList[2])
-  renderBlur(1/shared.textureWidth, 0, shared.textureList[2], shared.fboList[1])
-  renderBlur(0, 1/shared.textureHeight, shared.textureList[1], shared.fboList[2])
+  renderBlur(
+    1 / shared.textureWidth,
+    0,
+    shared.textureList[0],
+    shared.fboList[1]
+  )
+  renderBlur(
+    0,
+    1 / shared.textureHeight,
+    shared.textureList[1],
+    shared.fboList[2]
+  )
+  renderBlur(
+    1 / shared.textureWidth,
+    0,
+    shared.textureList[2],
+    shared.fboList[1]
+  )
+  renderBlur(
+    0,
+    1 / shared.textureHeight,
+    shared.textureList[1],
+    shared.fboList[2]
+  )
 
   // renderFlatTexture(shared.textureList[2])
   // renderFlatTexture(shared.textureList[0])
@@ -759,7 +805,8 @@ void main() {
   // gl_FragColor = lerpColor;
 
 
-  gl_FragColor = lerpColor * 0.25 * pow(r, 4.0) * v + vec4(0.0, 0.005, 0.02, 0.0);
+  gl_FragColor = lerpColor * 0.25 * pow(r, 4.0) * v
+    + vec4(0.0, 0.005, 0.02, 0.0);
 }
 `
 
