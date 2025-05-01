@@ -506,6 +506,10 @@ function renderHexagons() {
   gl.uniformMatrix4fv(locations.project, false, matrices.project)
 
   for (const p of particles) {
+    if(p.spawnDelay > 0) {
+      continue
+    }
+    
     gl.uniform1f(locations.focus, p.color[3])
 
     ident(matrices.transform)
@@ -678,9 +682,8 @@ uniform float focus;
 varying vec4 projected;
 
 void main() {
-  // gl_FragColor = rgba;
   vec4 multiplied = rgba * rgba.a;
-  multiplied.a = focus;
+  multiplied.a = 1. - focus;
 
   gl_FragColor = multiplied;
 }
@@ -725,13 +728,14 @@ uniform sampler2D clearSampler;
 varying mediump vec2 vuv;
 
 void main() {
-  vec4 clearColor = texture2D(clearSampler, vuv);
-  vec4 blurColor = texture2D(blurSampler, vuv);
-  float t = blurColor.a;
+  gl_FragColor = vec4(texture2D(blurSampler, vuv).a, 0., 0., 1.);
+  // vec4 clearColor = texture2D(clearSampler, vuv);
+  // vec4 blurColor = texture2D(blurSampler, vuv);
+  // float t = blurColor.a;
 
-  vec4 lerpColor = t * clearColor + (1. - t) * blurColor;
-  lerpColor.a = 1.0;
-  gl_FragColor = lerpColor;
+  // vec4 lerpColor = t * clearColor + (1. - t) * blurColor;
+  // lerpColor.a = 1.0;
+  // gl_FragColor = lerpColor;
 }
 `
 
