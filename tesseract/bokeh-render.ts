@@ -332,7 +332,7 @@ function updateSize() {
       shared.textureWidth +
       ', ' +
       shared.textureHeight +
-      ' #: ' +
+      ' # p: ' +
       shared.maxParticles
   }
 
@@ -351,10 +351,10 @@ function addParticle() {
       -shared.yMax + 2 * shared.yMax * Math.random(),
       0,
     ],
-    lifetime: 2,
+    lifetime: 2 + Math.random() * 4,
     spawnDelay: 0,
     age: 0,
-    color: [0, 1, 1, 1],
+    color: Math.random() > 0.5 ? [0.2, 0.3, 1, 1] : [1, 0.25, 0.3, 1],
   })
 }
 
@@ -736,11 +736,12 @@ void main() {
   vec4 blurColor = texture2D(blurSampler, vuv);
   float t = max(pow(max(blurColor.a, 0.00001), 0.125), 0.5);
   float r = min(1.0, 2.0 * length(vuv - vec2(0.5, 0.5)));
+  float v = cos(3.14159 * abs(vuv.y - 0.5));
 
 
   vec4 lerpColor = (1. - t) * clearColor + (t) * blurColor;
   lerpColor.a = 1.0;
-  gl_FragColor = lerpColor * 0.1 * pow(r, 4.0) + vec4(0.0, 0.005, 0.02, 0.0);
+  gl_FragColor = lerpColor * 0.15 * pow(r, 4.0) * v + vec4(0.0, 0.005, 0.02, 0.0);
 }
 `
 
