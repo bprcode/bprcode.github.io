@@ -735,10 +735,12 @@ void main() {
   vec4 clearColor = texture2D(clearSampler, vuv);
   vec4 blurColor = texture2D(blurSampler, vuv);
   float t = max(pow(max(blurColor.a, 0.00001), 0.125), 0.5);
+  float r = min(1.0, 2.0 * length(vuv - vec2(0.5, 0.5)));
+
 
   vec4 lerpColor = (1. - t) * clearColor + (t) * blurColor;
   lerpColor.a = 1.0;
-  gl_FragColor = lerpColor;
+  gl_FragColor = lerpColor * 0.1 * pow(r, 4.0) + vec4(0.0, 0.005, 0.02, 0.0);
 }
 `
 
