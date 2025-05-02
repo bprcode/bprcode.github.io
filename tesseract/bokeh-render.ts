@@ -6,6 +6,7 @@ import {
   scaleMatrix,
   translateMatrix,
 } from './sundry-matrix'
+import * as tesseract from './tesseract-controller'
 
 const shaders: { [k: string]: string } = {}
 const geometry: { [k: string]: number[] } = {}
@@ -61,9 +62,13 @@ const shared = {
   rbAA: null as WebGLRenderbuffer | null,
   fboList: [] as WebGLFramebuffer[],
   textureList: [] as WebGLTexture[],
+  activeColorSet: [
+    [0.5, 0, 0.25],
+    [0.25, 0.5, 0],
+  ] as [number, number, number][],
 }
 
-type particle = {
+type Particle = {
   position: [number, number, number]
   lifetime: number
   age: number
@@ -72,7 +77,20 @@ type particle = {
   scale: number
 }
 
-const particles = [] as particle[]
+type Light4D = {
+  xyzw: [number, number, number, number]
+  rgba: [number, number, number, number]
+}
+
+type TesseractAnimation = {
+  title: string
+  lighting: {
+    diffuseLights: Light4D[]
+    specularLights: Light4D[]
+  }
+}
+
+const particles = [] as Particle[]
 
 function getSceneScale() {
   const renderCanvas = document.querySelector('.render-canvas')
@@ -85,6 +103,30 @@ function getSceneScale() {
   }
 
   return renderCanvas.clientHeight / document.documentElement.clientHeight
+}
+
+function handleTesseractCycle(animation: TesseractAnimation) {
+  const colorList: [number, number, number][] = []
+  const excludeNegative = ({ rgba }) =>
+    rgba[0] >= 0 && rgba[1] >= 0 && rgba[2] >= 0
+  const excludeBlank = ({ rgba }) =>
+    rgba[0] !== 0 || rgba[1] !== 0 || rgba[2] !== 0
+
+  for (const { rgba } of animation.lighting.diffuseLights
+    .filter(excludeNegative)
+    .filter(excludeBlank)) {
+    colorList.push([rgba[0], rgba[1], rgba[2]])
+  }
+
+  for (const { rgba } of animation.lighting.specularLights
+    .filter(excludeNegative)
+    .filter(excludeBlank)) {
+    colorList.push([rgba[0], rgba[1], rgba[2]])
+  }
+
+  if (colorList.length) {
+    shared.activeColorSet = colorList
+  }
 }
 
 function init() {
@@ -113,6 +155,16 @@ function init() {
 
   const gl = shared.gl
   window.addEventListener('resize', updateSize)
+
+  if (tesseract.state.currentAnimation) {
+    handleTesseractCycle(tesseract.state.currentAnimation as TesseractAnimation)
+  }
+
+  window.addEventListener('tesseract-change', ((
+    e: CustomEvent<TesseractAnimation>
+  ) => {
+    handleTesseractCycle(e.detail)
+  }) as EventListener)
 
   // Create antialiasing buffer objects, if possible:
   if (gl instanceof WebGL2RenderingContext) {
@@ -385,8 +437,13 @@ function addParticle() {
     lifetime: 2 + Math.random() * 4,
     spawnDelay: 0,
     age: 0,
-    color: Math.random() > 0.5 ? [0.2, 0.3, 1, 1] : [1, 0.25, 0.3, 1],
-    scale: 0.9 + 0.2 * Math.random()
+    color: [
+      ...shared.activeColorSet[
+        Math.floor(Math.random() * shared.activeColorSet.length)
+      ],
+      1,
+    ],
+    scale: 0.9 + 0.2 * Math.random(),
   })
 }
 
@@ -551,7 +608,7 @@ function renderHexagons() {
     mult4(
       matrices.transform,
       rotateXY(Math.PI / 10),
-      scaleMatrix(p.scale * shared.sceneScale / 4)
+      scaleMatrix((p.scale * shared.sceneScale) / 4)
     )
     mult4(
       matrices.transform,

@@ -855,9 +855,16 @@ function startDemo () {
     callback: startNextAnimation
   })
 
+  window.dispatchEvent(new CustomEvent('tesseract-change', {
+    detail: state.currentAnimation}
+  ))
+
   function startNextAnimation () {
     const nextAnimation = state.upcomingAnimations.shift()
     state.currentAnimation = nextAnimation
+    window.dispatchEvent(new CustomEvent('tesseract-change', {
+      detail: state.currentAnimation}
+    ))
 
     if (!state.upcomingAnimations.length) { shuffleUpcoming() }
 
