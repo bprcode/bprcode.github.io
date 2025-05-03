@@ -25,7 +25,6 @@ const locations = {
   positionMax: null as WebGLUniformLocation | null,
   transform: null as WebGLUniformLocation | null,
   project: null as WebGLUniformLocation | null,
-  focus: null as WebGLUniformLocation | null,
   rgba: null as WebGLUniformLocation | null,
 }
 
@@ -177,7 +176,7 @@ function init() {
   const hexFragShader = createShader(
     gl,
     gl.FRAGMENT_SHADER,
-    shaders.alphaFromFocus
+    shaders.premultiplyAlpha
   )
   shared.hexagonProgram = createProgram(gl, hexVertShader, hexFragShader)
 
@@ -205,7 +204,6 @@ function init() {
     shared.hexagonProgram,
     'transform'
   )
-  locations.focus = gl.getUniformLocation(shared.hexagonProgram, 'focus')
   locations.project = gl.getUniformLocation(shared.hexagonProgram, 'project')
   locations.rgba = gl.getUniformLocation(shared.hexagonProgram, 'rgba')
   shared.hexagonVertBuffer = gl.createBuffer()
@@ -598,8 +596,6 @@ function renderHexagons() {
       continue
     }
 
-    gl.uniform1f(locations.focus, Math.sin((Math.PI * p.age) / p.lifetime))
-
     ident(matrices.transform)
 
     mult4(
@@ -665,6 +661,7 @@ function render() {
     shared.fboList[2]
   )
 
+  // renderFlatTexture(shared.textureList[2])
   renderComposite()
 }
 
@@ -787,16 +784,15 @@ void main() {
 }
 `
 
-shaders.alphaFromFocus = /* glsl */ `
+shaders.premultiplyAlpha = /* glsl */ `
 precision mediump float;
 uniform vec4 rgba;
-uniform float focus;
 
 varying vec4 projected;
 
 void main() {
   vec4 multiplied = rgba * rgba.a;
-  multiplied.a = 1. - focus;
+  multiplied.a = rgba.a;
 
   gl_FragColor = multiplied;
 }
