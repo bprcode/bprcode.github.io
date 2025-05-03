@@ -599,9 +599,6 @@ function renderHexagons() {
     }
 
     gl.uniform1f(locations.focus, Math.sin((Math.PI * p.age) / p.lifetime))
-    // particles[i].color[3] = Math.sin(
-    //   (Math.PI * particles[i].age) / particles[i].lifetime
-    // )
 
     ident(matrices.transform)
 
@@ -667,9 +664,6 @@ function render() {
     shared.textureList[1],
     shared.fboList[2]
   )
-
-  // renderFlatTexture(shared.textureList[2])
-  // renderFlatTexture(shared.textureList[0])
 
   renderComposite()
 }
@@ -847,23 +841,32 @@ uniform sampler2D clearSampler;
 varying mediump vec2 vuv;
 
 void main() {
-  // gl_FragColor = vec4(texture2D(blurSampler, vuv).a, 0., 0., 1.);
-  vec4 clearColor = texture2D(clearSampler, vuv);
-  vec4 blurColor = texture2D(blurSampler, vuv);
-  float r = min(1.0, 2.0 * length(vuv - vec2(0.5, 0.5)));
-  // float t = max(pow(max(blurColor.a, 0.00001), 0.125), 0.5);
-  float t = 1.0  - pow(1.0 - r, 0.85);
+  const float aberration = 0.01;
+  vec2 deltaCenter = vuv - vec2(0.5, 0.5);
+  float boundedDistance = min(length(deltaCenter), 1.0);
+  vec2 radialOffset = normalize(deltaCenter) * boundedDistance * aberration;
+  float r = min(1.0, 2.0 * length(deltaCenter));
+  float t = 1.0  - pow(1.0 - r, 0.95);
+
+  vec4 farSample = texture2D(clearSampler, vuv + radialOffset) * (1.0 - t)
+    + texture2D(blurSampler, vuv + radialOffset) * t;
+  vec4 centerSample = texture2D(clearSampler, vuv) * (1.0 - t)
+    + texture2D(blurSampler, vuv) * t;
+  vec4 nearSample = texture2D(clearSampler, vuv - radialOffset) * (1.0 - t)
+    + texture2D(blurSampler, vuv - radialOffset) * t;
+
   float v = cos(3.14159 * abs(vuv.y - 0.5));
 
 
-  // gl_FragColor = vec4(t, 0, 0, 1);
-  vec4 lerpColor = (1. - t) * clearColor + (t) * blurColor;
-  lerpColor.a = 1.0;
-  // gl_FragColor = lerpColor;
+  vec4 aberrantColor = vec4(farSample.r, centerSample.g, nearSample.b, 1.0);
+  // vec4 lerpColor = (1. - t) * clearColor + (t) * blurColor;
+  // lerpColor.a = 1.0;
 
 
-  gl_FragColor = lerpColor * 0.25 * pow(r, 4.0) * v
+  gl_FragColor = aberrantColor * 0.75 * pow(r, 4.0) * v
     + vec4(0.0, 0.005, 0.02, 0.0);
+  // gl_FragColor = lerpColor * 0.25 * pow(r, 4.0) * v
+  //   + vec4(0.0, 0.005, 0.02, 0.0);
 }
 `
 
