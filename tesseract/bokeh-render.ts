@@ -63,8 +63,8 @@ const shared = {
   fboList: [] as WebGLFramebuffer[],
   textureList: [] as WebGLTexture[],
   activeColorSet: [
-    [0.5, 0, 0.25],
-    [0.25, 0.5, 0],
+    [0.3, 0.1, 0.15],
+    [0.1, 0.25, 0.3],
   ] as [number, number, number][],
 }
 
@@ -841,32 +841,36 @@ uniform sampler2D clearSampler;
 varying mediump vec2 vuv;
 
 void main() {
-  const float aberration = 0.01;
+  const float aberration = 0.008;
   vec2 deltaCenter = vuv - vec2(0.5, 0.5);
-  float boundedDistance = min(length(deltaCenter), 1.0);
+  float boundedDistance = min(pow(length(deltaCenter) + 0.001, 0.25), 1.0);
   vec2 radialOffset = normalize(deltaCenter) * boundedDistance * aberration;
   float r = min(1.0, 2.0 * length(deltaCenter));
   float t = 1.0  - pow(1.0 - r, 0.95);
 
-  vec4 farSample = texture2D(clearSampler, vuv + radialOffset) * (1.0 - t)
-    + texture2D(blurSampler, vuv + radialOffset) * t;
-  vec4 centerSample = texture2D(clearSampler, vuv) * (1.0 - t)
-    + texture2D(blurSampler, vuv) * t;
-  vec4 nearSample = texture2D(clearSampler, vuv - radialOffset) * (1.0 - t)
-    + texture2D(blurSampler, vuv - radialOffset) * t;
+  vec3 near = vec3(texture2D(clearSampler, vuv + radialOffset) * (1.0 - t)
+    + texture2D(blurSampler, vuv + radialOffset) * t);
+  vec3 seminear = vec3(texture2D(clearSampler, vuv + 0.5 * radialOffset) * (1.0 - t)
+    + texture2D(blurSampler, vuv + 0.5 * radialOffset) * t);
+  vec3 middle = vec3(texture2D(clearSampler, vuv) * (1.0 - t)
+    + texture2D(blurSampler, vuv) * t);
+  vec3 semifar = vec3(texture2D(clearSampler, vuv - 0.5 * radialOffset) * (1.0 - t)
+    + texture2D(blurSampler, vuv - 0.5 * radialOffset) * t);
+  vec3 far = vec3(texture2D(clearSampler, vuv - radialOffset) * (1.0 - t)
+    + texture2D(blurSampler, vuv - radialOffset) * t);
 
   float v = cos(3.14159 * abs(vuv.y - 0.5));
 
-
-  vec4 aberrantColor = vec4(farSample.r, centerSample.g, nearSample.b, 1.0);
-  // vec4 lerpColor = (1. - t) * clearColor + (t) * blurColor;
-  // lerpColor.a = 1.0;
-
+  far *=      vec3(0.,   0.,   0.6);
+  semifar *=  vec3(0.,   0.3,  0.3);
+  middle *=   vec3(0.1,  0.4,  0.1);
+  seminear *= vec3(0.3,  0.3,  0.);
+  near *=     vec3(0.6,  0.,   0.);
+  
+  vec4 aberrantColor = vec4(far + semifar + middle + seminear + near, 1.0);
 
   gl_FragColor = aberrantColor * 0.75 * pow(r, 4.0) * v
     + vec4(0.0, 0.005, 0.02, 0.0);
-  // gl_FragColor = lerpColor * 0.25 * pow(r, 4.0) * v
-  //   + vec4(0.0, 0.005, 0.02, 0.0);
 }
 `
 
