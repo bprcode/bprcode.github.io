@@ -103,15 +103,15 @@ noscript {
   place-items: center;
 }
 
-.overlay-grid::before {
-  z-index: -2;
+/* .overlay-grid::before { */
+  /* z-index: -2;
   content: '';
   display: block;
   position: absolute;
   top: 0px;
   width: 100vw;
-  height: 100%;
-  background-image: radial-gradient(
+  height: 100%; */
+  /* background-image: radial-gradient(
       230vw 30vh at 55vw 112vh,
       #000 45%,
       transparent
@@ -127,6 +127,32 @@ noscript {
       #000,
       #020204 35%,
       #403866 98%
+    ); */
+/* } */
+
+.overlay-test {
+  z-index: 3;
+  pointer-events: none;
+  position: fixed;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  height: 100vh;
+  height: 100dvh;
+
+  box-shadow: inset 0 0 1rem orange;
+
+  /* background-image: radial-gradient(
+      230vw 30vh at 55vw 112vh,
+      #000 45%,
+      transparent
+    ),
+    radial-gradient(230vw 200vh at 55vw 112vh, #000, #020204 35%, #403866 98%); */
+  background-image: radial-gradient(
+      230lvw 200lvh at 55lvw 112lvh,
+      #aff0,
+      #aaffff08 35%,
+      #ddeeff10 98%
     );
 }
 

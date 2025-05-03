@@ -492,13 +492,16 @@ function renderBlur(
   blurX: number,
   blurY: number,
   fromTexture: WebGLTexture,
-  toFbo: WebGLFramebuffer
+  toFbo: WebGLFramebuffer,
+  needClear = true,
 ) {
   const gl = shared.gl!
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, toFbo)
-  // debug -- can skip some of these clears:
-  gl.clear(gl.COLOR_BUFFER_BIT)
+  if(needClear) {
+    gl.clear(gl.COLOR_BUFFER_BIT)
+  }
+  gl.blendFunc(gl.ONE, gl.ONE)
 
   gl.viewport(0, 0, shared.textureWidth, shared.textureHeight)
   gl.useProgram(shared.blurProgram)
@@ -578,7 +581,6 @@ function renderHexagons() {
   gl.viewport(0, 0, shared.textureWidth, shared.textureHeight)
 
   gl.clear(gl.COLOR_BUFFER_BIT)
-  // debug -- is this what we want?
   gl.blendFunc(gl.ONE, gl.ONE)
 
   gl.useProgram(shared.hexagonProgram)
@@ -640,25 +642,29 @@ function render() {
     1 / shared.textureWidth,
     0,
     shared.textureList[0],
-    shared.fboList[1]
+    shared.fboList[1],
+    true,
   )
   renderBlur(
     0,
     1 / shared.textureHeight,
     shared.textureList[1],
-    shared.fboList[2]
+    shared.fboList[2],
+    true,
   )
   renderBlur(
     1 / shared.textureWidth,
     0,
     shared.textureList[2],
-    shared.fboList[1]
+    shared.fboList[1],
+    false,
   )
   renderBlur(
     0,
     1 / shared.textureHeight,
     shared.textureList[1],
-    shared.fboList[2]
+    shared.fboList[2],
+    false,
   )
 
   // renderFlatTexture(shared.textureList[2])
