@@ -842,13 +842,18 @@ function startDemo () {
   const zeroVelocities = Array(12).fill(0)
 
   shuffleUpcoming()
-  const firstAnimation = state.upcomingAnimations.shift()
+  // DEBUG
+  // const firstAnimation = state.upcomingAnimations.shift()
+  const firstAnimation = state.animationSet.find(x => x.title === 'captured light')
   state.currentAnimation = firstAnimation
   state.modelL = Quaternion.from(firstAnimation.modelL)
   state.modelR = Quaternion.from(firstAnimation.modelR)
   state.animationSpeeds = [...firstAnimation.animationSpeeds]
   // Turn the lights off for the first appearance:
   state.lighting = new Lighting
+
+  // DEBUG
+  return
 
   state.countdowns.push({
     remaining: holdTime,

@@ -844,29 +844,29 @@ void main() {
   float r = min(1.0, 2.0 * length(deltaCenter));
   float t = 1.0  - pow(1.0 - r, 0.95);
 
-  vec3 near = vec3(texture2D(clearSampler, vuv + radialOffset) * (1.0 - t)
-    + texture2D(blurSampler, vuv + radialOffset) * t);
-  vec3 seminear = vec3(texture2D(clearSampler, vuv + 0.5 * radialOffset) * (1.0 - t)
-    + texture2D(blurSampler, vuv + 0.5 * radialOffset) * t);
-  vec3 middle = vec3(texture2D(clearSampler, vuv) * (1.0 - t)
-    + texture2D(blurSampler, vuv) * t);
-  vec3 semifar = vec3(texture2D(clearSampler, vuv - 0.5 * radialOffset) * (1.0 - t)
-    + texture2D(blurSampler, vuv - 0.5 * radialOffset) * t);
-  vec3 far = vec3(texture2D(clearSampler, vuv - radialOffset) * (1.0 - t)
-    + texture2D(blurSampler, vuv - radialOffset) * t);
+  vec4 near = texture2D(clearSampler, vuv + radialOffset) * (1.0 - t)
+    + texture2D(blurSampler, vuv + radialOffset) * t;
+  vec4 seminear = texture2D(clearSampler, vuv + 0.5 * radialOffset) * (1.0 - t)
+    + texture2D(blurSampler, vuv + 0.5 * radialOffset) * t;
+  vec4 middle = texture2D(clearSampler, vuv) * (1.0 - t)
+    + texture2D(blurSampler, vuv) * t;
+  vec4 semifar = texture2D(clearSampler, vuv - 0.5 * radialOffset) * (1.0 - t)
+    + texture2D(blurSampler, vuv - 0.5 * radialOffset) * t;
+  vec4 far = texture2D(clearSampler, vuv - radialOffset) * (1.0 - t)
+    + texture2D(blurSampler, vuv - radialOffset) * t;
 
   float v = cos(3.14159 * abs(vuv.y - 0.5));
 
-  far *=      vec3(0.,   0.,   0.6);
-  semifar *=  vec3(0.,   0.3,  0.3);
-  middle *=   vec3(0.1,  0.4,  0.1);
-  seminear *= vec3(0.3,  0.3,  0.);
-  near *=     vec3(0.6,  0.,   0.);
+  far *=      vec4(0.,   0.,   0.6,   0.2);
+  semifar *=  vec4(0.,   0.3,  0.3,   0.2);
+  middle *=   vec4(0.1,  0.4,  0.1,   0.2);
+  seminear *= vec4(0.3,  0.3,  0.,    0.2);
+  near *=     vec4(0.6,  0.,   0.,    0.2);
   
-  vec4 aberrantColor = vec4(far + semifar + middle + seminear + near, 1.0);
+  vec4 aberrantColor = far + semifar + middle + seminear + near;
+  vec4 vignetteColor = aberrantColor * 0.75 * pow(r, 4.0) * v;
 
-  gl_FragColor = aberrantColor * 0.75 * pow(r, 4.0) * v
-    + vec4(0.0, 0.005, 0.02, 0.0);
+  gl_FragColor = vignetteColor;
 }
 `
 
