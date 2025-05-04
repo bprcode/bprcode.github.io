@@ -23,6 +23,7 @@ const locations = {
   blurSampler: null as WebGLUniformLocation | null,
   clearSampler: null as WebGLUniformLocation | null,
   aspect: null as WebGLUniformLocation | null,
+  boost: null as WebGLUniformLocation | null,
   positionMax: null as WebGLUniformLocation | null,
   transform: null as WebGLUniformLocation | null,
   project: null as WebGLUniformLocation | null,
@@ -62,6 +63,7 @@ const shared = {
   rbAA: null as WebGLRenderbuffer | null,
   fboList: [] as WebGLFramebuffer[],
   textureList: [] as WebGLTexture[],
+  orbitLight: [1, 0, 0] as [number, number, number],
   activeColorSet: [
     [0.3, 0.1, 0.15],
     [0.1, 0.25, 0.3],
@@ -186,7 +188,7 @@ function init() {
   }
 
   // Particle pass initialization
-  const hexVertShader = createShader(gl, gl.VERTEX_SHADER, shaders.vertEx)
+  const hexVertShader = createShader(gl, gl.VERTEX_SHADER, shaders.flatLensVert)
   const hexFragShader = createShader(
     gl,
     gl.FRAGMENT_SHADER,
@@ -210,6 +212,7 @@ function init() {
 
   locations.position = gl.getAttribLocation(shared.hexagonProgram, 'position')
   locations.aspect = gl.getUniformLocation(shared.hexagonProgram, 'aspect')
+  locations.boost = gl.getUniformLocation(shared.hexagonProgram, 'boost')
   locations.positionMax = gl.getUniformLocation(
     shared.hexagonProgram,
     'positionMax'
@@ -428,9 +431,9 @@ function addParticle() {
     position: [
       -shared.xMax + 2 * shared.xMax * Math.random(),
       -shared.yMax + 2 * shared.yMax * Math.random(),
-      0,
+      2 * (Math.random() - 0.5),
     ],
-    lifetime: 2 + Math.random() * 4,
+    lifetime: 3 + Math.random() * 5,
     spawnDelay: 0,
     age: 0,
     color: [...shared.activeColorSet[colorIndex], 1],
@@ -490,6 +493,16 @@ function animate(t: number) {
   shared.tLast = t
 
   shared.elapsed += dt
+  shared.elapsed %= 86400
+
+  const theta = (Math.PI * 2 * shared.elapsed) / 5
+  const phi = (Math.PI * 2 * shared.elapsed) / 7
+
+  shared.orbitLight = [
+    Math.cos(theta) * Math.cos(phi),
+    -Math.cos(theta) * Math.sin(phi),
+    Math.sin(theta),
+  ]
 
   updateParticles(dt)
   render()
@@ -589,7 +602,6 @@ function renderHexagons() {
   gl.viewport(0, 0, shared.textureWidth, shared.textureHeight)
 
   gl.clear(gl.COLOR_BUFFER_BIT)
-  // debug -- is this what we want?
   gl.blendFunc(gl.ONE, gl.ONE)
 
   gl.useProgram(shared.hexagonProgram)
@@ -622,6 +634,15 @@ function renderHexagons() {
 
     gl.uniform4fv(locations.rgba, p.color)
     gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
+
+    const boost = Math.max(
+      0,
+      (shared.orbitLight[0] * p.position[0] +
+        shared.orbitLight[1] * p.position[1] +
+        shared.orbitLight[2] * p.position[2]) /
+        Math.sqrt(p.position[0] ** 2 + p.position[1] ** 2 + p.position[2] ** 2)
+    )
+    gl.uniform1f(locations.boost, 1.0 + 0.5 * boost ** 4)
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
   }
 
@@ -777,7 +798,7 @@ geometry.hexagon = [
 
 geometry.square = [-1, 1, 1, 1, 1, -1, -1, -1]
 
-shaders.vertEx = /* glsl */ `
+shaders.flatLensVert = /* glsl */ `
 uniform float aspect;
 uniform vec2 positionMax;
 uniform mat4 transform;
@@ -801,12 +822,13 @@ void main() {
 
 shaders.premultiplyAlpha = /* glsl */ `
 precision mediump float;
+uniform float boost;
 uniform vec4 rgba;
 
 varying vec4 projected;
 
 void main() {
-  vec4 multiplied = rgba * rgba.a;
+  vec4 multiplied = rgba * rgba.a * boost;
   multiplied.a = rgba.a;
 
   gl_FragColor = multiplied;
