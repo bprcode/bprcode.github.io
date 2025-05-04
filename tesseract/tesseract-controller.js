@@ -843,8 +843,9 @@ function startDemo () {
 
   shuffleUpcoming()
   // DEBUG
-  // const firstAnimation = state.upcomingAnimations.shift()
-  const firstAnimation = state.animationSet.find(x => x.title === 'blossom')
+  // const firstAnimation = state.animationSet.find(x => x.title === 'chromophore')
+  const firstAnimation = state.upcomingAnimations.shift()
+
   state.currentAnimation = firstAnimation
   state.modelL = Quaternion.from(firstAnimation.modelL)
   state.modelR = Quaternion.from(firstAnimation.modelR)

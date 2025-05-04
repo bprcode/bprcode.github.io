@@ -319,7 +319,6 @@ function updateSize() {
   const gl = shared.gl
   const canvas: HTMLCanvasElement | null =
     document.querySelector('.bokeh-canvas')
-  const checker = document.getElementById('resize-check')
 
   if (!canvas || !gl) {
     return
@@ -412,22 +411,6 @@ function updateSize() {
       gl.UNSIGNED_BYTE,
       null
     )
-  }
-
-  if (checker) {
-    checker.textContent =
-      shared.resizeCount +
-      ' resizes: window largest: ' +
-      Math.max(
-        document.documentElement.clientWidth,
-        document.documentElement.clientHeight
-      ) +
-      ' tex size: ' +
-      shared.textureWidth +
-      ', ' +
-      shared.textureHeight +
-      ' # p: ' +
-      shared.maxParticles
   }
 
   render()
