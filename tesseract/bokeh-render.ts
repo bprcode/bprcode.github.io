@@ -22,7 +22,9 @@ const locations = {
   texSampler: null as WebGLUniformLocation | null,
   blurSampler: null as WebGLUniformLocation | null,
   clearSampler: null as WebGLUniformLocation | null,
-  aspect: null as WebGLUniformLocation | null,
+  uvOrbit: null as WebGLUniformLocation | null,
+  hexAspect: null as WebGLUniformLocation | null,
+  compositorAspect: null as WebGLUniformLocation | null,
   boost: null as WebGLUniformLocation | null,
   positionMax: null as WebGLUniformLocation | null,
   transform: null as WebGLUniformLocation | null,
@@ -38,7 +40,7 @@ const matrices = {
 const shared = {
   gl: null as WebGL2RenderingContext | WebGLRenderingContext | null,
   resizeCount: 0,
-  blurKernelSize: 8,
+  blurKernelSize: 6,
   canvasWidth: 0,
   canvasHeight: 0,
   textureWidth: 1,
@@ -211,7 +213,7 @@ function init() {
   shared.compositorProgram = createProgram(gl, texVertShader, compositorShader)
 
   locations.position = gl.getAttribLocation(shared.hexagonProgram, 'position')
-  locations.aspect = gl.getUniformLocation(shared.hexagonProgram, 'aspect')
+  locations.hexAspect = gl.getUniformLocation(shared.hexagonProgram, 'aspect')
   locations.boost = gl.getUniformLocation(shared.hexagonProgram, 'boost')
   locations.positionMax = gl.getUniformLocation(
     shared.hexagonProgram,
@@ -252,10 +254,12 @@ function init() {
     shared.compositorProgram,
     'clearSampler'
   )
+  locations.uvOrbit = gl.getUniformLocation(shared.compositorProgram, 'uvOrbit')
+  locations.compositorAspect = gl.getUniformLocation(shared.compositorProgram, 'compositorAspect')
 
   // Textured surface initialization
   locations.xy = gl.getAttribLocation(shared.flatProgram, 'xy')
-  locations.uv = gl.getAttribLocation(shared.flatProgram, 'uv')
+  locations.uv = gl.getAttribLocation(shared.flatProgram, 'uvA')
   locations.texSampler = gl.getUniformLocation(shared.flatProgram, 'texSampler')
   shared.flatVertBuffer = gl.createBuffer()
 
@@ -360,6 +364,9 @@ function updateSize() {
   gl.useProgram(shared.hexagonProgram)
   gl.uniform2fv(locations.positionMax, [shared.xMax, shared.yMax])
 
+  gl.useProgram(shared.compositorProgram)
+  gl.uniform1f(locations.compositorAspect, shared.aspect)
+
   // Update renderbuffer storage for antialiasing, if supported:
   if (shared.fboAA && gl instanceof WebGL2RenderingContext) {
     const samples = Math.min(16, gl.getParameter(gl.MAX_SAMPLES))
@@ -429,8 +436,8 @@ function addParticle() {
   const colorIndex = Math.floor(Math.random() * shared.activeColorSet.length)
   particles.push({
     position: [
-      -shared.xMax + 2 * shared.xMax * Math.random(),
-      -shared.yMax + 2 * shared.yMax * Math.random(),
+      shared.xMax * 2 * (Math.random() - 0.5),
+      shared.yMax * 2 * (Math.random() - 0.5),
       2 * (Math.random() - 0.5),
     ],
     lifetime: 3 + Math.random() * 5,
@@ -495,8 +502,8 @@ function animate(t: number) {
   shared.elapsed += dt
   shared.elapsed %= 86400
 
-  const theta = (Math.PI * 2 * shared.elapsed) / 5
-  const phi = (Math.PI * 2 * shared.elapsed) / 7
+  const theta = (Math.PI * 2 * shared.elapsed) / 7
+  const phi = (Math.PI * 2 * shared.elapsed) / 19
 
   shared.orbitLight = [
     Math.cos(theta) * Math.cos(phi),
@@ -567,6 +574,8 @@ function renderComposite() {
   gl.bindTexture(gl.TEXTURE_2D, shared.textureList[2])
   gl.uniform1i(locations.blurSampler, 1)
 
+  gl.uniform2fv(locations.uvOrbit, [(1+shared.orbitLight[0])/2, (1+shared.orbitLight[1])/2])
+
   gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
   gl.disableVertexAttribArray(locations.xy)
   gl.disableVertexAttribArray(locations.uv)
@@ -634,15 +643,13 @@ function renderHexagons() {
 
     gl.uniform4fv(locations.rgba, p.color)
     gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
-
-    const boost = Math.max(
-      0,
-      (shared.orbitLight[0] * p.position[0] +
-        shared.orbitLight[1] * p.position[1] +
-        shared.orbitLight[2] * p.position[2]) /
-        Math.sqrt(p.position[0] ** 2 + p.position[1] ** 2 + p.position[2] ** 2)
-    )
-    gl.uniform1f(locations.boost, 1.0 + 0.5 * boost ** 4)
+    
+    const boost = Math.min(1, 1 / (
+      (shared.xMax * shared.orbitLight[0] - p.position[0])**2 +
+      (shared.yMax * shared.orbitLight[1] - p.position[1])**2 +
+      (shared.orbitLight[2] - p.position[2])**2
+    ))
+    gl.uniform1f(locations.boost, 1.0 + 0.75 * boost ** 2)
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
   }
 
@@ -697,7 +704,6 @@ function render() {
     false
   )
 
-  // renderFlatTexture(shared.textureList[2])
   renderComposite()
 }
 
@@ -837,22 +843,22 @@ void main() {
 
 shaders.texVert = /* glsl */ `
 attribute vec2 xy;
-attribute vec2 uv;
-varying mediump vec2 vuv;
+attribute vec2 uvA;
+varying mediump vec2 uv;
 
 void main() {
   gl_Position = vec4(xy, 0, 1);
-  vuv = uv;
+  uv = uvA;
 }
 `
 
 shaders.texFrag = /* glsl */ `
 precision mediump float;
 uniform sampler2D texSampler;
-varying mediump vec2 vuv;
+varying mediump vec2 uv;
 
 void main() {
-  gl_FragColor = texture2D(texSampler, vuv);
+  gl_FragColor = texture2D(texSampler, uv);
 }
 `
 
@@ -860,28 +866,38 @@ shaders.compositor = /* glsl */ `
 precision mediump float;
 uniform sampler2D blurSampler;
 uniform sampler2D clearSampler;
-varying mediump vec2 vuv;
+uniform vec2 uvOrbit;
+uniform float compositorAspect;
+varying mediump vec2 uv;
 
 void main() {
+  vec2 orbitScaled = vec2(uvOrbit.x * compositorAspect, uvOrbit.y);
+  vec2 uvScaled = vec2(uv.x * compositorAspect, uv.y);
+  float emphasis = max(0.,
+    smoothstep(0., 1., 1.0 - length(orbitScaled - uvScaled))
+  );
+
   const float aberration = 0.005;
-  vec2 deltaCenter = vuv - vec2(0.5, 0.5);
+  vec2 deltaCenter = uv - vec2(0.5, 0.5);
   float boundedDistance = min(pow(length(deltaCenter) + 0.001, 0.25), 1.0);
   vec2 radialOffset = normalize(deltaCenter) * boundedDistance * aberration;
   float r = min(1.0, 2.0 * length(deltaCenter));
   float t = 1.0  - pow(1.0 - r, 0.95);
 
-  vec4 near = texture2D(clearSampler, vuv + radialOffset) * (1.0 - t)
-    + texture2D(blurSampler, vuv + radialOffset) * t;
-  vec4 seminear = texture2D(clearSampler, vuv + 0.5 * radialOffset) * (1.0 - t)
-    + texture2D(blurSampler, vuv + 0.5 * radialOffset) * t;
-  vec4 middle = texture2D(clearSampler, vuv) * (1.0 - t)
-    + texture2D(blurSampler, vuv) * t;
-  vec4 semifar = texture2D(clearSampler, vuv - 0.5 * radialOffset) * (1.0 - t)
-    + texture2D(blurSampler, vuv - 0.5 * radialOffset) * t;
-  vec4 far = texture2D(clearSampler, vuv - radialOffset) * (1.0 - t)
-    + texture2D(blurSampler, vuv - radialOffset) * t;
+  t *= 1.0 - 0.75 * emphasis;
 
-  float v = cos(3.14159 * abs(vuv.y - 0.5));
+  vec4 near = texture2D(clearSampler, uv + radialOffset) * (1.0 - t)
+    + texture2D(blurSampler, uv + radialOffset) * t;
+  vec4 seminear = texture2D(clearSampler, uv + 0.5 * radialOffset) * (1.0 - t)
+    + texture2D(blurSampler, uv + 0.5 * radialOffset) * t;
+  vec4 middle = texture2D(clearSampler, uv) * (1.0 - t)
+    + texture2D(blurSampler, uv) * t;
+  vec4 semifar = texture2D(clearSampler, uv - 0.5 * radialOffset) * (1.0 - t)
+    + texture2D(blurSampler, uv - 0.5 * radialOffset) * t;
+  vec4 far = texture2D(clearSampler, uv - radialOffset) * (1.0 - t)
+    + texture2D(blurSampler, uv - radialOffset) * t;
+
+  float v = cos(3.14159 * abs(uv.y - 0.5));
 
   far *=      vec4(0.,   0.,   0.6,   0.2);
   semifar *=  vec4(0.,   0.3,  0.3,   0.2);
@@ -891,7 +907,7 @@ void main() {
   
   vec4 aberrantColor = far + semifar + middle + seminear + near;
   vec4 vignetteColor = aberrantColor * 0.75 * pow(r, 4.0) * v;
-  vec4 curtainedColor = smoothstep(0.0, 0.4, (1. - 2. * abs(vuv.x - 0.5)))
+  vec4 curtainedColor = smoothstep(0.0, 0.4, (1. - 2. * abs(uv.x - 0.5)))
                         * vignetteColor;
 
   gl_FragColor = curtainedColor;
@@ -900,7 +916,7 @@ void main() {
 
 shaders.blur1d = /* glsl */ `
 precision mediump float;
-varying vec2 vuv;
+varying vec2 uv;
 
 uniform sampler2D readTexture;
 #define kernelSize ${shared.blurKernelSize}
@@ -911,10 +927,10 @@ void main (void) {
   vec2 dv = blurStep;
 
   // double-weight on 0 element:
-  vec4 color = texture2D(readTexture, vuv) * kernel[0];
+  vec4 color = texture2D(readTexture, uv) * kernel[0];
   for (int i = 1; i < kernelSize; i++) {
-    color += texture2D(readTexture, vuv - float(i)*dv) * kernel[i]
-            + texture2D(readTexture, vuv + float(i)*dv) * kernel[i];
+    color += texture2D(readTexture, uv - float(i)*dv) * kernel[i]
+            + texture2D(readTexture, uv + float(i)*dv) * kernel[i];
   }
 
   gl_FragColor = color;
