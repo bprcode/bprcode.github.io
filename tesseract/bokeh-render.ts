@@ -492,13 +492,15 @@ function renderBlur(
   blurX: number,
   blurY: number,
   fromTexture: WebGLTexture,
-  toFbo: WebGLFramebuffer
+  toFbo: WebGLFramebuffer,
+  needClear = true
 ) {
   const gl = shared.gl!
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, toFbo)
-  // debug -- can skip some of these clears:
-  gl.clear(gl.COLOR_BUFFER_BIT)
+  if (needClear) {
+    gl.clear(gl.COLOR_BUFFER_BIT)
+  }
 
   gl.viewport(0, 0, shared.textureWidth, shared.textureHeight)
   gl.useProgram(shared.blurProgram)
@@ -640,25 +642,29 @@ function render() {
     1 / shared.textureWidth,
     0,
     shared.textureList[0],
-    shared.fboList[1]
+    shared.fboList[1],
+    true
   )
   renderBlur(
     0,
     1 / shared.textureHeight,
     shared.textureList[1],
-    shared.fboList[2]
+    shared.fboList[2],
+    true
   )
   renderBlur(
     1 / shared.textureWidth,
     0,
     shared.textureList[2],
-    shared.fboList[1]
+    shared.fboList[1],
+    false
   )
   renderBlur(
     0,
     1 / shared.textureHeight,
     shared.textureList[1],
-    shared.fboList[2]
+    shared.fboList[2],
+    false
   )
 
   // renderFlatTexture(shared.textureList[2])
@@ -865,8 +871,10 @@ void main() {
   
   vec4 aberrantColor = far + semifar + middle + seminear + near;
   vec4 vignetteColor = aberrantColor * 0.75 * pow(r, 4.0) * v;
+  vec4 curtainedColor = smoothstep(0.0, 0.4, (1. - 2. * abs(vuv.x - 0.5)))
+                        * vignetteColor;
 
-  gl_FragColor = vignetteColor;
+  gl_FragColor = curtainedColor;
 }
 `
 
