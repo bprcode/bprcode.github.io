@@ -853,9 +853,6 @@ function startDemo () {
   // Turn the lights off for the first appearance:
   state.lighting = new Lighting
 
-  // DEBUG
-  return
-
   state.countdowns.push({
     remaining: holdTime,
     callback: startNextAnimation

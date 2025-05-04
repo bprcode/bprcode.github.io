@@ -74,6 +74,7 @@ type Particle = {
   age: number
   spawnDelay: number
   color: [number, number, number, number]
+  colorIndex: number
   scale: number
 }
 
@@ -422,6 +423,7 @@ function removeParticle(i: number) {
 }
 
 function addParticle() {
+  const colorIndex = Math.floor(Math.random() * shared.activeColorSet.length)
   particles.push({
     position: [
       -shared.xMax + 2 * shared.xMax * Math.random(),
@@ -431,17 +433,16 @@ function addParticle() {
     lifetime: 2 + Math.random() * 4,
     spawnDelay: 0,
     age: 0,
-    color: [
-      ...shared.activeColorSet[
-        Math.floor(Math.random() * shared.activeColorSet.length)
-      ],
-      1,
-    ],
+    color: [...shared.activeColorSet[colorIndex], 1],
+    colorIndex: colorIndex,
     scale: 0.9 + 0.2 * Math.random(),
   })
 }
 
 function updateParticles(dt: number) {
+  const colorHalfLife = 1.125
+  const k = -Math.log(0.5) / colorHalfLife
+
   while (particles.length < shared.maxParticles) {
     addParticle()
     particles[particles.length - 1].spawnDelay = Math.random() * 8
@@ -461,8 +462,20 @@ function updateParticles(dt: number) {
       continue
     }
 
+    const targetColor =
+      shared.activeColorSet[
+        particles[i].colorIndex % shared.activeColorSet.length
+      ]
+    particles[i].color[0] = ease(particles[i].color[0], targetColor[0], dt)
+    particles[i].color[1] = ease(particles[i].color[1], targetColor[1], dt)
+    particles[i].color[2] = ease(particles[i].color[2], targetColor[2], dt)
+
     particles[i].color[3] =
       Math.sin((Math.PI * particles[i].age) / particles[i].lifetime) ** 2
+  }
+
+  function ease(a: number, b: number, t: number) {
+    return b - (b - a) * Math.exp(-k * t)
   }
 }
 
@@ -777,8 +790,8 @@ void main() {
   vec4 transformed = transform * position;
 
   float r = length(vec2(transformed)) / length(positionMax);
-  transformed.x /= 0.9 + r * 0.1;
-  transformed.y /= 0.9 + r * 0.1;
+  transformed.x /= 0.9 + r * 0.1125;
+  transformed.y /= 0.9 + r * 0.1125;
 
   projected = project * transformed;
 
@@ -797,17 +810,6 @@ void main() {
   multiplied.a = rgba.a;
 
   gl_FragColor = multiplied;
-}
-`
-
-shaders.fragEx = /* glsl */ `
-precision mediump float;
-uniform vec4 rgba;
-
-varying vec4 projected;
-
-void main() {
-  gl_FragColor = clamp(length(vec2(projected.x, projected.y)), 0., 1.) * rgba;
 }
 `
 
