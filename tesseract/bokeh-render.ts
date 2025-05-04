@@ -7,6 +7,7 @@ import {
   translateMatrix,
 } from './sundry-matrix'
 import * as tesseract from './tesseract-controller'
+import { bokehColorMap } from './bokeh-color-data'
 
 const shaders: { [k: string]: string } = {}
 const geometry: { [k: string]: number[] } = {}
@@ -64,7 +65,7 @@ const shared = {
   activeColorSet: [
     [0.3, 0.1, 0.15],
     [0.1, 0.25, 0.3],
-  ] as [number, number, number][],
+  ] as RGBTriple[],
 }
 
 type Particle = {
@@ -80,6 +81,8 @@ type Light4D = {
   xyzw: [number, number, number, number]
   rgba: [number, number, number, number]
 }
+
+type RGBTriple = [number, number, number]
 
 type TesseractAnimation = {
   title: string
@@ -105,7 +108,12 @@ function getSceneScale() {
 }
 
 function handleTesseractCycle(animation: TesseractAnimation) {
-  const colorList: [number, number, number][] = []
+  if (bokehColorMap.has(animation.title)) {
+    shared.activeColorSet = bokehColorMap.get(animation.title) as RGBTriple[]
+    return
+  }
+
+  const colorList: RGBTriple[] = []
   const excludeNegative = ({ rgba }) =>
     rgba[0] >= 0 && rgba[1] >= 0 && rgba[2] >= 0
   const excludeBlank = ({ rgba }) =>
@@ -121,6 +129,11 @@ function handleTesseractCycle(animation: TesseractAnimation) {
     .filter(excludeNegative)
     .filter(excludeBlank)) {
     colorList.push([rgba[0], rgba[1], rgba[2]])
+  }
+
+  console.log(animation.title, 'applying colors:')
+  for (const color of colorList) {
+    console.log(color)
   }
 
   if (colorList.length) {
@@ -843,7 +856,7 @@ uniform sampler2D clearSampler;
 varying mediump vec2 vuv;
 
 void main() {
-  const float aberration = 0.008;
+  const float aberration = 0.005;
   vec2 deltaCenter = vuv - vec2(0.5, 0.5);
   float boundedDistance = min(pow(length(deltaCenter) + 0.001, 0.25), 1.0);
   vec2 radialOffset = normalize(deltaCenter) * boundedDistance * aberration;

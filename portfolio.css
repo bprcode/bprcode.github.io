@@ -117,17 +117,9 @@ noscript {
       transparent
     ),
     radial-gradient(230vw 200vh at 55vw 112vh, #000, #020204 35%, #403866 98%);
-  background-image: radial-gradient(
-      230lvw 30lvh at 55lvw 112lvh,
-      #000 45%,
-      transparent
-    ),
-    radial-gradient(
-      230lvw 200lvh at 55lvw 112lvh,
-      #000,
-      #020204 35%,
-      #403866 98%
-    );
+  background-image: 
+    radial-gradient( 230lvw 30lvh at 55lvw 112lvh, #000 45%, transparent ),
+    radial-gradient( 230lvw 200lvh at 55lvw 112lvh, #000, #010104 35%, #352560 98% );
 }
 
 .loading-notice {
