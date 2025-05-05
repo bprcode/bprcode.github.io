@@ -878,7 +878,9 @@ void main() {
   );
 
   const float aberration = 0.005;
-  vec2 deltaCenter = uv - vec2(0.5, 0.5);
+  vec2 deltaCenter = vec2(uv.x, uv.y) - vec2(0.5, 0.5);
+  deltaCenter.x *= compositorAspect;
+
   float boundedDistance = min(pow(length(deltaCenter) + 0.001, 0.25), 1.0);
   vec2 radialOffset = normalize(deltaCenter) * boundedDistance * aberration;
   float r = min(1.0, 2.0 * length(deltaCenter));
@@ -909,6 +911,8 @@ void main() {
   vec4 vignetteColor = aberrantColor * 0.75 * pow(r, 4.0) * v;
   vec4 curtainedColor = smoothstep(0.0, 0.4, (1. - 2. * abs(uv.x - 0.5)))
                         * vignetteColor;
+
+  // curtainedColor.r = pow(smoothstep(0., 1.0, r), 4.0);
 
   gl_FragColor = curtainedColor;
 }

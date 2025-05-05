@@ -843,8 +843,8 @@ function startDemo () {
 
   shuffleUpcoming()
   // DEBUG
-  // const firstAnimation = state.animationSet.find(x => x.title === 'chromophore')
-  const firstAnimation = state.upcomingAnimations.shift()
+  const firstAnimation = state.animationSet.find(x => x.title === 'blossom')
+  // const firstAnimation = state.upcomingAnimations.shift()
 
   state.currentAnimation = firstAnimation
   state.modelL = Quaternion.from(firstAnimation.modelL)
@@ -852,6 +852,9 @@ function startDemo () {
   state.animationSpeeds = [...firstAnimation.animationSpeeds]
   // Turn the lights off for the first appearance:
   state.lighting = new Lighting
+
+  // debug
+  return
 
   state.countdowns.push({
     remaining: holdTime,
