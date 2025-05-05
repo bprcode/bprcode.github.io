@@ -40,7 +40,7 @@ const matrices = {
 const shared = {
   gl: null as WebGL2RenderingContext | WebGLRenderingContext | null,
   resizeCount: 0,
-  blurKernelSize: 6,
+  blurKernelSize: 8,
   canvasWidth: 0,
   canvasHeight: 0,
   textureWidth: 1,
@@ -51,7 +51,7 @@ const shared = {
   sceneScale: 1,
   xMax: 0,
   yMax: 0,
-  particleDensity: 12,
+  particleDensity: 14,
   maxParticles: 0,
   easedParticleMax: 0,
   hexagonProgram: null as WebGLProgram | null,
@@ -255,7 +255,10 @@ function init() {
     'clearSampler'
   )
   locations.uvOrbit = gl.getUniformLocation(shared.compositorProgram, 'uvOrbit')
-  locations.compositorAspect = gl.getUniformLocation(shared.compositorProgram, 'compositorAspect')
+  locations.compositorAspect = gl.getUniformLocation(
+    shared.compositorProgram,
+    'compositorAspect'
+  )
 
   // Textured surface initialization
   locations.xy = gl.getAttribLocation(shared.flatProgram, 'xy')
@@ -440,7 +443,7 @@ function addParticle() {
       shared.yMax * 2 * (Math.random() - 0.5),
       2 * (Math.random() - 0.5),
     ],
-    lifetime: 3 + Math.random() * 5,
+    lifetime: 5 + Math.random() * 2,
     spawnDelay: 0,
     age: 0,
     color: [...shared.activeColorSet[colorIndex], 1],
@@ -574,7 +577,10 @@ function renderComposite() {
   gl.bindTexture(gl.TEXTURE_2D, shared.textureList[2])
   gl.uniform1i(locations.blurSampler, 1)
 
-  gl.uniform2fv(locations.uvOrbit, [(1+shared.orbitLight[0])/2, (1+shared.orbitLight[1])/2])
+  gl.uniform2fv(locations.uvOrbit, [
+    (1 + shared.orbitLight[0]) / 2,
+    (1 + shared.orbitLight[1]) / 2,
+  ])
 
   gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
   gl.disableVertexAttribArray(locations.xy)
@@ -643,12 +649,14 @@ function renderHexagons() {
 
     gl.uniform4fv(locations.rgba, p.color)
     gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
-    
-    const boost = Math.min(1, 1 / (
-      (shared.xMax * shared.orbitLight[0] - p.position[0])**2 +
-      (shared.yMax * shared.orbitLight[1] - p.position[1])**2 +
-      (shared.orbitLight[2] - p.position[2])**2
-    ))
+
+    const boost = Math.min(
+      1,
+      1 /
+        ((shared.xMax * shared.orbitLight[0] - p.position[0]) ** 2 +
+          (shared.yMax * shared.orbitLight[1] - p.position[1]) ** 2 +
+          (shared.orbitLight[2] - p.position[2]) ** 2)
+    )
     gl.uniform1f(locations.boost, 1.0 + 0.75 * boost ** 2)
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
   }
@@ -878,12 +886,12 @@ void main() {
   );
 
   const float aberration = 0.005;
-  vec2 deltaCenter = vec2(uv.x, uv.y) - vec2(0.5, 0.5);
+  vec2 deltaCenter = vec2(uv.x, uv.y) - vec2(0.5, 0.55);
   deltaCenter.x *= compositorAspect;
 
   float boundedDistance = min(pow(length(deltaCenter) + 0.001, 0.25), 1.0);
   vec2 radialOffset = normalize(deltaCenter) * boundedDistance * aberration;
-  float r = min(1.0, 2.0 * length(deltaCenter));
+  float r = min(1.0, 2.0 * length(deltaCenter) / 3.0);
   float t = 1.0  - pow(1.0 - r, 0.95);
 
   t *= 1.0 - 0.75 * emphasis;
@@ -899,7 +907,7 @@ void main() {
   vec4 far = texture2D(clearSampler, uv - radialOffset) * (1.0 - t)
     + texture2D(blurSampler, uv - radialOffset) * t;
 
-  float v = cos(3.14159 * abs(uv.y - 0.5));
+  float v = cos(3.14159 * abs(uv.y - 0.475));
 
   far *=      vec4(0.,   0.,   0.6,   0.2);
   semifar *=  vec4(0.,   0.3,  0.3,   0.2);
@@ -907,12 +915,11 @@ void main() {
   seminear *= vec4(0.3,  0.3,  0.,    0.2);
   near *=     vec4(0.6,  0.,   0.,    0.2);
   
+  float smoothR = smoothstep(0., 1., pow(r, 1.5));
   vec4 aberrantColor = far + semifar + middle + seminear + near;
-  vec4 vignetteColor = aberrantColor * 0.75 * pow(r, 4.0) * v;
+  vec4 vignetteColor = aberrantColor * 0.75 * smoothR * v;
   vec4 curtainedColor = smoothstep(0.0, 0.4, (1. - 2. * abs(uv.x - 0.5)))
                         * vignetteColor;
-
-  // curtainedColor.r = pow(smoothstep(0., 1.0, r), 4.0);
 
   gl_FragColor = curtainedColor;
 }
