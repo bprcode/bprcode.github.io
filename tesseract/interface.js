@@ -145,6 +145,7 @@ function initialize () {
         return closeAllPanes()
       }
 
+      window.dispatchEvent(new CustomEvent('pane-open'))
       section.classList.remove('concealed')
       section.classList.add('opaque')
       section.scrollTop = 0
@@ -178,6 +179,8 @@ function initialize () {
   }
 
   function closeAllPanes () {
+    window.dispatchEvent(new CustomEvent('pane-close'))
+
     for (const e of all('.content')) {
       e.classList.remove('opaque')
       e.classList.add('concealed')

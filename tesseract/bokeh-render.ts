@@ -39,6 +39,7 @@ const matrices = {
 
 const shared = {
   gl: null as WebGL2RenderingContext | WebGLRenderingContext | null,
+  animationSpeed: 1,
   resizeCount: 0,
   blurKernelSize: 6,
   canvasWidth: 0,
@@ -182,6 +183,13 @@ function init() {
   ) => {
     handleTesseractCycle(e.detail)
   }) as EventListener)
+
+  window.addEventListener('pane-close', () => {
+    shared.animationSpeed = 1
+  })
+  window.addEventListener('pane-open', () => {
+    shared.animationSpeed = 0.3
+  })
 
   // Create antialiasing buffer objects, if possible:
   if (gl instanceof WebGL2RenderingContext) {
@@ -499,7 +507,7 @@ function animate(t: number) {
     shared.tLast = t
   }
 
-  const dt = (t - shared.tLast) / 1000
+  const dt = shared.animationSpeed * (t - shared.tLast) / 1000
   shared.tLast = t
 
   shared.elapsed += dt
