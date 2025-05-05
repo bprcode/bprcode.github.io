@@ -52,7 +52,7 @@ const shared = {
   sceneScale: 1,
   xMax: 0,
   yMax: 0,
-  particleDensity: 12,
+  particleDensity: 10,
   maxParticles: 0,
   easedParticleMax: 0,
   hexagonProgram: null as WebGLProgram | null,
@@ -452,7 +452,7 @@ function addParticle() {
       shared.yMax * 2 * (Math.random() - 0.5),
       2 * (Math.random() - 0.5),
     ],
-    lifetime: 4 + Math.random() * 3,
+    lifetime: 5 + Math.random() * 5,
     spawnDelay: 0,
     age: 0,
     color: [...shared.activeColorSet[colorIndex], 1],
@@ -463,7 +463,7 @@ function addParticle() {
 
 function seedParticles() {
   while (particles.length < shared.maxParticles / 2) {
-    const t0 = 16 * particles.length / shared.maxParticles
+    const t0 = 4 * particles.length / shared.maxParticles
     addParticle()
     particles[particles.length - 1].lifetime = 2 + Math.random() * 4
     particles[particles.length - 1].spawnDelay = t0
@@ -502,7 +502,7 @@ function updateParticles(dt: number) {
     particles[i].color[2] = ease(particles[i].color[2], targetColor[2], dt)
 
     particles[i].color[3] =
-      Math.sin((Math.PI * particles[i].age) / particles[i].lifetime) ** 2
+      Math.sin((Math.PI * particles[i].age) / particles[i].lifetime) ** 4
   }
 
   function ease(a: number, b: number, t: number) {
@@ -523,8 +523,8 @@ function animate(t: number) {
   shared.elapsed += dt
   shared.elapsed %= 86400
 
-  const theta = (Math.PI * 2 * shared.elapsed) / 7
-  const phi = (Math.PI * 2 * shared.elapsed) / 19
+  const theta = (Math.PI * 2 * shared.elapsed) / 19
+  const phi = (Math.PI * 2 * shared.elapsed) / 59
 
   shared.orbitLight = [
     Math.cos(theta) * Math.cos(phi),
@@ -675,7 +675,7 @@ function renderHexagons() {
           (shared.yMax * shared.orbitLight[1] - p.position[1]) ** 2 +
           (shared.orbitLight[2] - p.position[2]) ** 2)
     )
-    gl.uniform1f(locations.boost, 1.0 + 1.5 * boost ** 2)
+    gl.uniform1f(locations.boost, 1.0 + 1.75 * boost ** 2)
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
   }
 
@@ -937,7 +937,7 @@ void main() {
     7.0 * smoothstep(0., 1., pow(0.45 * r, 1.1))
     * smoothstep(0., 1., 1. - r)
   );
-  
+
   vec4 aberrantColor = far + semifar + middle + seminear + near;
   // vignette mask check:
   // aberrantColor = vec4(1.,0.,0.,1.);
