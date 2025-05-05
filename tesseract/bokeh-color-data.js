@@ -1,8 +1,8 @@
 export const bokehColorMap = new Map([
   ['blossom',
     [
-      [ 0.14, 0.11, 0.30 ],
-      [ 0.12, 0.05, 0.25 ],
+      [ 0.12, 0.06, 0.30 ],
+      [ 0.07, 0.03, 0.21 ],
     ],
   ],
   ['first light',

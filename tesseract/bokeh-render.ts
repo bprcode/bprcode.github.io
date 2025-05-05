@@ -40,7 +40,7 @@ const matrices = {
 const shared = {
   gl: null as WebGL2RenderingContext | WebGLRenderingContext | null,
   resizeCount: 0,
-  blurKernelSize: 8,
+  blurKernelSize: 6,
   canvasWidth: 0,
   canvasHeight: 0,
   textureWidth: 1,
@@ -448,7 +448,7 @@ function addParticle() {
     age: 0,
     color: [...shared.activeColorSet[colorIndex], 1],
     colorIndex: colorIndex,
-    scale: 0.9 + 0.2 * Math.random(),
+    scale: 0.85 + 0.2 * Math.random(),
   })
 }
 
@@ -657,7 +657,7 @@ function renderHexagons() {
           (shared.yMax * shared.orbitLight[1] - p.position[1]) ** 2 +
           (shared.orbitLight[2] - p.position[2]) ** 2)
     )
-    gl.uniform1f(locations.boost, 1.0 + 0.75 * boost ** 2)
+    gl.uniform1f(locations.boost, 1.0 + 0.75 * boost ** 4)
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
   }
 
@@ -894,7 +894,7 @@ void main() {
   float r = min(1.0, 2.0 * length(deltaCenter) / 2.5);
   float t = 1.0  - pow(1.0 - r, 0.95);
 
-  t *= 1.0 - 0.75 * emphasis;
+  t *= 1.0 - 0.95 * emphasis;
 
   vec4 near = texture2D(clearSampler, uv + radialOffset) * (1.0 - t)
     + texture2D(blurSampler, uv + radialOffset) * t;
