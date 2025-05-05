@@ -52,7 +52,7 @@ const shared = {
   sceneScale: 1,
   xMax: 0,
   yMax: 0,
-  particleDensity: 14,
+  particleDensity: 12,
   maxParticles: 0,
   easedParticleMax: 0,
   hexagonProgram: null as WebGLProgram | null,
@@ -330,6 +330,7 @@ function init() {
   }
 
   updateSize()
+  seedParticles()
 
   requestAnimationFrame(animate)
 }
@@ -451,7 +452,7 @@ function addParticle() {
       shared.yMax * 2 * (Math.random() - 0.5),
       2 * (Math.random() - 0.5),
     ],
-    lifetime: 6 + Math.random() * 2,
+    lifetime: 4 + Math.random() * 3,
     spawnDelay: 0,
     age: 0,
     color: [...shared.activeColorSet[colorIndex], 1],
@@ -460,13 +461,22 @@ function addParticle() {
   })
 }
 
+function seedParticles() {
+  while (particles.length < shared.maxParticles / 2) {
+    const t0 = 16 * particles.length / shared.maxParticles
+    addParticle()
+    particles[particles.length - 1].lifetime = 2 + Math.random() * 4
+    particles[particles.length - 1].spawnDelay = t0
+  }
+}
+
 function updateParticles(dt: number) {
   const colorHalfLife = 1.125
   const k = -Math.log(0.5) / colorHalfLife
 
   while (particles.length < shared.maxParticles) {
     addParticle()
-    particles[particles.length - 1].spawnDelay = Math.random() * 8
+    particles[particles.length - 1].spawnDelay = Math.random() * 2
   }
 
   for (let i = 0; i < particles.length; i++) {
@@ -915,7 +925,7 @@ void main() {
   vec4 far = texture2D(clearSampler, uv - radialOffset) * (1.0 - t)
     + texture2D(blurSampler, uv - radialOffset) * t;
 
-  float v = cos(3.14159 * abs(uv.y - 0.475));
+  float v = cos(2.7 * abs(uv.y - 0.475));
 
   far *=      vec4(0.,   0.,   0.6,   0.2);
   semifar *=  vec4(0.,   0.3,  0.3,   0.2);
@@ -923,10 +933,17 @@ void main() {
   seminear *= vec4(0.3,  0.3,  0.,    0.2);
   near *=     vec4(0.6,  0.,   0.,    0.2);
   
-  float smoothR = smoothstep(0., 1., pow(r, 1.5));
+  float smoothR = smoothstep(0., 1.,
+    7.0 * smoothstep(0., 1., pow(0.45 * r, 1.1))
+    * smoothstep(0., 1., 1. - r)
+  );
+  
   vec4 aberrantColor = far + semifar + middle + seminear + near;
+  // vignette mask check:
+  // aberrantColor = vec4(1.,0.,0.,1.);
+
   vec4 vignetteColor = aberrantColor * 0.75 * smoothR * v;
-  vec4 curtainedColor = smoothstep(0.0, 0.4, (1. - 2. * abs(uv.x - 0.5)))
+  vec4 curtainedColor = smoothstep(0.0, 0.2, (1. - 2. * abs(uv.x - 0.5)))
                         * vignetteColor;
 
   gl_FragColor = curtainedColor;
