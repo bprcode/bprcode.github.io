@@ -891,7 +891,7 @@ void main() {
 
   float boundedDistance = min(pow(length(deltaCenter) + 0.001, 0.25), 1.0);
   vec2 radialOffset = normalize(deltaCenter) * boundedDistance * aberration;
-  float r = min(1.0, 2.0 * length(deltaCenter) / 3.0);
+  float r = min(1.0, 2.0 * length(deltaCenter) / 2.5);
   float t = 1.0  - pow(1.0 - r, 0.95);
 
   t *= 1.0 - 0.75 * emphasis;
