@@ -451,7 +451,7 @@ function addParticle() {
       shared.yMax * 2 * (Math.random() - 0.5),
       2 * (Math.random() - 0.5),
     ],
-    lifetime: 5 + Math.random() * 2,
+    lifetime: 6 + Math.random() * 2,
     spawnDelay: 0,
     age: 0,
     color: [...shared.activeColorSet[colorIndex], 1],
@@ -661,11 +661,11 @@ function renderHexagons() {
     const boost = Math.min(
       1,
       1 /
-        ((shared.xMax * shared.orbitLight[0] - p.position[0]) ** 2 +
+        (0.001 + (shared.xMax * shared.orbitLight[0] - p.position[0]) ** 2 +
           (shared.yMax * shared.orbitLight[1] - p.position[1]) ** 2 +
           (shared.orbitLight[2] - p.position[2]) ** 2)
     )
-    gl.uniform1f(locations.boost, 1.0 + 0.75 * boost ** 4)
+    gl.uniform1f(locations.boost, 1.0 + 0.75 * boost ** 2)
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
   }
 
