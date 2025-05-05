@@ -665,7 +665,7 @@ function renderHexagons() {
           (shared.yMax * shared.orbitLight[1] - p.position[1]) ** 2 +
           (shared.orbitLight[2] - p.position[2]) ** 2)
     )
-    gl.uniform1f(locations.boost, 1.0 + 0.75 * boost ** 2)
+    gl.uniform1f(locations.boost, 1.0 + 1.5 * boost ** 2)
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
   }
 
