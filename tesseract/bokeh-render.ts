@@ -22,10 +22,10 @@ const locations = {
   texSampler: null as WebGLUniformLocation | null,
   blurSampler: null as WebGLUniformLocation | null,
   clearSampler: null as WebGLUniformLocation | null,
-  uvOrbit: null as WebGLUniformLocation | null,
   hexAspect: null as WebGLUniformLocation | null,
   compositorAspect: null as WebGLUniformLocation | null,
   boost: null as WebGLUniformLocation | null,
+  aberration: null as WebGLUniformLocation | null,
   positionMax: null as WebGLUniformLocation | null,
   transform: null as WebGLUniformLocation | null,
   project: null as WebGLUniformLocation | null,
@@ -39,7 +39,9 @@ const matrices = {
 
 const shared = {
   gl: null as WebGL2RenderingContext | WebGLRenderingContext | null,
-  animationSpeed: 1,
+  readingMode: false,
+  pulseTime: -2,
+  zPulse: 0,
   resizeCount: 0,
   blurKernelSize: 6,
   canvasWidth: 0,
@@ -66,7 +68,6 @@ const shared = {
   rbAA: null as WebGLRenderbuffer | null,
   fboList: [] as WebGLFramebuffer[],
   textureList: [] as WebGLTexture[],
-  orbitLight: [1, 0, 0] as [number, number, number],
   activeColorSet: [
     [0.3, 0.1, 0.15],
     [0.1, 0.25, 0.3],
@@ -182,13 +183,17 @@ function init() {
     e: CustomEvent<TesseractAnimation>
   ) => {
     handleTesseractCycle(e.detail)
+
+    if (!shared.readingMode) {
+      shared.pulseTime = 0
+    }
   }) as EventListener)
 
   window.addEventListener('pane-close', () => {
-    shared.animationSpeed = 1
+    shared.readingMode = false
   })
   window.addEventListener('pane-open', () => {
-    shared.animationSpeed = 0.3
+    shared.readingMode = true
   })
 
   // Create antialiasing buffer objects, if possible:
@@ -262,10 +267,13 @@ function init() {
     shared.compositorProgram,
     'clearSampler'
   )
-  locations.uvOrbit = gl.getUniformLocation(shared.compositorProgram, 'uvOrbit')
   locations.compositorAspect = gl.getUniformLocation(
     shared.compositorProgram,
     'compositorAspect'
+  )
+  locations.aberration = gl.getUniformLocation(
+    shared.compositorProgram,
+    'aberration'
   )
 
   // Textured surface initialization
@@ -445,7 +453,7 @@ function removeParticle(i: number) {
 }
 
 function addParticle() {
-  const y = shared.yMax * (-1 + 2.0 * (Math.random())**2)
+  const y = shared.yMax * (2.0 * (Math.random() - 0.5))
   const z = 2 * (Math.random() - 0.5)
   const colorIndex = Math.floor(Math.random() * shared.activeColorSet.length)
   particles.push({
@@ -456,7 +464,7 @@ function addParticle() {
     color: [...shared.activeColorSet[colorIndex], 1],
     colorIndex: colorIndex,
     scale:
-      0.85 + 0.1 * (1 - (y + shared.yMax) / shared.yMax) + (0.2) / (z + 2.01),
+      0.85 + 0.1 * (1 - (y + shared.yMax) / shared.yMax) + 0.2 / (z + 2.01),
   })
 }
 
@@ -516,23 +524,14 @@ function animate(t: number) {
     shared.tLast = t
   }
 
-  const dt = (shared.animationSpeed * (t - shared.tLast)) / 1000
+  const dt = ((shared.readingMode ? 0.3 : 1) * (t - shared.tLast)) / 1000
   shared.tLast = t
 
   shared.elapsed += dt
   shared.elapsed %= 86400
 
-  const theta = (Math.PI * 2 * (shared.elapsed - Math.PI/2)) / 3
-  // const phi = (Math.PI * 2 * shared.elapsed) / 57
-
-  shared.orbitLight = [
-    // Math.cos(theta) * Math.cos(phi),
-    // -Math.cos(theta) * Math.sin(phi),
-    // Math.sin(theta),
-    0,
-    0,
-    (theta % 20) - 10,
-  ]
+  shared.pulseTime += dt
+  shared.zPulse = 0.6 * (shared.pulseTime - 2)
 
   updateParticles(dt)
   render()
@@ -597,10 +596,10 @@ function renderComposite() {
   gl.bindTexture(gl.TEXTURE_2D, shared.textureList[2])
   gl.uniform1i(locations.blurSampler, 1)
 
-  gl.uniform2fv(locations.uvOrbit, [
-    (1 + shared.orbitLight[0]) / 2,
-    (1 + shared.orbitLight[1]) / 2,
-  ])
+  gl.uniform1f(
+    locations.aberration,
+    0.005 + 0.0025 * easeInOut(Math.max(0, 1 - shared.zPulse ** 2))
+  )
 
   gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
   gl.disableVertexAttribArray(locations.xy)
@@ -649,6 +648,8 @@ function renderHexagons() {
   matrices.project[0] = 1 / shared.aspect
   gl.uniformMatrix4fv(locations.project, false, matrices.project)
 
+  const rhoPulse = Math.max(shared.xMax, shared.yMax) * (shared.zPulse + 1)
+
   for (const p of particles) {
     if (p.spawnDelay > 0) {
       continue
@@ -670,16 +671,13 @@ function renderHexagons() {
     gl.uniform4fv(locations.rgba, p.color)
     gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
 
+    const rho = Math.sqrt(p.position[0] ** 2 + p.position[1] ** 2)
+
     const boost = Math.min(
       1,
-      Math.min(1,1/Math.abs(Math.sqrt(p.position[0]**2 + p.position[1]**2 + p.position[2]**2) - (shared.orbitLight[2]))**2)
-      // 1 /
-      //   (0.001 +
-      //     (shared.xMax * shared.orbitLight[0] - p.position[0]) ** 2 +
-      //     (shared.yMax * shared.orbitLight[1] - p.position[1]) ** 2 +
-      //     (shared.orbitLight[2] - p.position[2]) ** 2)
+      Math.max(0, easeInOut(1 - Math.abs(rho - rhoPulse)))
     )
-    gl.uniform1f(locations.boost, 1.0 + 1.75 * boost)
+    gl.uniform1f(locations.boost, 1.0 + 1.25 * boost)
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
   }
 
@@ -806,6 +804,10 @@ function createShader(
   throw Error('Shader compilation failed')
 }
 
+function easeInOut(t: number): number {
+  return t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2
+}
+
 geometry.hexagon = [
   -1,
   0,
@@ -896,18 +898,13 @@ shaders.compositor = /* glsl */ `
 precision mediump float;
 uniform sampler2D blurSampler;
 uniform sampler2D clearSampler;
-uniform vec2 uvOrbit;
 uniform float compositorAspect;
+uniform float aberration;
 varying mediump vec2 uv;
 
 void main() {
-  vec2 orbitScaled = vec2(uvOrbit.x * compositorAspect, uvOrbit.y);
   vec2 uvScaled = vec2(uv.x * compositorAspect, uv.y);
-  float emphasis = max(0.,
-    smoothstep(0., 1., 1.0 - length(orbitScaled - uvScaled))
-  );
 
-  const float aberration = 0.005;
   vec2 deltaCenter = vec2(uv.x, uv.y) - vec2(0.5, 0.55);
   deltaCenter.x *= compositorAspect;
 
@@ -915,8 +912,6 @@ void main() {
   vec2 radialOffset = normalize(deltaCenter) * boundedDistance * aberration;
   float r = min(1.0, 2.0 * length(deltaCenter) / 2.5);
   float t = 1.0  - pow(1.0 - r, 0.95);
-
-  t *= 1.0 - 0.95 * emphasis;
 
   vec4 near = texture2D(clearSampler, uv + radialOffset) * (1.0 - t)
     + texture2D(blurSampler, uv + radialOffset) * t;
