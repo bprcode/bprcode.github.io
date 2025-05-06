@@ -52,7 +52,7 @@ const shared = {
   sceneScale: 1,
   xMax: 0,
   yMax: 0,
-  particleDensity: 10,
+  particleDensity: 14,
   maxParticles: 0,
   easedParticleMax: 0,
   hexagonProgram: null as WebGLProgram | null,
@@ -445,25 +445,24 @@ function removeParticle(i: number) {
 }
 
 function addParticle() {
+  const y = shared.yMax * (-1 + 2.0 * (Math.random())**2)
+  const z = 2 * (Math.random() - 0.5)
   const colorIndex = Math.floor(Math.random() * shared.activeColorSet.length)
   particles.push({
-    position: [
-      shared.xMax * 2 * (Math.random() - 0.5),
-      shared.yMax * 2 * (Math.random() - 0.5),
-      2 * (Math.random() - 0.5),
-    ],
+    position: [shared.xMax * 2 * (Math.random() - 0.5), y, z],
     lifetime: 5 + Math.random() * 5,
     spawnDelay: 0,
     age: 0,
     color: [...shared.activeColorSet[colorIndex], 1],
     colorIndex: colorIndex,
-    scale: 0.85 + 0.2 * Math.random(),
+    scale:
+      0.85 + 0.1 * (1 - (y + shared.yMax) / shared.yMax) + (0.2) / (z + 2.01),
   })
 }
 
 function seedParticles() {
   while (particles.length < shared.maxParticles / 2) {
-    const t0 = 4 * particles.length / shared.maxParticles
+    const t0 = (4 * particles.length) / shared.maxParticles
     addParticle()
     particles[particles.length - 1].lifetime = 2 + Math.random() * 4
     particles[particles.length - 1].spawnDelay = t0
@@ -517,19 +516,22 @@ function animate(t: number) {
     shared.tLast = t
   }
 
-  const dt = shared.animationSpeed * (t - shared.tLast) / 1000
+  const dt = (shared.animationSpeed * (t - shared.tLast)) / 1000
   shared.tLast = t
 
   shared.elapsed += dt
   shared.elapsed %= 86400
 
-  const theta = (Math.PI * 2 * shared.elapsed) / 19
-  const phi = (Math.PI * 2 * shared.elapsed) / 59
+  const theta = (Math.PI * 2 * (shared.elapsed - Math.PI/2)) / 3
+  // const phi = (Math.PI * 2 * shared.elapsed) / 57
 
   shared.orbitLight = [
-    Math.cos(theta) * Math.cos(phi),
-    -Math.cos(theta) * Math.sin(phi),
-    Math.sin(theta),
+    // Math.cos(theta) * Math.cos(phi),
+    // -Math.cos(theta) * Math.sin(phi),
+    // Math.sin(theta),
+    0,
+    0,
+    (theta % 20) - 10,
   ]
 
   updateParticles(dt)
@@ -670,12 +672,14 @@ function renderHexagons() {
 
     const boost = Math.min(
       1,
-      1 /
-        (0.001 + (shared.xMax * shared.orbitLight[0] - p.position[0]) ** 2 +
-          (shared.yMax * shared.orbitLight[1] - p.position[1]) ** 2 +
-          (shared.orbitLight[2] - p.position[2]) ** 2)
+      Math.min(1,1/Math.abs(Math.sqrt(p.position[0]**2 + p.position[1]**2 + p.position[2]**2) - (shared.orbitLight[2]))**2)
+      // 1 /
+      //   (0.001 +
+      //     (shared.xMax * shared.orbitLight[0] - p.position[0]) ** 2 +
+      //     (shared.yMax * shared.orbitLight[1] - p.position[1]) ** 2 +
+      //     (shared.orbitLight[2] - p.position[2]) ** 2)
     )
-    gl.uniform1f(locations.boost, 1.0 + 1.75 * boost ** 2)
+    gl.uniform1f(locations.boost, 1.0 + 1.75 * boost)
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
   }
 
