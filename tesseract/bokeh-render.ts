@@ -26,6 +26,7 @@ const locations = {
   compositorAspect: null as WebGLUniformLocation | null,
   boost: null as WebGLUniformLocation | null,
   aberration: null as WebGLUniformLocation | null,
+  pulseRadius: null as WebGLUniformLocation | null,
   positionMax: null as WebGLUniformLocation | null,
   transform: null as WebGLUniformLocation | null,
   project: null as WebGLUniformLocation | null,
@@ -274,6 +275,10 @@ function init() {
   locations.aberration = gl.getUniformLocation(
     shared.compositorProgram,
     'aberration'
+  )
+  locations.pulseRadius = gl.getUniformLocation(
+    shared.compositorProgram,
+    'pulseRadius'
   )
 
   // Textured surface initialization
@@ -531,7 +536,7 @@ function animate(t: number) {
   shared.elapsed %= 86400
 
   shared.pulseTime += dt
-  shared.zPulse = 0.6 * (shared.pulseTime - 2)
+  shared.zPulse = 0.6 * shared.pulseTime - 2
 
   updateParticles(dt)
   render()
@@ -600,6 +605,8 @@ function renderComposite() {
     locations.aberration,
     0.005 + 0.0025 * easeInOut(Math.max(0, 1 - shared.zPulse ** 2))
   )
+
+  gl.uniform1f(locations.pulseRadius, Math.max(shared.xMax, shared.yMax) * (shared.zPulse + 1))
 
   gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
   gl.disableVertexAttribArray(locations.xy)
@@ -677,7 +684,7 @@ function renderHexagons() {
       1,
       Math.max(0, easeInOut(1 - Math.abs(rho - rhoPulse)))
     )
-    gl.uniform1f(locations.boost, 1.0 + 1.25 * boost)
+    gl.uniform1f(locations.boost, 1.0 + 3.25 * boost)
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
   }
 
@@ -900,16 +907,16 @@ uniform sampler2D blurSampler;
 uniform sampler2D clearSampler;
 uniform float compositorAspect;
 uniform float aberration;
+uniform float pulseRadius;
 varying mediump vec2 uv;
 
 void main() {
-  vec2 uvScaled = vec2(uv.x * compositorAspect, uv.y);
-
   vec2 deltaCenter = vec2(uv.x, uv.y) - vec2(0.5, 0.55);
   deltaCenter.x *= compositorAspect;
 
   float boundedDistance = min(pow(length(deltaCenter) + 0.001, 0.25), 1.0);
   vec2 radialOffset = normalize(deltaCenter) * boundedDistance * aberration;
+  float uvRadius = length(deltaCenter);
   float r = min(1.0, 2.0 * length(deltaCenter) / 2.5);
   float t = 1.0  - pow(1.0 - r, 0.95);
 
@@ -932,20 +939,19 @@ void main() {
   seminear *= vec4(0.3,  0.3,  0.,    0.2);
   near *=     vec4(0.6,  0.,   0.,    0.2);
   
-  float smoothR = smoothstep(0., 1.,
-    7.0 * smoothstep(0., 1., pow(0.45 * r, 1.1))
-    * smoothstep(0., 1., 1. - r)
-  );
+  float smoothR = smoothstep(0., 1., 7.0 * smoothstep(0., 1., pow(0.45 * r, 1.1)))
+    * smoothstep(0., 1., 1. - r);
+  float centralR = pow(0.85*r, 1.9);
+  float outerR = smoothstep(0., 1., 1. - r);
 
   vec4 aberrantColor = far + semifar + middle + seminear + near;
-  // vignette mask check:
-  // aberrantColor = vec4(1.,0.,0.,1.);
 
-  vec4 vignetteColor = aberrantColor * 0.75 * smoothR * v;
-  vec4 curtainedColor = smoothstep(0.0, 0.2, (1. - 2. * abs(uv.x - 0.5)))
-                        * vignetteColor;
+  float curtainFactor = smoothstep(0.0, 0.2, (1. - 2. * abs(uv.x - 0.5)));
 
-  gl_FragColor = curtainedColor;
+  float pulseDelta = min(1., pow(abs(uvRadius - pulseRadius), 2.));
+  float overallFade = (1. - v * curtainFactor) * (pulseDelta);
+
+  gl_FragColor = aberrantColor * (1. - overallFade) * centralR;
 }
 `
 
