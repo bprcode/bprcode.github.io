@@ -932,8 +932,10 @@ void main() {
   vec2 radialOffset = normalize(deltaCenter) * boundedDistance * aberration;
   float uvRadius = length(deltaCenter);
   float radialDifference = uvRadius - pulseRadius;
-  float leadingEase = step(0., radialDifference) * ease(abs(uvRadius-pulseRadius));
-  float trailingEase = (1. - step(0., radialDifference)) * min(1., 1. - exp(uvRadius - pulseRadius));
+  float leadingEase = step(0., radialDifference)
+                        * ease(abs(uvRadius-pulseRadius));
+  float trailingEase = (1. - step(0., radialDifference))
+                        * min(1., 1. - exp(uvRadius - pulseRadius));
   float pulseDelta = leadingEase + trailingEase;
   float r = min(1.0, 2.0 * length(deltaCenter) / 2.5);
   float t = pow(1.0  - pow(1.0 - r, 0.55), 1.4);
