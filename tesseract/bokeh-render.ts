@@ -44,7 +44,7 @@ const shared = {
   pulseTime: -3,
   zPulse: 0,
   resizeCount: 0,
-  blurKernelSize: 6,
+  blurKernelSize: 10,
   canvasWidth: 0,
   canvasHeight: 0,
   textureWidth: 1,
@@ -185,7 +185,6 @@ function init() {
   ) => {
     handleTesseractCycle(e.detail)
     queueCycleResponse()
-
   }) as EventListener)
 
   window.addEventListener('pane-close', () => {
@@ -352,7 +351,7 @@ function queueCycleResponse() {
     if (!shared.readingMode) {
       shared.pulseTime = 0
     }
-  }, 19500);
+  }, 19500)
 }
 
 function updateSize() {
@@ -610,10 +609,13 @@ function renderComposite() {
 
   gl.uniform1f(
     locations.aberration,
-    0.005 + 0.005 * easeInOut(Math.max(0, 1 - shared.zPulse ** 2))
+    0.005 + 0.006 * easePass(1 - Math.abs(2 * shared.zPulse + 1))
   )
 
-  gl.uniform1f(locations.pulseRadius, Math.max(shared.xMax, shared.yMax) * (shared.zPulse + 1))
+  gl.uniform1f(
+    locations.pulseRadius,
+    Math.max(shared.xMax, shared.yMax) * (shared.zPulse + 1)
+  )
 
   gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
   gl.disableVertexAttribArray(locations.xy)
@@ -822,6 +824,16 @@ function easeInOut(t: number): number {
   return t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2
 }
 
+function easePass(t: number): number {
+  if (t <= 0) {
+    return 0
+  }
+  if (t >= 1) {
+    return 1
+  }
+  return 1 - 2 ** (-10 * t)
+}
+
 geometry.hexagon = [
   -1,
   0,
@@ -925,7 +937,8 @@ float ease(float x) {
 }
 
 void main() {
-  vec2 deltaCenter = vec2(uv.x, uv.y) - vec2(0.5, 0.55);
+  const float yFocus = 0.55;
+  vec2 deltaCenter = vec2(uv.x, uv.y) - vec2(0.5, yFocus);
   deltaCenter.x *= compositorAspect;
 
   float boundedDistance = min(pow(length(deltaCenter) + 0.001, 0.25), 1.0);
@@ -938,8 +951,11 @@ void main() {
                         * min(1., 1. - exp(uvRadius - pulseRadius));
   float pulseDelta = leadingEase + trailingEase;
   float r = min(1.0, 2.0 * length(deltaCenter) / 2.5);
-  float t = pow(1.0  - pow(1.0 - r, 0.55), 1.4);
 
+  // Lerp blur intensity based on vertical position:
+  float t = min(1., pow(2. * (uv.y - yFocus), 2.));
+
+  // Take five samples for chromatic aberration:
   vec4 near = texture2D(clearSampler, uv + radialOffset) * (1.0 - t)
     + texture2D(blurSampler, uv + radialOffset) * t;
   vec4 seminear = texture2D(clearSampler, uv + 0.5 * radialOffset) * (1.0 - t)
