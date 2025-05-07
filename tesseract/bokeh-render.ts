@@ -41,7 +41,7 @@ const matrices = {
 const shared = {
   gl: null as WebGL2RenderingContext | WebGLRenderingContext | null,
   readingMode: false,
-  pulseTime: -2,
+  pulseTime: -3,
   zPulse: 0,
   resizeCount: 0,
   blurKernelSize: 6,
@@ -184,10 +184,8 @@ function init() {
     e: CustomEvent<TesseractAnimation>
   ) => {
     handleTesseractCycle(e.detail)
+    queueCycleResponse()
 
-    if (!shared.readingMode) {
-      shared.pulseTime = 0
-    }
   }) as EventListener)
 
   window.addEventListener('pane-close', () => {
@@ -344,8 +342,17 @@ function init() {
 
   updateSize()
   seedParticles()
+  queueCycleResponse()
 
   requestAnimationFrame(animate)
+}
+
+function queueCycleResponse() {
+  setTimeout(() => {
+    if (!shared.readingMode) {
+      shared.pulseTime = 0
+    }
+  }, 19500);
 }
 
 function updateSize() {
@@ -475,7 +482,7 @@ function addParticle() {
 
 function seedParticles() {
   while (particles.length < shared.maxParticles / 2) {
-    const t0 = (4 * particles.length) / shared.maxParticles
+    const t0 = (6 * particles.length) / shared.maxParticles
     addParticle()
     particles[particles.length - 1].lifetime = 2 + Math.random() * 4
     particles[particles.length - 1].spawnDelay = t0
@@ -603,7 +610,7 @@ function renderComposite() {
 
   gl.uniform1f(
     locations.aberration,
-    0.005 + 0.0025 * easeInOut(Math.max(0, 1 - shared.zPulse ** 2))
+    0.005 + 0.005 * easeInOut(Math.max(0, 1 - shared.zPulse ** 2))
   )
 
   gl.uniform1f(locations.pulseRadius, Math.max(shared.xMax, shared.yMax) * (shared.zPulse + 1))
@@ -684,7 +691,7 @@ function renderHexagons() {
       1,
       Math.max(0, easeInOut(1 - Math.abs(rho - rhoPulse)))
     )
-    gl.uniform1f(locations.boost, 1.0 + 3.25 * boost)
+    gl.uniform1f(locations.boost, 1.0 + 1.75 * boost)
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
   }
 
@@ -910,6 +917,13 @@ uniform float aberration;
 uniform float pulseRadius;
 varying mediump vec2 uv;
 
+float ease(float x) {
+  float lo = 0.5 * pow(2., 20. * x - 10.);
+  float hi = 1.0 - 0.5 * pow(2., -20. * x + 10.);
+  float s = step(0.5, x);
+  return max(0., min(1., (1. - s) * lo + s * hi));
+}
+
 void main() {
   vec2 deltaCenter = vec2(uv.x, uv.y) - vec2(0.5, 0.55);
   deltaCenter.x *= compositorAspect;
@@ -917,8 +931,12 @@ void main() {
   float boundedDistance = min(pow(length(deltaCenter) + 0.001, 0.25), 1.0);
   vec2 radialOffset = normalize(deltaCenter) * boundedDistance * aberration;
   float uvRadius = length(deltaCenter);
+  float radialDifference = uvRadius - pulseRadius;
+  float leadingEase = step(0., radialDifference) * ease(abs(uvRadius-pulseRadius));
+  float trailingEase = (1. - step(0., radialDifference)) * min(1., 1. - exp(uvRadius - pulseRadius));
+  float pulseDelta = leadingEase + trailingEase;
   float r = min(1.0, 2.0 * length(deltaCenter) / 2.5);
-  float t = 1.0  - pow(1.0 - r, 0.95);
+  float t = pow(1.0  - pow(1.0 - r, 0.55), 1.4);
 
   vec4 near = texture2D(clearSampler, uv + radialOffset) * (1.0 - t)
     + texture2D(blurSampler, uv + radialOffset) * t;
@@ -948,7 +966,7 @@ void main() {
 
   float curtainFactor = smoothstep(0.0, 0.2, (1. - 2. * abs(uv.x - 0.5)));
 
-  float pulseDelta = min(1., pow(abs(uvRadius - pulseRadius), 2.));
+  
   float overallFade = (1. - v * curtainFactor) * (pulseDelta);
 
   gl_FragColor = aberrantColor * (1. - overallFade) * centralR;
