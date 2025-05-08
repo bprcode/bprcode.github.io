@@ -936,10 +936,13 @@ void main() {
 
   float curtainFactor = smoothstep(0.0, 0.2, (1. - 2. * abs(vuv.x - 0.5)));
   
-  float overallFade = (1. - v * curtainFactor) * (pulseDelta);
+  float overallFade = (1. - v) * (pulseDelta);
   float boost = 1. - pow(pulseDelta, 4.);
 
-  gl_FragColor = aberrantColor * (1. - overallFade) * centralR * (1. + boost);
+  float finalScale = (1. - overallFade) * centralR * (1. + boost) * curtainFactor;
+  gl_FragColor = aberrantColor * finalScale;
+  // debug
+  // gl_FragColor = vec4(finalScale, 0, 0, 1.);
 }
 `
 
