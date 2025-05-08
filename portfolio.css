@@ -113,10 +113,10 @@ noscript {
   height: 100%;;
   background-image: 
     radial-gradient( 230vw 30vh at 55vw 112vh, #000 45%, transparent ),
-    radial-gradient( 230vw 200vh at 55vw 112vh, #000, #020105 35%, #281763 98% );
+    radial-gradient( 230vw 200vh at 55vw 112vh, #000, #020107 35%, #281760 98% );
   background-image: 
     radial-gradient( 230lvw 30lvh at 55lvw 112lvh, #000 45%, transparent ),
-    radial-gradient( 230lvw 200lvh at 55lvw 112lvh, #000, #020105 35%, #281763 98% );
+    radial-gradient( 230lvw 200lvh at 55lvw 112lvh, #000, #020107 35%, #281760 98% );
 }
 
 .loading-notice {
