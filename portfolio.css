@@ -793,7 +793,7 @@ input {
   position: absolute;
   right: 0px;
   left: 100%;
-  top: 5ex;
+  top: 5.25ex;
   height: 1px;
   border-bottom: 1px solid var(--footer-link-text);
 }
