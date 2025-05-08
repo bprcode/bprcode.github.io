@@ -40,7 +40,7 @@ const matrices = {
 const shared = {
   gl: null as WebGL2RenderingContext | WebGLRenderingContext | null,
   readingMode: false,
-  pulseTime: -3,
+  pulseTime: -2,
   zPulse: 0,
   resizeCount: 0,
   blurKernelSize: 10,
