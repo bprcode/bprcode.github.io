@@ -24,7 +24,6 @@ const locations = {
   clearSampler: null as WebGLUniformLocation | null,
   hexAspect: null as WebGLUniformLocation | null,
   compositorAspect: null as WebGLUniformLocation | null,
-  boost: null as WebGLUniformLocation | null,
   aberration: null as WebGLUniformLocation | null,
   pulseRadius: null as WebGLUniformLocation | null,
   positionMax: null as WebGLUniformLocation | null,
@@ -41,10 +40,10 @@ const matrices = {
 const shared = {
   gl: null as WebGL2RenderingContext | WebGLRenderingContext | null,
   readingMode: false,
-  pulseTime: -3,
+  pulseTime: -2,
   zPulse: 0,
   resizeCount: 0,
-  blurKernelSize: 6,
+  blurKernelSize: 10,
   canvasWidth: 0,
   canvasHeight: 0,
   textureWidth: 1,
@@ -185,7 +184,6 @@ function init() {
   ) => {
     handleTesseractCycle(e.detail)
     queueCycleResponse()
-
   }) as EventListener)
 
   window.addEventListener('pane-close', () => {
@@ -226,7 +224,6 @@ function init() {
 
   locations.position = gl.getAttribLocation(shared.hexagonProgram, 'position')
   locations.hexAspect = gl.getUniformLocation(shared.hexagonProgram, 'aspect')
-  locations.boost = gl.getUniformLocation(shared.hexagonProgram, 'boost')
   locations.positionMax = gl.getUniformLocation(
     shared.hexagonProgram,
     'positionMax'
@@ -352,7 +349,7 @@ function queueCycleResponse() {
     if (!shared.readingMode) {
       shared.pulseTime = 0
     }
-  }, 19500);
+  }, 19500)
 }
 
 function updateSize() {
@@ -610,10 +607,13 @@ function renderComposite() {
 
   gl.uniform1f(
     locations.aberration,
-    0.005 + 0.005 * easeInOut(Math.max(0, 1 - shared.zPulse ** 2))
+    0.005 + 0.007 * easePass(1 - Math.abs(2 * shared.zPulse + 1))
   )
 
-  gl.uniform1f(locations.pulseRadius, Math.max(shared.xMax, shared.yMax) * (shared.zPulse + 1))
+  gl.uniform1f(
+    locations.pulseRadius,
+    Math.max(shared.xMax, shared.yMax) * (shared.zPulse + 1)
+  )
 
   gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
   gl.disableVertexAttribArray(locations.xy)
@@ -687,11 +687,6 @@ function renderHexagons() {
 
     const rho = Math.sqrt(p.position[0] ** 2 + p.position[1] ** 2)
 
-    const boost = Math.min(
-      1,
-      Math.max(0, easeInOut(1 - Math.abs(rho - rhoPulse)))
-    )
-    gl.uniform1f(locations.boost, 1.0 + 1.75 * boost)
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
   }
 
@@ -822,6 +817,16 @@ function easeInOut(t: number): number {
   return t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2
 }
 
+function easePass(t: number): number {
+  if (t <= 0) {
+    return 0
+  }
+  if (t >= 1) {
+    return 1
+  }
+  return 1 - 2 ** (-10 * t)
+}
+
 geometry.hexagon = [
   -1,
   0,
@@ -874,13 +879,12 @@ void main() {
 
 shaders.premultiplyAlpha = /* glsl */ `
 precision mediump float;
-uniform float boost;
 uniform vec4 rgba;
 
 varying vec4 projected;
 
 void main() {
-  vec4 multiplied = rgba * rgba.a * boost;
+  vec4 multiplied = rgba * rgba.a;
   multiplied.a = rgba.a;
 
   gl_FragColor = multiplied;
@@ -925,7 +929,8 @@ float ease(float x) {
 }
 
 void main() {
-  vec2 deltaCenter = vec2(uv.x, uv.y) - vec2(0.5, 0.55);
+  const float yFocus = 0.55;
+  vec2 deltaCenter = vec2(uv.x, uv.y) - vec2(0.5, yFocus);
   deltaCenter.x *= compositorAspect;
 
   float boundedDistance = min(pow(length(deltaCenter) + 0.001, 0.25), 1.0);
@@ -938,8 +943,11 @@ void main() {
                         * min(1., 1. - exp(uvRadius - pulseRadius));
   float pulseDelta = leadingEase + trailingEase;
   float r = min(1.0, 2.0 * length(deltaCenter) / 2.5);
-  float t = pow(1.0  - pow(1.0 - r, 0.55), 1.4);
 
+  // Lerp blur intensity based on vertical position:
+  float t = min(1., pow(2. * abs(uv.y - yFocus), 3.));
+
+  // Take five samples for chromatic aberration:
   vec4 near = texture2D(clearSampler, uv + radialOffset) * (1.0 - t)
     + texture2D(blurSampler, uv + radialOffset) * t;
   vec4 seminear = texture2D(clearSampler, uv + 0.5 * radialOffset) * (1.0 - t)
@@ -970,8 +978,9 @@ void main() {
 
   
   float overallFade = (1. - v * curtainFactor) * (pulseDelta);
+  float boost = 1. - pow(pulseDelta, 4.);
 
-  gl_FragColor = aberrantColor * (1. - overallFade) * centralR;
+  gl_FragColor = aberrantColor * (1. - overallFade) * centralR * (1. + boost);
 }
 `
 
