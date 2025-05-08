@@ -24,7 +24,6 @@ const locations = {
   clearSampler: null as WebGLUniformLocation | null,
   hexAspect: null as WebGLUniformLocation | null,
   compositorAspect: null as WebGLUniformLocation | null,
-  boost: null as WebGLUniformLocation | null,
   aberration: null as WebGLUniformLocation | null,
   pulseRadius: null as WebGLUniformLocation | null,
   positionMax: null as WebGLUniformLocation | null,
@@ -225,7 +224,6 @@ function init() {
 
   locations.position = gl.getAttribLocation(shared.hexagonProgram, 'position')
   locations.hexAspect = gl.getUniformLocation(shared.hexagonProgram, 'aspect')
-  locations.boost = gl.getUniformLocation(shared.hexagonProgram, 'boost')
   locations.positionMax = gl.getUniformLocation(
     shared.hexagonProgram,
     'positionMax'
@@ -609,7 +607,7 @@ function renderComposite() {
 
   gl.uniform1f(
     locations.aberration,
-    0.005 + 0.006 * easePass(1 - Math.abs(2 * shared.zPulse + 1))
+    0.005 + 0.007 * easePass(1 - Math.abs(2 * shared.zPulse + 1))
   )
 
   gl.uniform1f(
@@ -689,11 +687,6 @@ function renderHexagons() {
 
     const rho = Math.sqrt(p.position[0] ** 2 + p.position[1] ** 2)
 
-    const boost = Math.min(
-      1,
-      Math.max(0, easeInOut(1 - Math.abs(rho - rhoPulse)))
-    )
-    gl.uniform1f(locations.boost, 1.0 + 1.75 * boost)
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
   }
 
@@ -886,13 +879,12 @@ void main() {
 
 shaders.premultiplyAlpha = /* glsl */ `
 precision mediump float;
-uniform float boost;
 uniform vec4 rgba;
 
 varying vec4 projected;
 
 void main() {
-  vec4 multiplied = rgba * rgba.a * boost;
+  vec4 multiplied = rgba * rgba.a;
   multiplied.a = rgba.a;
 
   gl_FragColor = multiplied;
@@ -953,7 +945,7 @@ void main() {
   float r = min(1.0, 2.0 * length(deltaCenter) / 2.5);
 
   // Lerp blur intensity based on vertical position:
-  float t = min(1., pow(2. * (uv.y - yFocus), 2.));
+  float t = min(1., pow(2. * abs(uv.y - yFocus), 3.));
 
   // Take five samples for chromatic aberration:
   vec4 near = texture2D(clearSampler, uv + radialOffset) * (1.0 - t)
@@ -986,8 +978,9 @@ void main() {
 
   
   float overallFade = (1. - v * curtainFactor) * (pulseDelta);
+  float boost = 1. - pow(pulseDelta, 4.);
 
-  gl_FragColor = aberrantColor * (1. - overallFade) * centralR;
+  gl_FragColor = aberrantColor * (1. - overallFade) * centralR * (1. + boost);
 }
 `
 
