@@ -41,7 +41,7 @@ const matrices = {
 const shared = {
   gl: null as WebGL2RenderingContext | WebGLRenderingContext | null,
   readingMode: false,
-  pulseTime: -2,
+  pulseTime: 8, // DEBUG, -2
   zPulse: 0,
   resizeCount: 0,
   blurKernelSize: 10,
@@ -348,9 +348,7 @@ function queueCycleResponse() {
     if (!shared.readingMode) {
       shared.pulseTime = 0
     }
-  // }, 19500)
-  // DEBUG
-  }, 8000 - 500)
+  }, 19500)
 }
 
 function updateSize() {
@@ -884,12 +882,14 @@ uniform float pulseRadius;
 varying mediump vec2 vuv;
 
 float ease(float x) {
+  // Bound input range to [0... 1]
   float t = max(0., min(1., x));
 
+  // Exponential ease:
   float lo = 0.5 * pow(2., 20. * t - 10.);
   float hi = 1.0 - 0.5 * pow(2., -20. * t + 10.);
-  float switched = step(0.5, t);
-  return max(0., min(1., (1. - switched) * lo + switched * hi));
+  float isHi = step(0.5, t);
+  return max(0., min(1., (1. - isHi) * lo + isHi * hi));
 }
 
 void main() {
@@ -923,7 +923,7 @@ void main() {
   vec4 far = texture2D(clearSampler, vuv - radialOffset) * (1.0 - t)
     + texture2D(blurSampler, vuv - radialOffset) * t;
 
-  float v = cos(2.7 * abs(vuv.y - 0.475));
+  float vertical = cos(3.0 * abs(vuv.y - yFocus));
 
   far *=      vec4(0.,   0.,   0.6,   0.2);
   semifar *=  vec4(0.,   0.3,  0.3,   0.2);
@@ -934,18 +934,18 @@ void main() {
   float smoothR = smoothstep(0., 1.,
     7.0 * smoothstep(0., 1., pow(0.45 * r, 1.1)))
     * smoothstep(0., 1., 1. - r);
-  float centralR = pow(0.75*r, 1.7);
+  float centralR = pow(0.9*r, 1.8);
   float outerR = smoothstep(0., 1., 1. - r);
 
   vec4 aberrantColor = far + semifar + middle + seminear + near;
 
-  float curtainFactor = smoothstep(0.0, 0.2, (1. - 2. * abs(vuv.x - 0.5)));
+  float curtainFactor = smoothstep(-0.075, 0.3, (1. - 2. * abs(vuv.x - 0.5)));
   
-  float overallFade = (1. - v) * (pulseDelta);
-  float boost = 2. * (1. - pow(pulseDelta, 4.));
+  float overallFade = (1. - vertical) * (pulseDelta);
+  float waveEmphasis = 1.85 * (1. - pow(pulseDelta, 2.));
 
   float finalScale = (1. - overallFade)
-                      * centralR * (1. + boost) * curtainFactor;
+                      * centralR * (1. + waveEmphasis) * curtainFactor;
   gl_FragColor = aberrantColor * finalScale;
   // debug
   // gl_FragColor = vec4(finalScale, 0.5*finalScale, 0, 1.);
