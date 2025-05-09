@@ -406,11 +406,19 @@ function updateSize() {
   gl.useProgram(shared.hexagonProgram)
   gl.uniform2fv(locations.positionMax, [shared.xMax, shared.yMax])
 
-  console.log(tWidth)
   gl.useProgram(shared.compositorProgram)
   gl.uniform1f(locations.compositorAspect, shared.aspect)
-  gl.uniform1f(locations.curtainLo, 0.0 * tWidth + (-0.5 / 0.04) * (1. - tWidth))
-  gl.uniform1f(locations.curtainHi, 0.75 * tWidth + (-0.05 / 0.04) * (1. - tWidth))
+
+  // Lerp horizontal vignette based on fractional canvas width,
+  // interpolating between breakpoints:
+  const lerpLo = 0.0 * tWidth + (-0.05 / 0.04) * (1 - tWidth)
+  const lerpHi =
+    tWidth >= 0.96
+      ? 0.8 * tWidth + -12.95 * (1 - tWidth)
+      : 0.25 * (1 - (tWidth - 0.96)) + 0.7 * (tWidth - 0.96)
+
+  gl.uniform1f(locations.curtainLo, Math.max(-0.05, Math.min(0.1, lerpLo)))
+  gl.uniform1f(locations.curtainHi, Math.max(0.0, Math.min(1.0, lerpHi)))
 
   // Update renderbuffer storage for antialiasing, if supported:
   if (shared.fboAA && gl instanceof WebGL2RenderingContext) {
@@ -488,8 +496,7 @@ function addParticle() {
     age: 0,
     color: [...shared.activeColorSet[colorIndex], 1],
     colorIndex: colorIndex,
-    scale:
-      0.85 + 0.1 * (1 - (y + shared.yMax) / shared.yMax) + 0.2 / (z + 2),
+    scale: 0.85 + 0.1 * (1 - (y + shared.yMax) / shared.yMax) + 0.2 / (z + 2),
   })
 }
 
@@ -801,10 +808,6 @@ function createShader(
   throw Error('Shader compilation failed')
 }
 
-function easeInOut(t: number): number {
-  return t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2
-}
-
 function easePass(t: number): number {
   if (t <= 0) {
     return 0
@@ -958,14 +961,11 @@ void main() {
 
   vec4 aberrantColor = far + semifar + middle + seminear + near;
 
-  // float curtainFactor = smoothstep(
-  //   curtainLo, curtainHi, (1. - 2. * abs(vuv.x - 0.5)));
-  // float curtainFactor = smoothstep(
-  //   curtainLo, curtainHi, (1. - 2. * abs(vuv.x - 0.5)));
   float curtainFactor = smoothstep(
-    -0.05, 0.25, (1. - 2. * abs(vuv.x - 0.5)));
+    curtainLo, curtainHi, (1. - 2. * abs(vuv.x - 0.5)));
+
   // debug
-  // curtainFactor = 1.;
+  // vertical = 1.;
   
   float overallFade = (1. - vertical) * (pulseDelta);
   float waveEmphasis = 1.85 * (1. - pow(pulseDelta, 2.));
@@ -975,7 +975,7 @@ void main() {
   gl_FragColor = aberrantColor * finalScale;
   // debug
   // gl_FragColor = vec4(finalScale, 0.5*finalScale, 0, 1.);
-  // gl_FragColor = vec4(curtainFactor, 0.5*curtainFactor, 0, 1.);
+  gl_FragColor = vec4(vertical, 0.5*vertical, 0, 1.);
 }
 `
 
