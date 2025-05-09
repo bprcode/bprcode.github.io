@@ -233,6 +233,10 @@ noscript {
   text-shadow: 0px 0px 10px #000, 0px 0px 6px #000;
 }
 
+.name-container span {
+  z-index: 1;
+}
+
 .name-container::before {
   content: '';
   position: absolute;
@@ -241,8 +245,8 @@ noscript {
   box-shadow: 0px 0px 12px rgba(119, 0, 255, 0.207);
   border-radius: 1px;
   padding: 4px;
-  z-index: -1;
-  top: -0.35em;
+  z-index: 1;
+  top: -0.25em;
   left: calc(50% - 0.5 * 2em);
   width: 2em;
   height: 2em;
@@ -257,8 +261,8 @@ noscript {
   box-shadow: 0px 0px 12px rgba(119, 0, 255, 0.207);
   border-radius: 1px;
   padding: 4px;
-  z-index: -2;
-  top: 1.45em;
+  z-index: 0;
+  top: 1.35em;
   left: calc(50% - 0.5 * 1.25em);
   width: 1.25em;
   height: 1.25em;
@@ -312,6 +316,7 @@ noscript {
 
 .gear,
 .fullscreen {
+  z-index: 0;
   cursor: pointer;
   width: 3.5em;
   height: 100%;
@@ -940,7 +945,6 @@ footer {
     box-shadow: 0px 0px 4px #0af8;
     border-radius: 1px;
     padding: 4px;
-    z-index: -1;
     top: -0.05em;
     left: 1.15em;
     width: 1.6em;
@@ -956,7 +960,6 @@ footer {
     box-shadow: 0px 0px 4px #0af8;
     border-radius: 1px;
     padding: 4px;
-    z-index: -2;
     top: 0.2596em;
     left: 0.44em;
     width: 1em;

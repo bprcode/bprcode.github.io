@@ -41,7 +41,7 @@ const matrices = {
 const shared = {
   gl: null as WebGL2RenderingContext | WebGLRenderingContext | null,
   readingMode: false,
-  pulseTime: -2,
+  pulseTime: 8,
   zPulse: 0,
   resizeCount: 0,
   blurKernelSize: 10,
@@ -927,9 +927,10 @@ void main() {
   seminear *= vec4(0.3,  0.3,  0.,    0.2);
   near *=     vec4(0.6,  0.,   0.,    0.2);
   
-  float smoothR = smoothstep(0., 1., 7.0 * smoothstep(0., 1., pow(0.45 * r, 1.1)))
+  float smoothR = smoothstep(0., 1.,
+    7.0 * smoothstep(0., 1., pow(0.45 * r, 1.1)))
     * smoothstep(0., 1., 1. - r);
-  float centralR = pow(0.85*r, 1.9);
+  float centralR = pow(0.75*r, 1.7);
   float outerR = smoothstep(0., 1., 1. - r);
 
   vec4 aberrantColor = far + semifar + middle + seminear + near;
@@ -937,12 +938,14 @@ void main() {
   float curtainFactor = smoothstep(0.0, 0.2, (1. - 2. * abs(vuv.x - 0.5)));
   
   float overallFade = (1. - v) * (pulseDelta);
-  float boost = 1. - pow(pulseDelta, 4.);
+  // float boost = 1. - pow(pulseDelta, 4.);
+  float boost = 0.;
 
-  float finalScale = (1. - overallFade) * centralR * (1. + boost) * curtainFactor;
+  float finalScale = (1. - overallFade)
+                      * centralR * (1. + boost) * curtainFactor;
   gl_FragColor = aberrantColor * finalScale;
   // debug
-  // gl_FragColor = vec4(finalScale, 0, 0, 1.);
+  gl_FragColor = vec4(finalScale, 0, 0, 0.9);
 }
 `
 
