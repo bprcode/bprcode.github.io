@@ -41,7 +41,7 @@ const matrices = {
 const shared = {
   gl: null as WebGL2RenderingContext | WebGLRenderingContext | null,
   readingMode: false,
-  pulseTime: 8,
+  pulseTime: -2,
   zPulse: 0,
   resizeCount: 0,
   blurKernelSize: 10,
@@ -348,7 +348,9 @@ function queueCycleResponse() {
     if (!shared.readingMode) {
       shared.pulseTime = 0
     }
-  }, 19500)
+  // }, 19500)
+  // DEBUG
+  }, 8000 - 500)
 }
 
 function updateSize() {
@@ -882,10 +884,12 @@ uniform float pulseRadius;
 varying mediump vec2 vuv;
 
 float ease(float x) {
-  float lo = 0.5 * pow(2., 20. * x - 10.);
-  float hi = 1.0 - 0.5 * pow(2., -20. * x + 10.);
-  float s = step(0.5, x);
-  return max(0., min(1., (1. - s) * lo + s * hi));
+  float t = max(0., min(1., x));
+
+  float lo = 0.5 * pow(2., 20. * t - 10.);
+  float hi = 1.0 - 0.5 * pow(2., -20. * t + 10.);
+  float switched = step(0.5, t);
+  return max(0., min(1., (1. - switched) * lo + switched * hi));
 }
 
 void main() {
@@ -938,14 +942,13 @@ void main() {
   float curtainFactor = smoothstep(0.0, 0.2, (1. - 2. * abs(vuv.x - 0.5)));
   
   float overallFade = (1. - v) * (pulseDelta);
-  // float boost = 1. - pow(pulseDelta, 4.);
-  float boost = 0.;
+  float boost = 2. * (1. - pow(pulseDelta, 4.));
 
   float finalScale = (1. - overallFade)
                       * centralR * (1. + boost) * curtainFactor;
   gl_FragColor = aberrantColor * finalScale;
   // debug
-  gl_FragColor = vec4(finalScale, 0, 0, 0.9);
+  // gl_FragColor = vec4(finalScale, 0.5*finalScale, 0, 1.);
 }
 `
 
