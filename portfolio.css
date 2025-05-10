@@ -111,15 +111,12 @@ noscript {
   top: 0px;
   width: 100vw;
   height: 100%;;
-  background-image: radial-gradient(
-      230vw 30vh at 55vw 112vh,
-      #000 45%,
-      transparent
-    ),
-    radial-gradient(230vw 200vh at 55vw 112vh, #000, #020204 35%, #403866 98%);
+  background-image: 
+    radial-gradient( 230vw 30vh at 55vw 112vh, #000 45%, transparent ),
+    radial-gradient( 230vw 200vh at 55vw 112vh, #000, #020107 35%, #281760 98% );
   background-image: 
     radial-gradient( 230lvw 30lvh at 55lvw 112lvh, #000 45%, transparent ),
-    radial-gradient( 230lvw 200lvh at 55lvw 112lvh, #000, #010104 35%, #352560 98% );
+    radial-gradient( 230lvw 200lvh at 55lvw 112lvh, #000, #020107 35%, #281760 98% );
 }
 
 .loading-notice {
@@ -236,6 +233,10 @@ noscript {
   text-shadow: 0px 0px 10px #000, 0px 0px 6px #000;
 }
 
+.name-container span {
+  z-index: 1;
+}
+
 .name-container::before {
   content: '';
   position: absolute;
@@ -244,8 +245,8 @@ noscript {
   box-shadow: 0px 0px 12px rgba(119, 0, 255, 0.207);
   border-radius: 1px;
   padding: 4px;
-  z-index: -1;
-  top: -0.35em;
+  z-index: 1;
+  top: -0.25em;
   left: calc(50% - 0.5 * 2em);
   width: 2em;
   height: 2em;
@@ -260,8 +261,8 @@ noscript {
   box-shadow: 0px 0px 12px rgba(119, 0, 255, 0.207);
   border-radius: 1px;
   padding: 4px;
-  z-index: -2;
-  top: 1.45em;
+  z-index: 0;
+  top: 1.35em;
   left: calc(50% - 0.5 * 1.25em);
   width: 1.25em;
   height: 1.25em;
@@ -315,6 +316,7 @@ noscript {
 
 .gear,
 .fullscreen {
+  z-index: 0;
   cursor: pointer;
   width: 3.5em;
   height: 100%;
@@ -719,7 +721,7 @@ input {
   margin-bottom: 0.7em;
 }
 
-.settings > fieldset {
+.settings fieldset {
   margin-bottom: 0.7em;
 }
 
@@ -796,7 +798,7 @@ input {
   position: absolute;
   right: 0px;
   left: 100%;
-  top: 5ex;
+  top: 5.25ex;
   height: 1px;
   border-bottom: 1px solid var(--footer-link-text);
 }
@@ -943,7 +945,6 @@ footer {
     box-shadow: 0px 0px 4px #0af8;
     border-radius: 1px;
     padding: 4px;
-    z-index: -1;
     top: -0.05em;
     left: 1.15em;
     width: 1.6em;
@@ -959,7 +960,6 @@ footer {
     box-shadow: 0px 0px 4px #0af8;
     border-radius: 1px;
     padding: 4px;
-    z-index: -2;
     top: 0.2596em;
     left: 0.44em;
     width: 1em;

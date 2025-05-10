@@ -14,16 +14,19 @@ const geometry: { [k: string]: number[] } = {}
 
 const locations = {
   position: -1 as GLint,
-  xy: -1 as GLint,
-  uv: -1 as GLint,
+  xyBlur: -1 as GLint,
+  xyComposite: -1 as GLint,
+  uvBlur: -1 as GLint,
+  uvComposite: -1 as GLint,
   kernel: null as WebGLUniformLocation | null,
   readTexture: null as WebGLUniformLocation | null,
   blurStep: null as WebGLUniformLocation | null,
-  texSampler: null as WebGLUniformLocation | null,
   blurSampler: null as WebGLUniformLocation | null,
   clearSampler: null as WebGLUniformLocation | null,
   hexAspect: null as WebGLUniformLocation | null,
   compositorAspect: null as WebGLUniformLocation | null,
+  curtainLo: null as WebGLUniformLocation | null,
+  curtainHi: null as WebGLUniformLocation | null,
   aberration: null as WebGLUniformLocation | null,
   pulseRadius: null as WebGLUniformLocation | null,
   positionMax: null as WebGLUniformLocation | null,
@@ -61,8 +64,8 @@ const shared = {
   flatProgram: null as WebGLProgram | null,
   blurProgram: null as WebGLProgram | null,
   compositorProgram: null as WebGLProgram | null,
-  hexagonVertBuffer: null as WebGLBuffer | null,
-  flatVertBuffer: null as WebGLBuffer | null,
+  hexagonVertexBuffer: null as WebGLBuffer | null,
+  squareVertexBuffer: null as WebGLBuffer | null,
   uvBuffer: null as WebGLBuffer | null,
   fboAA: null as WebGLFramebuffer | null,
   rbAA: null as WebGLRenderbuffer | null,
@@ -208,19 +211,16 @@ function init() {
   )
   shared.hexagonProgram = createProgram(gl, hexVertShader, hexFragShader)
 
-  const texVertShader = createShader(gl, gl.VERTEX_SHADER, shaders.texVert)
-  const texFragShader = createShader(gl, gl.FRAGMENT_SHADER, shaders.texFrag)
-  shared.flatProgram = createProgram(gl, texVertShader, texFragShader)
-
+  const uvVertShader = createShader(gl, gl.VERTEX_SHADER, shaders.uvVert)
   const blurShader = createShader(gl, gl.FRAGMENT_SHADER, shaders.blur1d)
-  shared.blurProgram = createProgram(gl, texVertShader, blurShader)
+  shared.blurProgram = createProgram(gl, uvVertShader, blurShader)
 
   const compositorShader = createShader(
     gl,
     gl.FRAGMENT_SHADER,
     shaders.compositor
   )
-  shared.compositorProgram = createProgram(gl, texVertShader, compositorShader)
+  shared.compositorProgram = createProgram(gl, uvVertShader, compositorShader)
 
   locations.position = gl.getAttribLocation(shared.hexagonProgram, 'position')
   locations.hexAspect = gl.getUniformLocation(shared.hexagonProgram, 'aspect')
@@ -234,9 +234,9 @@ function init() {
   )
   locations.project = gl.getUniformLocation(shared.hexagonProgram, 'project')
   locations.rgba = gl.getUniformLocation(shared.hexagonProgram, 'rgba')
-  shared.hexagonVertBuffer = gl.createBuffer()
+  shared.hexagonVertexBuffer = gl.createBuffer()
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, shared.hexagonVertBuffer)
+  gl.bindBuffer(gl.ARRAY_BUFFER, shared.hexagonVertexBuffer)
   gl.bufferData(
     gl.ARRAY_BUFFER,
     new Float32Array(geometry.hexagon),
@@ -267,6 +267,14 @@ function init() {
     shared.compositorProgram,
     'compositorAspect'
   )
+  locations.curtainLo = gl.getUniformLocation(
+    shared.compositorProgram,
+    'curtainLo'
+  )
+  locations.curtainHi = gl.getUniformLocation(
+    shared.compositorProgram,
+    'curtainHi'
+  )
   locations.aberration = gl.getUniformLocation(
     shared.compositorProgram,
     'aberration'
@@ -276,13 +284,14 @@ function init() {
     'pulseRadius'
   )
 
-  // Textured surface initialization
-  locations.xy = gl.getAttribLocation(shared.flatProgram, 'xy')
-  locations.uv = gl.getAttribLocation(shared.flatProgram, 'uvA')
-  locations.texSampler = gl.getUniformLocation(shared.flatProgram, 'texSampler')
-  shared.flatVertBuffer = gl.createBuffer()
+  locations.xyBlur = gl.getAttribLocation(shared.blurProgram, 'xy')
+  locations.xyComposite = gl.getAttribLocation(shared.compositorProgram, 'xy')
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, shared.flatVertBuffer)
+  locations.uvBlur = gl.getAttribLocation(shared.blurProgram, 'uv')
+  locations.uvComposite = gl.getAttribLocation(shared.compositorProgram, 'uv')
+  shared.squareVertexBuffer = gl.createBuffer()
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, shared.squareVertexBuffer)
   gl.bufferData(
     gl.ARRAY_BUFFER,
     new Float32Array(geometry.square),
@@ -353,6 +362,7 @@ function queueCycleResponse() {
 }
 
 function updateSize() {
+  const maxCanvasSize = 1600
   const gl = shared.gl
   const canvas: HTMLCanvasElement | null =
     document.querySelector('.bokeh-canvas')
@@ -371,6 +381,9 @@ function updateSize() {
     1,
     Math.round((shared.canvasHeight * canvas.clientWidth) / canvas.clientHeight)
   )
+
+  const tWidth = canvas.clientWidth / maxCanvasSize
+  const isMaxWidth = canvas.clientWidth === maxCanvasSize
 
   shared.textureWidth = Math.max(
     1,
@@ -395,6 +408,17 @@ function updateSize() {
 
   gl.useProgram(shared.compositorProgram)
   gl.uniform1f(locations.compositorAspect, shared.aspect)
+
+  // Lerp horizontal vignette based on fractional canvas width,
+  // interpolating between breakpoints:
+  const lerpLo = 0.0 * tWidth + (-0.05 / 0.04) * (1 - tWidth)
+  const lerpHi =
+    tWidth >= 0.96
+      ? 0.8 * tWidth + -12.95 * (1 - tWidth)
+      : 0.25 * (1 - (tWidth - 0.96)) + 0.7 * (tWidth - 0.96)
+
+  gl.uniform1f(locations.curtainLo, Math.max(-0.05, Math.min(0.1, lerpLo)))
+  gl.uniform1f(locations.curtainHi, Math.max(0.0, Math.min(1.0, lerpHi)))
 
   // Update renderbuffer storage for antialiasing, if supported:
   if (shared.fboAA && gl instanceof WebGL2RenderingContext) {
@@ -472,8 +496,7 @@ function addParticle() {
     age: 0,
     color: [...shared.activeColorSet[colorIndex], 1],
     colorIndex: colorIndex,
-    scale:
-      0.85 + 0.1 * (1 - (y + shared.yMax) / shared.yMax) + 0.2 / (z + 2.01),
+    scale: 0.85 + 0.1 * (1 - (y + shared.yMax) / shared.yMax) + 0.2 / (z + 2),
   })
 }
 
@@ -564,13 +587,13 @@ function renderBlur(
 
   gl.viewport(0, 0, shared.textureWidth, shared.textureHeight)
   gl.useProgram(shared.blurProgram)
-  gl.enableVertexAttribArray(locations.xy)
-  gl.enableVertexAttribArray(locations.uv)
+  gl.enableVertexAttribArray(locations.xyBlur)
+  gl.enableVertexAttribArray(locations.uvBlur)
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, shared.flatVertBuffer)
-  gl.vertexAttribPointer(locations.xy, 2, gl.FLOAT, false, 0, 0)
+  gl.bindBuffer(gl.ARRAY_BUFFER, shared.squareVertexBuffer)
+  gl.vertexAttribPointer(locations.xyBlur, 2, gl.FLOAT, false, 0, 0)
   gl.bindBuffer(gl.ARRAY_BUFFER, shared.uvBuffer)
-  gl.vertexAttribPointer(locations.uv, 2, gl.FLOAT, false, 0, 0)
+  gl.vertexAttribPointer(locations.uvBlur, 2, gl.FLOAT, false, 0, 0)
 
   gl.activeTexture(gl.TEXTURE0)
   gl.bindTexture(gl.TEXTURE_2D, fromTexture)
@@ -578,8 +601,8 @@ function renderBlur(
   gl.uniform2f(locations.blurStep, blurX, blurY)
 
   gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
-  gl.disableVertexAttribArray(locations.xy)
-  gl.disableVertexAttribArray(locations.uv)
+  gl.disableVertexAttribArray(locations.xyBlur)
+  gl.disableVertexAttribArray(locations.uvBlur)
 }
 
 function renderComposite() {
@@ -589,13 +612,13 @@ function renderComposite() {
 
   gl.viewport(0, 0, shared.canvasWidth, shared.canvasHeight)
   gl.useProgram(shared.compositorProgram)
-  gl.enableVertexAttribArray(locations.xy)
-  gl.enableVertexAttribArray(locations.uv)
+  gl.enableVertexAttribArray(locations.xyComposite)
+  gl.enableVertexAttribArray(locations.uvComposite)
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, shared.flatVertBuffer)
-  gl.vertexAttribPointer(locations.xy, 2, gl.FLOAT, false, 0, 0)
+  gl.bindBuffer(gl.ARRAY_BUFFER, shared.squareVertexBuffer)
+  gl.vertexAttribPointer(locations.xyComposite, 2, gl.FLOAT, false, 0, 0)
   gl.bindBuffer(gl.ARRAY_BUFFER, shared.uvBuffer)
-  gl.vertexAttribPointer(locations.uv, 2, gl.FLOAT, false, 0, 0)
+  gl.vertexAttribPointer(locations.uvComposite, 2, gl.FLOAT, false, 0, 0)
 
   gl.activeTexture(gl.TEXTURE0)
   gl.bindTexture(gl.TEXTURE_2D, shared.textureList[0])
@@ -616,32 +639,8 @@ function renderComposite() {
   )
 
   gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
-  gl.disableVertexAttribArray(locations.xy)
-  gl.disableVertexAttribArray(locations.uv)
-}
-
-function renderFlatTexture(sourceTexture: WebGLTexture) {
-  const gl = shared.gl!
-
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-
-  gl.viewport(0, 0, shared.canvasWidth, shared.canvasHeight)
-  gl.useProgram(shared.flatProgram)
-  gl.enableVertexAttribArray(locations.xy)
-  gl.enableVertexAttribArray(locations.uv)
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, shared.flatVertBuffer)
-  gl.vertexAttribPointer(locations.xy, 2, gl.FLOAT, false, 0, 0)
-  gl.bindBuffer(gl.ARRAY_BUFFER, shared.uvBuffer)
-  gl.vertexAttribPointer(locations.uv, 2, gl.FLOAT, false, 0, 0)
-
-  gl.activeTexture(gl.TEXTURE0)
-  gl.bindTexture(gl.TEXTURE_2D, sourceTexture)
-  gl.uniform1i(locations.texSampler, 0)
-
-  gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
-  gl.disableVertexAttribArray(locations.xy)
-  gl.disableVertexAttribArray(locations.uv)
+  gl.disableVertexAttribArray(locations.xyComposite)
+  gl.disableVertexAttribArray(locations.uvComposite)
 }
 
 function renderHexagons() {
@@ -655,14 +654,12 @@ function renderHexagons() {
   gl.useProgram(shared.hexagonProgram)
   gl.enableVertexAttribArray(locations.position)
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, shared.hexagonVertBuffer)
+  gl.bindBuffer(gl.ARRAY_BUFFER, shared.hexagonVertexBuffer)
   gl.vertexAttribPointer(locations.position, 3, gl.FLOAT, false, 0, 0)
 
   ident(matrices.project)
   matrices.project[0] = 1 / shared.aspect
   gl.uniformMatrix4fv(locations.project, false, matrices.project)
-
-  const rhoPulse = Math.max(shared.xMax, shared.yMax) * (shared.zPulse + 1)
 
   for (const p of particles) {
     if (p.spawnDelay > 0) {
@@ -684,8 +681,6 @@ function renderHexagons() {
 
     gl.uniform4fv(locations.rgba, p.color)
     gl.uniformMatrix4fv(locations.transform, false, matrices.transform)
-
-    const rho = Math.sqrt(p.position[0] ** 2 + p.position[1] ** 2)
 
     gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.hexagon.length / 3)
   }
@@ -813,10 +808,6 @@ function createShader(
   throw Error('Shader compilation failed')
 }
 
-function easeInOut(t: number): number {
-  return t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2
-}
-
 function easePass(t: number): number {
   if (t <= 0) {
     return 0
@@ -853,7 +844,15 @@ geometry.hexagon = [
   0,
 ]
 
-geometry.square = [-1, 1, 1, 1, 1, -1, -1, -1]
+geometry.square = [
+  -1, 1,
+
+  1, 1,
+
+  1, -1,
+
+  -1, -1,
+]
 
 shaders.flatLensVert = /* glsl */ `
 uniform float aspect;
@@ -862,8 +861,6 @@ uniform mat4 transform;
 uniform mat4 project;
 attribute vec4 position;
 
-varying vec4 projected;
-
 void main() {
   vec4 transformed = transform * position;
 
@@ -871,9 +868,7 @@ void main() {
   transformed.x /= 0.9 + r * 0.1125;
   transformed.y /= 0.9 + r * 0.1125;
 
-  projected = project * transformed;
-
-  gl_Position = projected;
+  gl_Position = project * transformed;
 }
 `
 
@@ -881,34 +876,19 @@ shaders.premultiplyAlpha = /* glsl */ `
 precision mediump float;
 uniform vec4 rgba;
 
-varying vec4 projected;
-
 void main() {
-  vec4 multiplied = rgba * rgba.a;
-  multiplied.a = rgba.a;
-
-  gl_FragColor = multiplied;
+  gl_FragColor = vec4(vec3(rgba) * rgba.a, rgba.a);
 }
 `
 
-shaders.texVert = /* glsl */ `
+shaders.uvVert = /* glsl */ `
 attribute vec2 xy;
-attribute vec2 uvA;
-varying mediump vec2 uv;
+attribute vec2 uv;
+varying mediump vec2 vuv;
 
 void main() {
   gl_Position = vec4(xy, 0, 1);
-  uv = uvA;
-}
-`
-
-shaders.texFrag = /* glsl */ `
-precision mediump float;
-uniform sampler2D texSampler;
-varying mediump vec2 uv;
-
-void main() {
-  gl_FragColor = texture2D(texSampler, uv);
+  vuv = uv;
 }
 `
 
@@ -919,18 +899,24 @@ uniform sampler2D clearSampler;
 uniform float compositorAspect;
 uniform float aberration;
 uniform float pulseRadius;
-varying mediump vec2 uv;
+uniform float curtainLo;
+uniform float curtainHi;
+varying mediump vec2 vuv;
 
 float ease(float x) {
-  float lo = 0.5 * pow(2., 20. * x - 10.);
-  float hi = 1.0 - 0.5 * pow(2., -20. * x + 10.);
-  float s = step(0.5, x);
-  return max(0., min(1., (1. - s) * lo + s * hi));
+  // Bound input range to [0... 1]
+  float t = max(0., min(1., x));
+
+  // Exponential ease:
+  float lo = 0.5 * pow(2., 20. * t - 10.);
+  float hi = 1.0 - 0.5 * pow(2., -20. * t + 10.);
+  float isHi = step(0.5, t);
+  return max(0., min(1., (1. - isHi) * lo + isHi * hi));
 }
 
 void main() {
   const float yFocus = 0.55;
-  vec2 deltaCenter = vec2(uv.x, uv.y) - vec2(0.5, yFocus);
+  vec2 deltaCenter = vec2(vuv.x, vuv.y) - vec2(0.5, yFocus);
   deltaCenter.x *= compositorAspect;
 
   float boundedDistance = min(pow(length(deltaCenter) + 0.001, 0.25), 1.0);
@@ -942,24 +928,33 @@ void main() {
   float trailingEase = (1. - step(0., radialDifference))
                         * min(1., 1. - exp(uvRadius - pulseRadius));
   float pulseDelta = leadingEase + trailingEase;
-  float r = min(1.0, 2.0 * length(deltaCenter) / 2.5);
+  float r = min(1.0, 0.8 * length(deltaCenter));
 
   // Lerp blur intensity based on vertical position:
-  float t = min(1., pow(2. * abs(uv.y - yFocus), 3.));
+  float t = min(1., pow(2. * abs(vuv.y - yFocus), 3.));
 
   // Take five samples for chromatic aberration:
-  vec4 near = texture2D(clearSampler, uv + radialOffset) * (1.0 - t)
-    + texture2D(blurSampler, uv + radialOffset) * t;
-  vec4 seminear = texture2D(clearSampler, uv + 0.5 * radialOffset) * (1.0 - t)
-    + texture2D(blurSampler, uv + 0.5 * radialOffset) * t;
-  vec4 middle = texture2D(clearSampler, uv) * (1.0 - t)
-    + texture2D(blurSampler, uv) * t;
-  vec4 semifar = texture2D(clearSampler, uv - 0.5 * radialOffset) * (1.0 - t)
-    + texture2D(blurSampler, uv - 0.5 * radialOffset) * t;
-  vec4 far = texture2D(clearSampler, uv - radialOffset) * (1.0 - t)
-    + texture2D(blurSampler, uv - radialOffset) * t;
+  vec4 near = mix(
+    texture2D(clearSampler, vuv + radialOffset),
+    texture2D(blurSampler, vuv + radialOffset) , t);
+  vec4 seminear = mix(
+    texture2D(clearSampler, vuv + 0.5 * radialOffset),
+    texture2D(blurSampler, vuv + 0.5 * radialOffset) , t);
+  vec4 middle = mix(
+    texture2D(clearSampler, vuv),
+    texture2D(blurSampler, vuv) , t);
+  vec4 semifar = mix(
+    texture2D(clearSampler, vuv - 0.5 * radialOffset),
+    texture2D(blurSampler, vuv - 0.5 * radialOffset) , t);
+  vec4 far = mix(
+    texture2D(clearSampler, vuv - radialOffset),
+    texture2D(blurSampler, vuv - radialOffset) , t);
 
-  float v = cos(2.7 * abs(uv.y - 0.475));
+  // Interpolation variable based on aspect ratio:
+  float tAspect = min(1., max(0., (2.1 - compositorAspect) / 1.2));
+  float vertical = cos(3.0 * abs((vuv.y - yFocus * 0.95)
+                    / (sin(3.14159 / 2. + 0.5*(vuv.x - 0.5)))));
+  vertical = 1. - (1. - vertical) * mix(1., 0.9, tAspect);
 
   far *=      vec4(0.,   0.,   0.6,   0.2);
   semifar *=  vec4(0.,   0.3,  0.3,   0.2);
@@ -967,26 +962,25 @@ void main() {
   seminear *= vec4(0.3,  0.3,  0.,    0.2);
   near *=     vec4(0.6,  0.,   0.,    0.2);
   
-  float smoothR = smoothstep(0., 1., 7.0 * smoothstep(0., 1., pow(0.45 * r, 1.1)))
-    * smoothstep(0., 1., 1. - r);
-  float centralR = pow(0.85*r, 1.9);
-  float outerR = smoothstep(0., 1., 1. - r);
+  float centralR = pow(mix(0.9, 1.8, tAspect) * r, mix(1.8, 2.4, tAspect));
 
   vec4 aberrantColor = far + semifar + middle + seminear + near;
 
-  float curtainFactor = smoothstep(0.0, 0.2, (1. - 2. * abs(uv.x - 0.5)));
+  float curtainFactor = smoothstep(
+    curtainLo, curtainHi, (1. - 2. * abs(vuv.x - 0.5)));
 
-  
-  float overallFade = (1. - v * curtainFactor) * (pulseDelta);
-  float boost = 1. - pow(pulseDelta, 4.);
+  float overallFade = (1. - vertical) * (pulseDelta);
+  float waveEmphasis = 1.85 * (1. - pow(pulseDelta, 2.));
 
-  gl_FragColor = aberrantColor * (1. - overallFade) * centralR * (1. + boost);
+  float finalScale = (1. - overallFade)
+                      * centralR * (1. + waveEmphasis) * curtainFactor;
+  gl_FragColor = aberrantColor * finalScale;
 }
 `
 
 shaders.blur1d = /* glsl */ `
 precision mediump float;
-varying vec2 uv;
+varying vec2 vuv;
 
 uniform sampler2D readTexture;
 #define kernelSize ${shared.blurKernelSize}
@@ -997,10 +991,10 @@ void main (void) {
   vec2 dv = blurStep;
 
   // double-weight on 0 element:
-  vec4 color = texture2D(readTexture, uv) * kernel[0];
+  vec4 color = texture2D(readTexture, vuv) * kernel[0];
   for (int i = 1; i < kernelSize; i++) {
-    color += texture2D(readTexture, uv - float(i)*dv) * kernel[i]
-            + texture2D(readTexture, uv + float(i)*dv) * kernel[i];
+    color += texture2D(readTexture, vuv - float(i)*dv) * kernel[i]
+            + texture2D(readTexture, vuv + float(i)*dv) * kernel[i];
   }
 
   gl_FragColor = color;
