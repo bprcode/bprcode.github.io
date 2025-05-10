@@ -43,7 +43,7 @@ const matrices = {
 const shared = {
   gl: null as WebGL2RenderingContext | WebGLRenderingContext | null,
   readingMode: false,
-  pulseTime: -2, // DEBUG, -2
+  pulseTime: -2,
   zPulse: 0,
   resizeCount: 0,
   blurKernelSize: 10,
@@ -928,24 +928,33 @@ void main() {
   float trailingEase = (1. - step(0., radialDifference))
                         * min(1., 1. - exp(uvRadius - pulseRadius));
   float pulseDelta = leadingEase + trailingEase;
-  float r = min(1.0, 2.0 * length(deltaCenter) / 2.5);
+  float r = min(1.0, 0.8 * length(deltaCenter));
 
   // Lerp blur intensity based on vertical position:
   float t = min(1., pow(2. * abs(vuv.y - yFocus), 3.));
 
   // Take five samples for chromatic aberration:
-  vec4 near = texture2D(clearSampler, vuv + radialOffset) * (1.0 - t)
-    + texture2D(blurSampler, vuv + radialOffset) * t;
-  vec4 seminear = texture2D(clearSampler, vuv + 0.5 * radialOffset) * (1.0 - t)
-    + texture2D(blurSampler, vuv + 0.5 * radialOffset) * t;
-  vec4 middle = texture2D(clearSampler, vuv) * (1.0 - t)
-    + texture2D(blurSampler, vuv) * t;
-  vec4 semifar = texture2D(clearSampler, vuv - 0.5 * radialOffset) * (1.0 - t)
-    + texture2D(blurSampler, vuv - 0.5 * radialOffset) * t;
-  vec4 far = texture2D(clearSampler, vuv - radialOffset) * (1.0 - t)
-    + texture2D(blurSampler, vuv - radialOffset) * t;
+  vec4 near = mix(
+    texture2D(clearSampler, vuv + radialOffset),
+    texture2D(blurSampler, vuv + radialOffset) , t);
+  vec4 seminear = mix(
+    texture2D(clearSampler, vuv + 0.5 * radialOffset),
+    texture2D(blurSampler, vuv + 0.5 * radialOffset) , t);
+  vec4 middle = mix(
+    texture2D(clearSampler, vuv),
+    texture2D(blurSampler, vuv) , t);
+  vec4 semifar = mix(
+    texture2D(clearSampler, vuv - 0.5 * radialOffset),
+    texture2D(blurSampler, vuv - 0.5 * radialOffset) , t);
+  vec4 far = mix(
+    texture2D(clearSampler, vuv - radialOffset),
+    texture2D(blurSampler, vuv - radialOffset) , t);
 
-  float vertical = cos(3.0 * abs(vuv.y - yFocus * 0.95));
+  // Interpolation variable based on aspect ratio:
+  float tAspect = min(1., max(0., (2.1 - compositorAspect) / 1.2));
+  float vertical = cos(3.0 * abs((vuv.y - yFocus * 0.95)
+                    / (sin(3.14159 / 2. + 0.5*(vuv.x - 0.5)))));
+  vertical = 1. - (1. - vertical) * mix(1., 0.9, tAspect);
 
   far *=      vec4(0.,   0.,   0.6,   0.2);
   semifar *=  vec4(0.,   0.3,  0.3,   0.2);
@@ -953,29 +962,19 @@ void main() {
   seminear *= vec4(0.3,  0.3,  0.,    0.2);
   near *=     vec4(0.6,  0.,   0.,    0.2);
   
-  float smoothR = smoothstep(0., 1.,
-    7.0 * smoothstep(0., 1., pow(0.45 * r, 1.1)))
-    * smoothstep(0., 1., 1. - r);
-  float centralR = pow(0.9*r, 1.8);
-  float outerR = smoothstep(0., 1., 1. - r);
+  float centralR = pow(mix(0.9, 1.8, tAspect) * r, mix(1.8, 2.4, tAspect));
 
   vec4 aberrantColor = far + semifar + middle + seminear + near;
 
   float curtainFactor = smoothstep(
     curtainLo, curtainHi, (1. - 2. * abs(vuv.x - 0.5)));
 
-  // debug
-  // vertical = 1.;
-  
   float overallFade = (1. - vertical) * (pulseDelta);
   float waveEmphasis = 1.85 * (1. - pow(pulseDelta, 2.));
 
   float finalScale = (1. - overallFade)
                       * centralR * (1. + waveEmphasis) * curtainFactor;
   gl_FragColor = aberrantColor * finalScale;
-  // debug
-  // gl_FragColor = vec4(finalScale, 0.5*finalScale, 0, 1.);
-  gl_FragColor = vec4(vertical, 0.5*vertical, 0, 1.);
 }
 `
 
