@@ -166,6 +166,12 @@ noscript {
   display: none;
 }
 
+.bokeh-canvas {
+  width: min(1600px, 100vw);
+  height: 100dvh;
+  position: absolute;
+}
+
 .render-canvas {
   z-index: 1;
   position: fixed;
@@ -213,14 +219,12 @@ noscript {
   position: relative;
 
   font-weight: 400;
-  /* letter-spacing: 0.045rem; */
   padding-left: 0.7em;
 }
 
 .small-title {
   color: var(--soft-color);
   margin-left: 0.7rem;
-  /* letter-spacing: 0.03rem; */
   font-weight: 400;
 }
 
@@ -240,13 +244,13 @@ noscript {
 .name-container::before {
   content: '';
   position: absolute;
-  border: 1.5px #8aceff30 solid;
-  background-color: #111f;
-  box-shadow: 0px 0px 12px rgba(119, 0, 255, 0.207);
-  border-radius: 1px;
+  background-color: #090018ff;
+  box-shadow:
+      0px 0px 4px 1px #0af6,
+      0px 0px 2px 0px #8aceff90 inset;
   padding: 4px;
   z-index: 1;
-  top: -0.25em;
+  top: -0.15em;
   left: calc(50% - 0.5 * 2em);
   width: 2em;
   height: 2em;
@@ -256,13 +260,13 @@ noscript {
 .name-container::after {
   content: '';
   position: absolute;
-  border: 1.5px #8aceff20 solid;
-  background-color: rgb(14, 11, 18);
-  box-shadow: 0px 0px 12px rgba(119, 0, 255, 0.207);
-  border-radius: 1px;
+  background-color: #100020ff;
+  box-shadow:
+    0px 0px 4px 1px #0af4,
+    0px 0px 0.5px 0px #8aceff70 inset;
   padding: 4px;
   z-index: 0;
-  top: 1.35em;
+  top: 1.45em;
   left: calc(50% - 0.5 * 1.25em);
   width: 1.25em;
   height: 1.25em;
@@ -298,7 +302,7 @@ noscript {
   min-width: 6.5ch;
   margin-left: 0px;
   margin-right: 0px;
-  /* letter-spacing: 0.03em; */
+  text-shadow: 0px 0px 10px #000, 0px 0px 6px #000;
 }
 
 .link-box:hover a {
@@ -938,14 +942,11 @@ footer {
   }
 
   .name-container::before {
-    content: '';
-    position: absolute;
-    border: 1.5px #8aceff70 solid;
-    background-color: #000f;
-    box-shadow: 0px 0px 4px #0af8;
-    border-radius: 1px;
-    padding: 4px;
-    top: -0.05em;
+    background-color: #001f;
+    box-shadow:
+      0px 0px 4px 1px #0af8,
+      0px 0px 2px 0px #8acefff0 inset;
+    top: 0.05em;
     left: 1.15em;
     width: 1.6em;
     height: 1.6em;
@@ -955,12 +956,11 @@ footer {
   .name-container::after {
     content: '';
     position: absolute;
-    border: 1.5px #8eb4ff60 solid;
-    background-color: #35447d45;
-    box-shadow: 0px 0px 4px #0af8;
-    border-radius: 1px;
-    padding: 4px;
-    top: 0.2596em;
+    background-color: rgb(12, 18, 38);
+    box-shadow:
+      0px 0px 4px 1px #0af8,
+      0px 0px 0.5px 0px #8acefff0 inset;
+    top: 0.35em;
     left: 0.44em;
     width: 1em;
     height: 1em;

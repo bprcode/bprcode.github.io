@@ -556,7 +556,10 @@ function animate(t: number) {
     shared.tLast = t
   }
 
-  const dt = ((shared.readingMode ? 0.3 : 1) * (t - shared.tLast)) / 1000
+  const dt =
+    ((shared.readingMode && shared.pulseTime > 6 ? 0.3 : 1) *
+      (t - shared.tLast)) /
+    1000
   shared.tLast = t
 
   shared.elapsed += dt
@@ -970,7 +973,7 @@ void main() {
     curtainLo, curtainHi, (1. - 2. * abs(vuv.x - 0.5)));
 
   float overallFade = (1. - vertical) * (pulseDelta);
-  float waveEmphasis = 1.85 * (1. - pow(pulseDelta, 2.));
+  float waveEmphasis = 1.45 * (1. - pow(pulseDelta, 2.));
 
   float finalScale = (1. - overallFade)
                       * centralR * (1. + waveEmphasis) * curtainFactor;
