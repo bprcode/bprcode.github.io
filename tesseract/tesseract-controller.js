@@ -63,7 +63,7 @@ export function logError (message) {
 }
 
 function handleGlobalError (event, source, line, column, error) {
-  logError('⚠️ ' + event)
+  logError('Error: ' + event)
   logError(source)
   logError('Line: ' + line)
   logError('Col: ' + column)
@@ -363,7 +363,7 @@ try {
   }
 
 } catch (e) {
-  logError('\n🚩 Initialization error: ' + e.message
+  logError('\nInitialization error: ' + e.message
         + '\n' + e.stack)
 }
 }
