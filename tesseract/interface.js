@@ -427,7 +427,10 @@ function initCarousel() {
 
       slide.classList.add('carousel-slide')
       slide.classList.add('hide-slide')
-      slide.style.backgroundImage = `url(${src})`
+
+      const img = document.createElement('img')
+      img.src = src
+      slide.append(img)
 
       clipping.append(slide)
     }
