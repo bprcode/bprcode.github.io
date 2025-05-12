@@ -405,8 +405,7 @@ function initCarousel() {
       pipContainer.classList.add('pip-container')
       carousel.append(pipContainer)
   
-      for(const [index, src] of Object.entries(sources)) {
-        const centering = 32 * sources.length / -2
+      for(const [index] of Object.entries(sources)) {
         const pip = document.createElement('div')
         pip.classList.add('carousel-pip')
   
