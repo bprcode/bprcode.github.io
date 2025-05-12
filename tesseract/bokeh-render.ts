@@ -554,18 +554,9 @@ function animate(t: number) {
 }
 
 function renderBlur(
-  blurX: number,
-  blurY: number,
-  fromTexture: WebGLTexture,
-  toFbo: WebGLFramebuffer,
-  needClear = true
+  passes: number
 ) {
   const gl = shared.gl!
-
-  gl.bindFramebuffer(gl.FRAMEBUFFER, toFbo)
-  if (needClear) {
-    gl.clear(gl.COLOR_BUFFER_BIT)
-  }
 
   gl.viewport(0, 0, shared.textureWidth, shared.textureHeight)
   gl.useProgram(shared.blurProgram)
@@ -577,12 +568,23 @@ function renderBlur(
   gl.bindBuffer(gl.ARRAY_BUFFER, shared.uvBuffer)
   gl.vertexAttribPointer(locations.uvBlur, 2, gl.FLOAT, false, 0, 0)
 
-  gl.activeTexture(gl.TEXTURE0)
-  gl.bindTexture(gl.TEXTURE_2D, fromTexture)
-  gl.uniform1i(locations.readTexture, 0)
-  gl.uniform2f(locations.blurStep, blurX, blurY)
-
-  gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
+  for(let i = 0; i < passes; i++) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, shared.fboList[1 + (i % 2)])
+    if(i < 2) {
+      gl.clear(gl.COLOR_BUFFER_BIT)
+    }
+    //
+    gl.activeTexture(gl.TEXTURE0)
+    // Read from 0, 1, 2, 1, 2 ...
+    gl.bindTexture(gl.TEXTURE_2D, shared.textureList[i === 0 ? 0 : 1 + ((i + 1) % 2)])
+    gl.uniform1i(locations.readTexture, 0)
+    gl.uniform2f(locations.blurStep,
+      i % 2 ? 0 : 1 / shared.textureWidth,
+      i % 2 ? 1 / shared.textureHeight : 0)
+  
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
+  }
+  
   gl.disableVertexAttribArray(locations.xyBlur)
   gl.disableVertexAttribArray(locations.uvBlur)
 }
@@ -688,36 +690,7 @@ function render() {
 
   renderHexagons()
   resolveAA()
-
-  renderBlur(
-    1 / shared.textureWidth,
-    0,
-    shared.textureList[0],
-    shared.fboList[1],
-    true
-  )
-  renderBlur(
-    0,
-    1 / shared.textureHeight,
-    shared.textureList[1],
-    shared.fboList[2],
-    true
-  )
-  renderBlur(
-    1 / shared.textureWidth,
-    0,
-    shared.textureList[2],
-    shared.fboList[1],
-    false
-  )
-  renderBlur(
-    0,
-    1 / shared.textureHeight,
-    shared.textureList[1],
-    shared.fboList[2],
-    false
-  )
-
+  renderBlur(4)
   renderComposite()
 }
 
