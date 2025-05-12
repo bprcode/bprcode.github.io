@@ -7,7 +7,8 @@
     "dev": "vite",
     "host": "vite --host",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build-for-deploy": "pwsh -c \"rm assets -r -force; rm index.html; tsc && vite build; mv dist/index-source.html index.html; mv dist/assets assets; rm dist;\""
   },
   "devDependencies": {
     "typescript": "~5.7.2",
