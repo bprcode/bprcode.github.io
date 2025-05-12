@@ -122,33 +122,6 @@ function handleTesseractCycle(animation: TesseractAnimation) {
     shared.activeColorSet = bokehColorMap.get(animation.title) as RGBTriple[]
     return
   }
-
-  const colorList: RGBTriple[] = []
-  const excludeNegative = ({ rgba }) =>
-    rgba[0] >= 0 && rgba[1] >= 0 && rgba[2] >= 0
-  const excludeBlank = ({ rgba }) =>
-    rgba[0] !== 0 || rgba[1] !== 0 || rgba[2] !== 0
-
-  for (const { rgba } of animation.lighting.diffuseLights
-    .filter(excludeNegative)
-    .filter(excludeBlank)) {
-    colorList.push([rgba[0], rgba[1], rgba[2]])
-  }
-
-  for (const { rgba } of animation.lighting.specularLights
-    .filter(excludeNegative)
-    .filter(excludeBlank)) {
-    colorList.push([rgba[0], rgba[1], rgba[2]])
-  }
-
-  console.log(animation.title, 'applying colors:')
-  for (const color of colorList) {
-    console.log(color)
-  }
-
-  if (colorList.length) {
-    shared.activeColorSet = colorList
-  }
 }
 
 function init() {
@@ -383,7 +356,6 @@ function updateSize() {
   )
 
   const tWidth = canvas.clientWidth / maxCanvasSize
-  const isMaxWidth = canvas.clientWidth === maxCanvasSize
 
   shared.textureWidth = Math.max(
     1,
@@ -396,6 +368,7 @@ function updateSize() {
 
   canvas.height = shared.canvasHeight
   canvas.width = shared.canvasWidth
+
   shared.aspect = shared.canvasWidth / shared.canvasHeight
   shared.sceneScale = getSceneScale()
 
@@ -462,8 +435,8 @@ function updateSize() {
     )
   )
 
-  for (const texAlt of shared.textureList) {
-    gl.bindTexture(gl.TEXTURE_2D, texAlt)
+  for (const tex of shared.textureList) {
+    gl.bindTexture(gl.TEXTURE_2D, tex)
     gl.texImage2D(
       gl.TEXTURE_2D,
       0,
@@ -486,17 +459,19 @@ function removeParticle(i: number) {
 }
 
 function addParticle() {
-  const y = shared.yMax * (2.0 * (Math.random() - 0.5))
+  const x = shared.xMax * 2 * (Math.random() - 0.5)
+  const y = shared.yMax * 2 * (Math.random() - 0.5)
   const z = 2 * (Math.random() - 0.5)
   const colorIndex = Math.floor(Math.random() * shared.activeColorSet.length)
+
   particles.push({
-    position: [shared.xMax * 2 * (Math.random() - 0.5), y, z],
+    position: [x, y, z],
     lifetime: 5 + Math.random() * 5,
     spawnDelay: 0,
     age: 0,
     color: [...shared.activeColorSet[colorIndex], 1],
     colorIndex: colorIndex,
-    scale: 0.85 + 0.1 * (1 - (y + shared.yMax) / shared.yMax) + 0.2 / (z + 2),
+    scale: 0.85 + 0.1 * y / shared.yMax + 0.2 / (z + 2),
   })
 }
 
@@ -510,8 +485,9 @@ function seedParticles() {
 }
 
 function updateParticles(dt: number) {
+  // Rate of color interpolation following animation state change:
   const colorHalfLife = 1.125
-  const k = -Math.log(0.5) / colorHalfLife
+  const k = 0.6931471805599453 /* ln(2) */ / colorHalfLife
 
   while (particles.length < shared.maxParticles) {
     addParticle()
@@ -551,11 +527,14 @@ function updateParticles(dt: number) {
 
 function animate(t: number) {
   shared.tLast ??= t
+
   // Skip large timesteps:
   if (t - shared.tLast > 100) {
     shared.tLast = t
   }
 
+  // Slow down animation while reading site content,
+  // unless waiting for the pulse animation to finish:
   const dt =
     ((shared.readingMode && shared.pulseTime > 6 ? 0.3 : 1) *
       (t - shared.tLast)) /
@@ -575,18 +554,9 @@ function animate(t: number) {
 }
 
 function renderBlur(
-  blurX: number,
-  blurY: number,
-  fromTexture: WebGLTexture,
-  toFbo: WebGLFramebuffer,
-  needClear = true
+  passes: number
 ) {
   const gl = shared.gl!
-
-  gl.bindFramebuffer(gl.FRAMEBUFFER, toFbo)
-  if (needClear) {
-    gl.clear(gl.COLOR_BUFFER_BIT)
-  }
 
   gl.viewport(0, 0, shared.textureWidth, shared.textureHeight)
   gl.useProgram(shared.blurProgram)
@@ -598,12 +568,23 @@ function renderBlur(
   gl.bindBuffer(gl.ARRAY_BUFFER, shared.uvBuffer)
   gl.vertexAttribPointer(locations.uvBlur, 2, gl.FLOAT, false, 0, 0)
 
-  gl.activeTexture(gl.TEXTURE0)
-  gl.bindTexture(gl.TEXTURE_2D, fromTexture)
-  gl.uniform1i(locations.readTexture, 0)
-  gl.uniform2f(locations.blurStep, blurX, blurY)
-
-  gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
+  for(let i = 0; i < passes; i++) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, shared.fboList[1 + (i % 2)])
+    if(i < 2) {
+      gl.clear(gl.COLOR_BUFFER_BIT)
+    }
+    //
+    gl.activeTexture(gl.TEXTURE0)
+    // Read from 0, 1, 2, 1, 2 ...
+    gl.bindTexture(gl.TEXTURE_2D, shared.textureList[i === 0 ? 0 : 1 + ((i + 1) % 2)])
+    gl.uniform1i(locations.readTexture, 0)
+    gl.uniform2f(locations.blurStep,
+      i % 2 ? 0 : 1 / shared.textureWidth,
+      i % 2 ? 1 / shared.textureHeight : 0)
+  
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, geometry.square.length / 2)
+  }
+  
   gl.disableVertexAttribArray(locations.xyBlur)
   gl.disableVertexAttribArray(locations.uvBlur)
 }
@@ -709,36 +690,7 @@ function render() {
 
   renderHexagons()
   resolveAA()
-
-  renderBlur(
-    1 / shared.textureWidth,
-    0,
-    shared.textureList[0],
-    shared.fboList[1],
-    true
-  )
-  renderBlur(
-    0,
-    1 / shared.textureHeight,
-    shared.textureList[1],
-    shared.fboList[2],
-    true
-  )
-  renderBlur(
-    1 / shared.textureWidth,
-    0,
-    shared.textureList[2],
-    shared.fboList[1],
-    false
-  )
-  renderBlur(
-    0,
-    1 / shared.textureHeight,
-    shared.textureList[1],
-    shared.fboList[2],
-    false
-  )
-
+  renderBlur(4)
   renderComposite()
 }
 
@@ -805,10 +757,10 @@ function createShader(
     return shader
   }
 
-  console.error(gl.getShaderInfoLog(shader))
+  const failure = gl.getShaderInfoLog(shader)
   gl.deleteShader(shader)
 
-  throw Error('Shader compilation failed')
+  throw Error(failure || 'Shader compilation failed')
 }
 
 function easePass(t: number): number {
@@ -867,6 +819,7 @@ attribute vec4 position;
 void main() {
   vec4 transformed = transform * position;
 
+  // Slightly flatten geometry radially:
   float r = length(vec2(transformed)) / length(positionMax);
   transformed.x /= 0.9 + r * 0.1125;
   transformed.y /= 0.9 + r * 0.1125;
@@ -953,12 +906,13 @@ void main() {
     texture2D(clearSampler, vuv - radialOffset),
     texture2D(blurSampler, vuv - radialOffset) , t);
 
-  // Interpolation variable based on aspect ratio:
+  // Interpolation parameter based on aspect ratio:
   float tAspect = min(1., max(0., (2.1 - compositorAspect) / 1.2));
   float vertical = cos(3.0 * abs((vuv.y - yFocus * 0.95)
                     / (sin(3.14159 / 2. + 0.5*(vuv.x - 0.5)))));
   vertical = 1. - (1. - vertical) * mix(1., 0.9, tAspect);
 
+  // Weight color samples based on radial offset:
   far *=      vec4(0.,   0.,   0.6,   0.2);
   semifar *=  vec4(0.,   0.3,  0.3,   0.2);
   middle *=   vec4(0.1,  0.4,  0.1,   0.2);
@@ -969,10 +923,13 @@ void main() {
 
   vec4 aberrantColor = far + semifar + middle + seminear + near;
 
+  // Apply horizontal vignetting:
   float curtainFactor = smoothstep(
     curtainLo, curtainHi, (1. - 2. * abs(vuv.x - 0.5)));
 
   float overallFade = (1. - vertical) * (pulseDelta);
+  
+  // Highlight fragments based on proximity to the pulse animation:
   float waveEmphasis = 1.45 * (1. - pow(pulseDelta, 2.));
 
   float finalScale = (1. - overallFade)

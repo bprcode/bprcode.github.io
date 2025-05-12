@@ -405,8 +405,7 @@ function initCarousel() {
       pipContainer.classList.add('pip-container')
       carousel.append(pipContainer)
   
-      for(const [index, src] of Object.entries(sources)) {
-        const centering = 32 * sources.length / -2
+      for(const [index] of Object.entries(sources)) {
         const pip = document.createElement('div')
         pip.classList.add('carousel-pip')
   
@@ -428,7 +427,10 @@ function initCarousel() {
 
       slide.classList.add('carousel-slide')
       slide.classList.add('hide-slide')
-      slide.style.backgroundImage = `url(${src})`
+
+      const img = document.createElement('img')
+      img.src = src
+      slide.append(img)
 
       clipping.append(slide)
     }

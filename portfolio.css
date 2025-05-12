@@ -407,12 +407,6 @@ noscript {
   width: calc(100% + 32px);
   height: calc(100% + 96px);
   transform: translate(-16px, -24px);
-  background-image: radial-gradient(
-    ellipse 34% 50%,
-    rgba(39, 114, 151, 0.15) 25%,
-    rgba(85, 198, 255, 0.06) 70%,
-    rgba(67, 192, 255, 0)
-  );
 }
 
 .carousel-clipping {
@@ -430,11 +424,25 @@ noscript {
   position: absolute;
   width: 100%;
   height: 100%;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
   transform: translateX(0%);
-  transition: transform 0.4s ease-out;
+  transition: transform 0.4s ease-out, filter 0.3s ease-out;
+}
+
+.carousel img {
+  max-height: 240px;
+  max-width: 100%;
+  outline: 1px solid #0af6;
+  outline-offset: -1px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  transition: filter 0.15s linear;
+}
+
+.carousel img:hover {
+  transition: filter 0.15s linear;
+  filter: brightness(120%);
 }
 
 .spin-left-button,
@@ -479,10 +487,12 @@ noscript {
 
 .slide-left {
   transform: translateX(-100%);
+  filter: brightness(20%);
 }
 
 .slide-right {
   transform: translateX(100%);
+  filter: brightness(20%);
 }
 
 .skip-slide {
