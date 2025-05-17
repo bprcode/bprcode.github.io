@@ -320,6 +320,8 @@ function init() {
   }
 
   updateSize()
+  // Workaround for intermittent Safari misreported size:
+  setTimeout(updateSize, 1000);
   seedParticles()
   queueCycleResponse()
 
