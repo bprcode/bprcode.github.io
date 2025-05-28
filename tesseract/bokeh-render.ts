@@ -150,6 +150,13 @@ function init() {
 
   const gl = shared.gl
   window.addEventListener('resize', updateSize)
+  window.addEventListener('visibilitychange', () => {
+    if(document.hidden) {
+      return
+    }
+
+    updateSize()
+  })
 
   if (tesseract.state.currentAnimation) {
     handleTesseractCycle(tesseract.state.currentAnimation as TesseractAnimation)
@@ -320,8 +327,6 @@ function init() {
   }
 
   updateSize()
-  // Workaround for intermittent Safari misreported size:
-  setTimeout(updateSize, 1000);
   seedParticles()
   queueCycleResponse()
 
