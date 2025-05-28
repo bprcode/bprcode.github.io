@@ -327,6 +327,9 @@ function init() {
   }
 
   updateSize()
+  // Workaround for Safari mobile sometimes misreporting initial size:
+  setTimeout(updateSize, 1000)
+  setTimeout(updateSize, 2000)
   seedParticles()
   queueCycleResponse()
 
