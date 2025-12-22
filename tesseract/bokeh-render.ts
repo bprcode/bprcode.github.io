@@ -45,7 +45,6 @@ const shared = {
   readingMode: false,
   pulseTime: -2,
   zPulse: 0,
-  resizeCount: 0,
   blurKernelSize: 10,
   canvasWidth: 0,
   canvasHeight: 0,
@@ -353,8 +352,6 @@ function updateSize() {
   if (!canvas || !gl) {
     return
   }
-
-  shared.resizeCount++
 
   shared.canvasHeight = Math.max(
     1,
