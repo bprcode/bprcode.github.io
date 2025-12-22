@@ -46,7 +46,7 @@
     <meta name="theme-color" content="#1b182c" />
 
     <title>Scintilla.dev</title>
-    <script type="module" crossorigin src="/assets/app-D-V1icJ8.js"></script>
+    <script type="module" crossorigin src="/assets/app-Dlix2o3g.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/app-DRKcRXuA.css">
   </head>
 
@@ -142,21 +142,19 @@
             <ul class="feature-list">
               <li>
                 Instant interactions via optimistic updates to a
-                mutation buffer. The update algorithm is fault-tolerant and will
-                store updates indefinitely until the server can be reached.
-                Concurrency conflicts are automatically resolved.
+                mutation buffer. Updates are fault-tolerant and will 
+                automatically resolve concurrency conflicts.
               </li>
               <li>
                 A local cache serves queries from subsets or composite supersets 
                 of previous views. Staleness is tracked per-view, minimizing network traffic.
               </li>
               <li>
-                User authentication managed via JWT. Correctness and security of
-                backend API surface maintained via automated testing and CI
-                hooks.
+                Correctness and security of backend API surface maintained 
+                via automated testing and CI hooks.
               </li>
               <li>
-                Intuitive, fluid interface makes it easy for users to reschedule
+                Fluid interface makes it easy for users to reschedule
                 their calendars whether on desktop or mobile.
               </li>
             </ul>
@@ -195,9 +193,8 @@
                 reduction over the prime field ℤ₂.
               </li>
               <li>
-                Unlike most other solvers, finds <em>optimal</em> solutions by
-                identifying and permuting free variables in the puzzle's state
-                transition matrix.
+                Unlike other solvers, finds <em>optimal</em> solutions by
+                permuting free variables in the state transition matrix.
               </li>
               <li>
                 Achieves seamless user interaction by delegating calculations to
@@ -229,34 +226,44 @@
             <p>
               A mock library catalog, implemented as a full-stack web service.
               Users can search a catalog of recorded books, update inventory, or import metadata
-              from real-world library databases.
+              from real-world databases.
             </p>
             <h3>Features</h3>
             <ul class="feature-list">
               <li>
-                Integration with the OpenLibrary API allows automated retrieval
-                and population of database records. Non-relational record
-                structures are parsed for a best-fit match to Archivia's catalog
-                schema.
+                Integration with the OpenLibrary API enables automated retrieval
+                and population of database records.
               </li>
               <li>
-                Rendering of a three-dimensional carousel gallery of recently added books based on imported metadata.
-                Records unlikely to yield quality results are excluded from the recency queue.
+                Renders a three-dimensional carousel of recently added books.
+                Records unlikely to yield quality results are excluded.
               </li>
               <li>
-                Pages rendered via server-side templating for a nostalgic,
-                vintage browsing experience.
+                AI integration allows users to automatically generate summaries of catalog materials.
+              </li>
+              <li>
+                Available in two versions:
+                <ul>
+                  <li style="margin-top: 1rem;">
+                    An Express-based traditional server
+                  </li>
+                  <li>
+                    A serverless version optimized for edge rendering.
+                  </li>
+                </ul>
               </li>
             </ul>
             <p class="built-with">
-              <strong>Built with:</strong> Node.js, Handlebars, Bootstrap,
-              PostgreSQL.
+              <strong>Built with:</strong> Hono, Express, Node.js, Handlebars, Bootstrap, PostgreSQL.
             </p>
             <div class="project-links">
               <a href="https://archivia-app.com"
                 >site<img src="data:image/svg+xml,%3csvg%20width='24'%20height='24'%20viewBox='0%200%2024%2024'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3e%3cpath%20d='M24%200H13.6257V2.24309H21.7569V10.3743H24V0Z'%20fill='rgb(226,%20167,%20214)'/%3e%3cpath%20d='M22.7653%201.23474L10.2611%2013.7389'%20stroke='rgb(251,%20156,%20232)'%20stroke-width='2.24309'/%3e%3cpath%20d='M10.2611%203.47784H3.36463C1.5064%203.47784%200%204.98424%200%206.84248V20.6354C0%2022.4936%201.5064%2024%203.36463%2024H17.1575C19.0158%2024%2020.5222%2022.4936%2020.5222%2020.6354V13.7389H18.2791V20.6354C18.2791%2021.2548%2017.7769%2021.7569%2017.1575%2021.7569H3.36463C2.74522%2021.7569%202.24309%2021.2548%202.24309%2020.6354V6.84248C2.24309%206.22307%202.74522%205.72093%203.36463%205.72093H10.2611V3.47784Z'%20fill='rgb(251,%20156,%20232)'/%3e%3c/svg%3e" /></a
-              ><a href="https://github.com/bprcode/production-library"
-                >repo<img src="data:image/svg+xml,%3csvg%20width='24'%20height='24'%20viewBox='0%200%2024%2024'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3e%3cpath%20d='M24%200H13.6257V2.24309H21.7569V10.3743H24V0Z'%20fill='rgb(226,%20167,%20214)'/%3e%3cpath%20d='M22.7653%201.23474L10.2611%2013.7389'%20stroke='rgb(251,%20156,%20232)'%20stroke-width='2.24309'/%3e%3cpath%20d='M10.2611%203.47784H3.36463C1.5064%203.47784%200%204.98424%200%206.84248V20.6354C0%2022.4936%201.5064%2024%203.36463%2024H17.1575C19.0158%2024%2020.5222%2022.4936%2020.5222%2020.6354V13.7389H18.2791V20.6354C18.2791%2021.2548%2017.7769%2021.7569%2017.1575%2021.7569H3.36463C2.74522%2021.7569%202.24309%2021.2548%202.24309%2020.6354V6.84248C2.24309%206.22307%202.74522%205.72093%203.36463%205.72093H10.2611V3.47784Z'%20fill='rgb(251,%20156,%20232)'/%3e%3c/svg%3e"
+              ><a href="https://github.com/bprcode/cloud-library"
+                >repo (serverless)<img src="data:image/svg+xml,%3csvg%20width='24'%20height='24'%20viewBox='0%200%2024%2024'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3e%3cpath%20d='M24%200H13.6257V2.24309H21.7569V10.3743H24V0Z'%20fill='rgb(226,%20167,%20214)'/%3e%3cpath%20d='M22.7653%201.23474L10.2611%2013.7389'%20stroke='rgb(251,%20156,%20232)'%20stroke-width='2.24309'/%3e%3cpath%20d='M10.2611%203.47784H3.36463C1.5064%203.47784%200%204.98424%200%206.84248V20.6354C0%2022.4936%201.5064%2024%203.36463%2024H17.1575C19.0158%2024%2020.5222%2022.4936%2020.5222%2020.6354V13.7389H18.2791V20.6354C18.2791%2021.2548%2017.7769%2021.7569%2017.1575%2021.7569H3.36463C2.74522%2021.7569%202.24309%2021.2548%202.24309%2020.6354V6.84248C2.24309%206.22307%202.74522%205.72093%203.36463%205.72093H10.2611V3.47784Z'%20fill='rgb(251,%20156,%20232)'/%3e%3c/svg%3e"
+              /></a>
+              <a href="https://github.com/bprcode/production-library"
+                >repo (Express)<img src="data:image/svg+xml,%3csvg%20width='24'%20height='24'%20viewBox='0%200%2024%2024'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3e%3cpath%20d='M24%200H13.6257V2.24309H21.7569V10.3743H24V0Z'%20fill='rgb(226,%20167,%20214)'/%3e%3cpath%20d='M22.7653%201.23474L10.2611%2013.7389'%20stroke='rgb(251,%20156,%20232)'%20stroke-width='2.24309'/%3e%3cpath%20d='M10.2611%203.47784H3.36463C1.5064%203.47784%200%204.98424%200%206.84248V20.6354C0%2022.4936%201.5064%2024%203.36463%2024H17.1575C19.0158%2024%2020.5222%2022.4936%2020.5222%2020.6354V13.7389H18.2791V20.6354C18.2791%2021.2548%2017.7769%2021.7569%2017.1575%2021.7569H3.36463C2.74522%2021.7569%202.24309%2021.2548%202.24309%2020.6354V6.84248C2.24309%206.22307%202.74522%205.72093%203.36463%205.72093H10.2611V3.47784Z'%20fill='rgb(251,%20156,%20232)'/%3e%3c/svg%3e"
               /></a>
             </div>
           </section>
